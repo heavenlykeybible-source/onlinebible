@@ -7,7 +7,7 @@ compatibility_date = "2025-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "heavenlykey-media-db"
-database_id = "c0fe5ca1-cb39-4fbb-bad0-e6b2fa8c825a"
+database_id = "0a512013-8b98-46b2-9404-4df65b0c0f04"
 
 [[r2_buckets]]
 binding = "MEDIA_R2"
