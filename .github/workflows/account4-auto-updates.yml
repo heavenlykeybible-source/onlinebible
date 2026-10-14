@@ -1,0 +1,51 @@
+name: Account 4 Core Intake — Manual Only
+run-name: Account 4 manual intake · ${{ github.sha }}
+
+# Account 4 is the stable deployment authority. Normal application pushes MUST NOT
+# redeploy or mutate it. This workflow exists only for an explicit owner/operator
+# maintenance action and still sends an immutable SHA through the review pipeline.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: account4-core-maintenance
+  cancel-in-progress: false
+
+jobs:
+  stage-new-update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate exact commit SHA
+        shell: bash
+        env:
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$TARGET_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "Exact 40-character commit SHA required." >&2
+            exit 1
+          fi
+          echo "Validated immutable source commit: ${TARGET_SHA,,}"
+
+      - name: Stage exact commit in Account 4 waiting rooms
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/$REPOSITORY/actions/workflows/account4-stage-all.yml/dispatches" \
+            -f ref=main \
+            -f "inputs[target_ref]=${TARGET_SHA,,}"
+          echo "Account 4 maintenance staging requested for ${TARGET_SHA,,}."
+          echo "Production remains unchanged until individual owner approval."

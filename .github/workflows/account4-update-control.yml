@@ -1,0 +1,29 @@
+name: Update Account 4 Review Dashboard Only
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_owner_release:
+        description: "Type RELEASE_ACCOUNT4 after personally reviewing this Account 4 control-plane update"
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: account4-dashboard-maintenance
+  cancel-in-progress: false
+jobs:
+  dispatch-control:
+    if: github.actor == 'aoemeta247-cell' && inputs.confirm_owner_release == 'RELEASE_ACCOUNT4'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch owner-approved Account 4 dashboard maintenance only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run cloudflare-recovery-control.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f confirm_owner_release=RELEASE_ACCOUNT4
+          echo "Account 4 maintenance requested. Accounts 1-3 production were not targeted."

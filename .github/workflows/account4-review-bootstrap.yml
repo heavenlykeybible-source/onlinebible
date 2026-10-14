@@ -1,0 +1,17 @@
+name: Start Account 4 Waiting Rooms For Next Release
+on:
+  push:
+    branches: [main]
+    paths:
+      - .deploy/account4-review-bootstrap.txt
+permissions:
+  contents: read
+  actions: write
+jobs:
+  preview-only:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stage pinned commit in all three Account 4 sandboxes, never production
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run account4-stage-all.yml --repo "$GITHUB_REPOSITORY" --ref main -f target_ref="$GITHUB_SHA"

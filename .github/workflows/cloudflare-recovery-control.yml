@@ -1,0 +1,111 @@
+name: Deploy Account 4 Recovery Control
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_owner_release:
+        description: 'Type RELEASE_ACCOUNT4 after personally reviewing this exact main-branch update'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: heavenlykey-account-4-recovery-control
+  cancel-in-progress: false
+jobs:
+  deploy-recovery-control:
+    if: github.ref == 'refs/heads/main' && github.actor == 'aoemeta247-cell' && inputs.confirm_owner_release == 'RELEASE_ACCOUNT4'
+    runs-on: ubuntu-24.04
+    environment: account4-owner-approval
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.ACCOUNT_4_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify Account 4 credential contract and original D1 owner pin
+        env:
+          ACCOUNT4_EXPECTED_D1_ID: ${{ secrets.ACCOUNT4_PROTECTED_D1_ID }}
+        run: node scripts/check-deployment-credentials.mjs 4
+      - name: Install dependencies without scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Validate CMS permanence and control plane before any Cloudflare operation
+        run: |
+          set -euo pipefail
+          node scripts/cms-permanence-gate.mjs
+          node scripts/account4-permanence-gate.mjs
+          node scripts/protected-state-gate.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/index.ts --bundle --platform=browser --format=esm --outfile=/tmp/account4-reviewed.mjs
+          node --test scripts/test-account4-browser-navigation.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/package-intake.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-upload-intake.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/local-auth.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-local-auth.mjs
+          node --test scripts/test-account4-direct-upload.mjs
+          node --test scripts/test-account4-local-login.mjs
+          node --test scripts/test-account4-update-centre.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/release-history.ts --bundle --platform=neutral --format=esm --outfile=/tmp/account4-release-history.mjs
+          node --test scripts/test-account4-release-history.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/password-recovery.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-password-recovery.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/agent-bridge.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-agent-bridge.mjs
+          node --test scripts/test-account4-password-recovery.mjs
+          node --test scripts/test-account4-agent-bridge.mjs
+      - name: Verify Account 4 credentials
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+      - name: Check Account 4 R2 quarantine exists without creating or replacing it
+        working-directory: recovery-control
+        run: npx --yes wrangler@4.145.0 r2 bucket info heavenlykey-account4-code-quarantine --json > /tmp/account4-r2-verified.json
+      - name: Verify the exact pinned Account 4 owner database
+        working-directory: recovery-control
+        shell: bash
+        env:
+          ACCOUNT4_EXPECTED_D1_ID: ${{ secrets.ACCOUNT4_PROTECTED_D1_ID }}
+        run: |
+          set -euo pipefail
+          [[ "$ACCOUNT4_EXPECTED_D1_ID" =~ ^[0-9a-f-]{36}$ ]] || { echo '::error::Account 4 original D1 ID is not owner-pinned. Normal releases cannot choose a replacement database.'; exit 1; }
+          npx --yes wrangler@4.145.0 d1 list --json > /tmp/account4-d1.json
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          const x=JSON.parse(readFileSync('/tmp/account4-d1.json','utf8'));
+          const a=Array.isArray(x)?x:(x.result||[]);
+          const db=a.find(row=>row.name==='heavenlykey-recovery-control-db');
+          if((db?.uuid||db?.id)!==process.env.ACCOUNT4_EXPECTED_D1_ID)
+            throw Error('Account 4 existing D1 database identity changed. Do not deploy or reset administrator records.');
+          NODE
+          cp wrangler.toml wrangler.deploy.toml
+          sed -i "s/REPLACE_ACCOUNT4_D1_ID/$ACCOUNT4_EXPECTED_D1_ID/g" wrangler.deploy.toml
+          echo 'Account 4 protected database ID verified without changing it.'
+      - name: Check previously configured persistent login secrets (never rotate during code deploy)
+        working-directory: recovery-control
+        run: |
+          set -euo pipefail
+          npx --yes wrangler@4.145.0 secret list --config wrangler.deploy.toml > /tmp/account4-secret-names.json
+          node --input-type=module -e '
+            import {readFileSync} from "node:fs";
+            const a=JSON.parse(readFileSync("/tmp/account4-secret-names.json","utf8"));
+            if(!Array.isArray(a)||!["GITHUB_CONTROL_TOKEN","CONTROL_PASSWORD_HASH"].every(n=>a.some(s=>s.name===n))) {
+              console.error("Account 4 required existing login secret is absent. Deployment stopped; no credential is reset.");
+              process.exit(1);
+            }
+            console.log("Existing login and signed-session secrets are present; normal deployment will preserve them.");
+          '
+      # No Account 4 database migration runs during regular UI/code releases.
+      - name: Deploy password-protected Account 4 control plane
+        working-directory: recovery-control
+        run: npx --yes wrangler@4.145.0 deploy --config wrangler.deploy.toml
+      - name: Verify dashboard after deployment
+        run: |
+          set -euo pipefail
+          URL='https://heavenlykey-recovery-control.emmanuel2026miracle.workers.dev/'
+          for n in 1 2 3 4 5 6; do
+            HTTP=$(curl -sS -o /tmp/account4-response.html -w '%{http_code}' --max-time 15 "$URL" || true)
+            if [ "$HTTP" = 200 ] && grep -q 'Website Update Centre' /tmp/account4-response.html; then
+              echo 'Account 4 administrator login page responds correctly.'
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "::error::Account 4 was deployed but login page did not respond as expected"
+          exit 1

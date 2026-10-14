@@ -1,0 +1,78 @@
+name: Account 4 Website Update Centre Checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'review/**'
+      - 'recovery-control/**'
+      - 'scripts/verify-account4-approval.mjs'
+      - 'scripts/test-account4-update-centre.mjs'
+      - 'scripts/test-account4-local-login.mjs'
+      - 'scripts/test-account4-agent-bridge.mjs'
+      - 'scripts/test-account4-direct-upload.mjs'
+      - 'scripts/test-account4-migrations.py'
+      - 'scripts/test-account4-browser-navigation.mjs'
+      - 'scripts/configure-account4-login.mjs'
+      - 'scripts/test-account4-release-history.mjs'
+      - 'scripts/account4-permanence-gate.mjs'
+      - 'scripts/protected-state-gate.mjs'
+      - '.github/workflows/cloudflare-production.yml'
+      - '.github/workflows/cloudflare-media-engine.yml'
+      - '.github/workflows/cloudflare-global-community.yml'
+      - '.github/workflows/account4-review-ci.yml'
+  pull_request:
+    paths:
+      - 'recovery-control/**'
+      - 'scripts/test-account4-password-recovery.mjs'
+      - 'scripts/test-account4-agent-bridge.mjs'
+      - 'scripts/test-account4-release-history.mjs'
+      - 'scripts/account4-permanence-gate.mjs'
+      - 'scripts/test-account4-update-centre.mjs'
+      - 'scripts/test-account4-local-login.mjs'
+      - 'scripts/test-account4-browser-navigation.mjs'
+      - 'scripts/test-account4-direct-upload.mjs'
+      - '.github/workflows/cloudflare-recovery-control.yml'
+      - '.github/workflows/account4-review-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-update-centre:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check update-centre JavaScript and signed approvals
+        run: |
+          set -euo pipefail
+          node --check review/provision.mjs
+          node --check review/set-secrets.mjs
+          node --check scripts/verify-account4-approval.mjs
+          node --check scripts/configure-account4-login.mjs
+          node scripts/account4-permanence-gate.mjs
+          node scripts/protected-state-gate.mjs
+          node --check heavenly-key-website/js/system-updates-admin.js
+          node --test scripts/test-account4-update-centre.mjs
+      - name: Compile Account 4 dashboard and preview entry points
+        run: |
+          set -euo pipefail
+          npx --yes esbuild@0.25.12 recovery-control/src/index.ts --bundle --platform=browser --format=esm --outfile=/tmp/hkem-control.mjs
+          cp /tmp/hkem-control.mjs /tmp/account4-reviewed.mjs
+          node --test scripts/test-account4-browser-navigation.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/local-auth.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-local-auth.mjs
+          node --test scripts/test-account4-local-login.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/release-history.ts --bundle --platform=neutral --format=esm --outfile=/tmp/account4-release-history.mjs
+          node --test scripts/test-account4-release-history.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/password-recovery.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-password-recovery.mjs
+          node --test scripts/test-account4-password-recovery.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/package-intake.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-upload-intake.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/agent-bridge.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-agent-bridge.mjs
+          node --test scripts/test-account4-agent-bridge.mjs
+          node --test scripts/test-account4-direct-upload.mjs
+          python3 scripts/test-account4-migrations.py
+          for n in 1 2 3; do
+            npx --yes esbuild@0.25.12 "review/entry-$n.ts" --bundle --platform=browser --format=esm --outfile="/tmp/hkem-preview-$n.mjs"
+          done

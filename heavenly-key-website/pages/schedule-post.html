@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Schedule Posts | Heavenly Key Command Center</title>
+  <link rel="stylesheet" href="../css/tokens.css?v=1.2.6">
+  <link rel="stylesheet" href="../css/base.css?v=1.2.6">
+  <link rel="stylesheet" href="../css/components.css?v=1.2.6">
+  <link rel="stylesheet" href="../css/ui-components.css?v=1.2.6">
+  <style>
+    body{min-height:100vh;background:var(--color-surface-soft,#f7f7f8)}
+    .schedule-shell{width:min(920px,calc(100% - 28px));margin:0 auto;padding:24px 0 40px}
+    .schedule-head{text-align:center;margin:0 auto 20px}
+    .schedule-head img{width:74px;height:74px;object-fit:contain;margin-bottom:8px}
+    .schedule-head h1{margin:.25rem 0}
+    .schedule-head p{max-width:680px;margin:.4rem auto 0}
+    .schedule-card{background:#fff;border:1px solid var(--color-border,#ddd);border-radius:18px;padding:18px;margin:0 0 16px;box-shadow:0 8px 24px rgba(0,0,0,.05)}
+    .schedule-card h2{margin-top:0}
+    .schedule-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .schedule-card label{display:grid;gap:6px;margin-bottom:12px;font-weight:700}
+    .schedule-card input,.schedule-card textarea,.schedule-card select{width:100%}
+    .schedule-destinations{display:grid;gap:8px;margin:8px 0 14px}
+    .schedule-destination{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--color-border,#ddd);border-radius:12px;font-weight:600}
+    .schedule-destination input{width:auto}
+    .schedule-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .schedule-status{min-height:1.4em;margin:.7rem 0 0}
+    .scheduled-list{display:grid;gap:10px}
+    .scheduled-item{border:1px solid var(--color-border,#ddd);border-radius:12px;padding:12px}
+    .scheduled-item strong,.scheduled-item small{display:block}
+    .schedule-footer{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:24px;padding-top:18px;border-top:1px solid var(--color-border,#ddd)}
+    .schedule-footer .btn{min-width:220px}
+    .schedule-hidden{display:none!important}
+    @media(max-width:680px){.schedule-grid{grid-template-columns:1fr}.schedule-footer{display:grid}.schedule-footer .btn{width:100%;min-width:0}}
+  </style>
+</head>
+<body>
+<main class="schedule-shell">
+  <header class="schedule-head">
+    <img src="../assets/ministry/logo.png" alt="Heavenly Key Evangelistic Movement logo">
+    <span class="eyebrow">Heavenly Key Command Center</span>
+    <h1>Schedule Social Posts</h1>
+    <p>Create, review and schedule ministry posts. This page is dedicated only to scheduled publishing.</p>
+  </header>
+
+  <section id="schedule-access" class="schedule-card">
+    <p id="schedule-access-status" class="schedule-status" role="status">Checking administrator access…</p>
+  </section>
+
+  <div id="schedule-workspace" class="schedule-hidden">
+    <section class="schedule-card">
+      <h2>Schedule One Post</h2>
+      <form id="schedule-post-form">
+        <p><strong>Destinations</strong></p>
+        <div id="schedule-destinations" class="schedule-destinations"></div>
+        <label>Post title · optional
+          <input name="title" maxlength="200">
+        </label>
+        <label>Message / caption
+          <textarea name="text" rows="7" maxlength="5000" required></textarea>
+        </label>
+        <div class="schedule-grid">
+          <label>Optional media
+            <select name="media_id" id="schedule-media">
+              <option value="">No media · text only</option>
+            </select>
+          </label>
+          <label>Media type
+            <select name="media_type">
+              <option value="image">Image</option>
+              <option value="video">Video / Reel</option>
+              <option value="reel">Reel / short video</option>
+              <option value="audio">Audio</option>
+            </select>
+          </label>
+        </div>
+        <label>Preacher / presenter · optional
+          <input name="presenter" maxlength="160">
+        </label>
+        <label>Schedule date / time · your local time
+          <input name="publish_at" type="datetime-local" required>
+        </label>
+        <div class="schedule-actions">
+          <button class="btn btn-primary" type="submit">📅 SCHEDULE POST</button>
+        </div>
+        <p id="schedule-post-status" class="schedule-status" role="status"></p>
+      </form>
+    </section>
+
+    <section class="schedule-card">
+      <h2>Bulk Media Auto Scheduler</h2>
+      <p>Select up to 100 pictures and videos in one batch. The system uploads them safely, then automatically spreads every file across the schedule. It automatically spreads the batch at 5 posts per day. A 90-file batch uses 18 days and a 100-file batch uses 20 days, so the 30-day window is enough.</p>
+      <div class="schedule-card" style="background:var(--color-surface-soft,#f7f7f8);box-shadow:none">
+        <label>Pictures / videos · up to 100 files
+          <input id="schedule-batch-files" type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,.jpg,.jpeg,.png,.webp,.mp4,.webm">
+        </label>
+        <div class="schedule-actions">
+          <button id="schedule-batch-upload" class="btn btn-secondary" type="button">⬆ Upload Selected Media</button>
+          <button id="schedule-batch-clear" class="btn btn-secondary" type="button">Clear Batch</button>
+        </div>
+        <progress id="schedule-batch-progress" max="100" value="0" hidden style="width:100%;margin-top:10px"></progress>
+        <p id="schedule-batch-status" class="schedule-status" role="status" aria-live="polite"></p>
+        <div id="schedule-batch-list" class="scheduled-list"></div>
+      </div>
+      <p>Build the schedule first, review the captions and media order, then approve. Nothing is scheduled until you approve.</p>
+      <form id="schedule-plan-form">
+        <div class="schedule-grid">
+          <label>Campaign theme
+            <input name="theme" maxlength="140" placeholder="Revival, Holiness & Prayer">
+          </label>
+          <label>Start date
+            <input name="start_date" type="date" required>
+          </label>
+        </div>
+        <div class="schedule-grid">
+        <label>Posting rate
+          <select name="posts_per_day">
+            <option value="5" selected>5 posts per day</option>
+          </select>
+        </label>
+        <label>Schedule window
+          <select name="schedule_length">
+            <option value="30" selected>Up to 30 days</option>
+          </select>
+        </label>
+        </div>
+        <div class="schedule-actions">
+          <button class="btn btn-secondary" type="submit">Build Automatic Plan</button>
+          <button id="schedule-plan-approve" class="btn btn-primary" type="button" hidden>Approve & Schedule All</button>
+        </div>
+        <p id="schedule-plan-status" class="schedule-status" role="status"></p>
+      </form>
+      <div id="schedule-plan-drafts" class="scheduled-list"></div>
+    </section>
+
+    <section class="schedule-card">
+      <h2>Scheduled Posts</h2>
+      <div class="schedule-actions"><button id="scheduled-posts-refresh" class="btn btn-secondary" type="button">Refresh Scheduled Posts</button></div>
+      <p id="scheduled-posts-status" class="schedule-status" role="status"></p>
+      <div id="scheduled-posts-list" class="scheduled-list"></div>
+    </section>
+  </div>
+
+  <nav class="schedule-footer" aria-label="Schedule page navigation">
+    <button id="schedule-back" class="btn btn-secondary" type="button">← GO BACK TO PREVIOUS</button>
+    <a class="btn btn-primary" href="admin.html">⌂ GO BACK TO MAIN DASHBOARD</a>
+  </nav>
+</main>
+<script type="module" src="../js/schedule-post.js?v=2.0.0"></script>
+<script defer src="../js/hk-standard-footer.js"></script>
+</body>
+</html>

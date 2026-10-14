@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Christian Platform — Authentication</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wine:#7A1F2B;--wine-dark:#5C1620;--royal:#1E3A6E;--gold:#C9A227;--gold-light:#E8C766;
+    --white:#FFFFFF;--paper:#FBFAF8;--charcoal:#33322F;--charcoal-soft:#5A5854;
+    --orange:#D9702E;--black:#0B0B0C;--border:#E7E2D8;--error:#B3261E;--success:#2E7D46;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--charcoal);background:var(--paper);line-height:1.55;}
+  h1,h2,.display{font-family:'Fraunces',Georgia,serif;font-weight:600;color:var(--wine);margin:0 0 .4em;}
+  .screen{max-width:440px;margin:0 auto;padding:48px 20px;min-height:100vh;display:none;}
+  .screen.active{display:block;}
+  .eyebrow{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;display:block;margin-bottom:.5em;}
+  .verse-card{background:var(--white);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:28px;font-family:'Fraunces',serif;font-style:italic;font-size:.92rem;}
+  .verse-card cite{display:block;font-style:normal;font-size:.78rem;color:var(--charcoal-soft);margin-top:4px;font-weight:600;}
+  label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;color:var(--charcoal);}
+  input[type=text],input[type=email],input[type=password],select{
+    width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:6px;font-size:.95rem;
+    margin-bottom:4px;font-family:inherit;background:var(--white);min-height:44px;
+  }
+  input:focus,select:focus{outline:2px solid var(--royal);outline-offset:1px;border-color:var(--royal);}
+  .field{margin-bottom:18px;}
+  .hint{font-size:.78rem;color:var(--charcoal-soft);margin-top:4px;}
+  .error-text{font-size:.8rem;color:var(--error);margin-top:4px;display:flex;gap:6px;align-items:flex-start;}
+  .success-banner{background:#EAF6EC;border:1px solid var(--success);color:var(--success);padding:12px 16px;border-radius:6px;font-size:.85rem;margin-bottom:20px;}
+  .pw-wrap{position:relative;}
+  .pw-toggle{position:absolute;right:12px;top:11px;background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--charcoal-soft);}
+  .pw-checklist{list-style:none;padding:0;margin:8px 0 0;font-size:.78rem;color:var(--charcoal-soft);}
+  .pw-checklist li{margin-bottom:2px;}
+  .pw-checklist li.met{color:var(--success);}
+  .checkbox-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:22px;font-size:.85rem;}
+  .checkbox-row input{width:auto;min-height:auto;margin-top:3px;}
+  .checkbox-row a{color:var(--royal);}
+  .btn{display:block;width:100%;padding:14px;border-radius:6px;font-weight:700;font-size:.95rem;
+       border:2px solid transparent;cursor:pointer;text-align:center;text-decoration:none;}
+  .btn-primary{background:var(--wine);color:var(--white);}
+  .btn-primary:disabled{background:#C9A9AD;cursor:not-allowed;}
+  .btn-outline{background:transparent;border-color:var(--wine);color:var(--wine);margin-top:10px;}
+  .switch-link{text-align:center;font-size:.85rem;margin-top:20px;color:var(--charcoal-soft);}
+  .switch-link a{color:var(--royal);font-weight:600;}
+  .top-nav{text-align:center;margin-bottom:8px;}
+  .top-nav .logo{font-family:'Fraunces',serif;font-weight:700;color:var(--wine);font-size:1.1rem;}
+  .demo-switcher{position:fixed;bottom:12px;left:12px;right:12px;background:var(--black);color:#fff;
+    padding:10px;border-radius:8px;font-size:.72rem;display:flex;flex-wrap:wrap;gap:6px;z-index:99;max-width:440px;margin:0 auto;}
+  .demo-switcher button{background:rgba(255,255,255,.12);border:none;color:#fff;padding:5px 8px;border-radius:4px;font-size:.7rem;cursor:pointer;}
+  .anon-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:18px;font-size:.85rem;color:var(--charcoal-soft);margin-bottom:22px;}
+  .anon-card strong{color:var(--wine);}
+  .info-note{font-size:.78rem;color:var(--charcoal-soft);text-align:center;margin-top:14px;}
+</style>
+</head>
+<body>
+
+<!-- WELCOME / START HERE -->
+<div class="screen active" id="welcome">
+  <div class="top-nav"><span class="logo">Heavenly Key</span></div>
+  <h1>Welcome to the Global Christian Platform</h1>
+  <p style="color:var(--charcoal-soft)">A place to pray, grow, and belong.</p>
+  <div class="verse-card">"How good and pleasant it is when God's people live together in unity."<cite>— Psalm 133:1 (KJV, paraphrased)</cite></div>
+  <a href="#" class="btn btn-primary" onclick="show('register')">Register — takes less than a minute</a>
+  <a href="#" class="btn btn-outline" onclick="show('login')">Login</a>
+</div>
+
+<!-- REGISTER -->
+<div class="screen" id="register">
+  <div class="top-nav"><span class="logo">Heavenly Key</span></div>
+  <h1>Create Your Account</h1>
+  <form onsubmit="event.preventDefault(); show('verify');">
+    <div class="field">
+      <label for="r-name">Name</label>
+      <input type="text" id="r-name" required minlength="2" maxlength="60">
+    </div>
+    <div class="field">
+      <label for="r-email">Email</label>
+      <input type="email" id="r-email" required>
+      <div class="error-text" style="display:none">⚠ This email is already registered — <a href="#" onclick="show('login')">try logging in instead</a></div>
+    </div>
+    <div class="field">
+      <label for="r-password">Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="r-password" required minlength="8">
+        <button type="button" class="pw-toggle" aria-label="Show password">👁</button>
+      </div>
+      <ul class="pw-checklist">
+        <li>At least 8 characters</li>
+        <li>At least one number</li>
+      </ul>
+    </div>
+    <div class="field">
+      <label for="r-country">Country</label>
+      <select id="r-country" required>
+        <option value="">Select your country</option>
+        <option>Nigeria</option><option>Kenya</option><option>Ghana</option>
+        <option>South Africa</option><option>United States</option><option>United Kingdom</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="r-terms" required>
+      <label for="r-terms" style="font-weight:400">I accept the <a href="#">Community Guidelines</a> and <a href="#">Privacy Policy</a></label>
+    </div>
+    <button type="submit" class="btn btn-primary">Create My Account</button>
+  </form>
+  <div class="switch-link">Already have an account? <a href="#" onclick="show('login')">Login</a></div>
+</div>
+
+<!-- VERIFY EMAIL -->
+<div class="screen" id="verify">
+  <div class="top-nav"><span class="logo">Heavenly Key</span></div>
+  <h1>Check Your Email</h1>
+  <div class="success-banner">We've sent a verification link to your email address.</div>
+  <p style="color:var(--charcoal-soft);font-size:.9rem;">Didn't get it? Check your spam folder, or:</p>
+  <a href="#" class="btn btn-outline">Resend Verification Email</a>
+  <div class="switch-link"><a href="#" onclick="show('register')">Change email address</a></div>
+  <p class="info-note">(Demo) <a href="#" onclick="show('complete-profile')">Continue as if verified →</a></p>
+</div>
+
+<!-- LOGIN -->
+<div class="screen" id="login">
+  <div class="top-nav"><span class="logo">Heavenly Key</span></div>
+  <h1>Welcome Back</h1>
+  <form onsubmit="event.preventDefault(); show('dashboard');">
+    <div class="field">
+      <label for="l-email">Email</label>
+      <input type="email" id="l-email" required>
+    </div>
+    <div class="field">
+      <label for="l-password">Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="l-password" required>
+        <button type="button" class="pw-toggle" aria-label="Show password">👁</button>
+      </div>
+      <div class="error-text" style="display:none">⚠ Email or password is incorrect</div>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="l-remember">
+      <label for="l-remember" style="font-weight:400">Remember Me</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+  </form>
+  <div class="switch-link"><a href="#" onclick="show('forgot')">Forgot Password?</a></div>
+  <div class="switch-link">New here? <a href="#" onclick="show('register')">Create an account</a></div>
+</div>
+
+<!-- FORGOT PASSWORD -->
+<div class="screen" id="forgot">
+  <div class="top-nav"><span class="logo">Heavenly Key</span></div>
+  <h1>Reset Your Password</h1>
+  <form onsubmit="event.preventDefault(); this.style.display='none'; document.getElementById('forgot-sent').style.display='block';">
+    <div class="field">
+      <label for="f-email">Email</label>
+      <input type="email" id="f-email" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Send Reset Link</button>
+  </form>
+  <div class="success-banner" id="forgot-sent" style="display:none">If that email is registered, a reset link is on its way.</div>
+  <div class="switch-link"><a href="#" onclick="show('login')">Back to Login</a></div>
+</div>
+
+<!-- COMPLETE PROFILE -->
+<div class="screen" id="complete-profile">
+  <div class="top-nav"><span class="logo">Heavenly Key</span></div>
+  <h1>Complete Your Profile</h1>
+  <form onsubmit="event.preventDefault(); show('dashboard');">
+    <div class="field">
+      <label for="p-photo">Profile Photo (optional)</label>
+      <input type="text" id="p-photo" placeholder="Upload or skip">
+    </div>
+    <div class="field">
+      <label for="p-bio">Short Bio (optional)</label>
+      <input type="text" id="p-bio" placeholder="Tell the community a little about you">
+    </div>
+    <div class="anon-card">
+      <strong>About Anonymous Posting</strong><br>
+      When you post a prayer request, testimony, or question, you can choose to post under your name or anonymously — each time you post. This is a per-post choice, not an account type. Your account is never anonymous to our team, and administrators can identify anonymous posts if ever needed for safety or moderation.
+    </div>
+    <button type="submit" class="btn btn-primary">Continue to Dashboard</button>
+  </form>
+</div>
+
+<!-- MEMBER DASHBOARD (entry state) -->
+<div class="screen" id="dashboard">
+  <div class="top-nav"><span class="logo">Heavenly Key</span></div>
+  <h1>Welcome, Friend</h1>
+  <p style="color:var(--charcoal-soft)">Glad you're here.</p>
+  <div class="verse-card">"Go ye into all the world, and preach the gospel to every creature."<cite>— Mark 16:15 (KJV)</cite></div>
+
+  <div class="anon-card" style="border-left:3px solid var(--gold);">
+    <strong>My Spiritual Growth</strong><br>
+    <span style="font-size:.82rem;">Current Path: New Believers Discipleship — Lesson 3 of 21</span><br>
+    <span style="font-size:.82rem;">✅ 2 Lessons Completed · 📖 2 Memory Verses Learned · ✔ 2 Quizzes Passed</span><br>
+    <span style="font-size:.82rem;">📚 Reading Plan: Day 14 of 90</span>
+  </div>
+
+  <a href="#" class="btn btn-primary">Prayer Centre</a>
+  <a href="#" class="btn btn-outline">Bible</a>
+  <a href="#" class="btn btn-outline">Testimonies</a>
+  <a href="#" class="btn btn-outline">Community</a>
+</div>
+
+<div class="demo-switcher">
+  <span style="padding:5px 4px;opacity:.6">Prototype nav:</span>
+  <button onclick="show('welcome')">Welcome</button>
+  <button onclick="show('register')">Register</button>
+  <button onclick="show('verify')">Verify</button>
+  <button onclick="show('login')">Login</button>
+  <button onclick="show('forgot')">Forgot Pw</button>
+  <button onclick="show('complete-profile')">Complete Profile</button>
+  <button onclick="show('dashboard')">Dashboard</button>
+</div>
+
+<script>
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll('.pw-toggle').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var input = btn.previousElementSibling;
+      input.type = input.type === 'password' ? 'text' : 'password';
+    });
+  });
+</script>
+</body>
+</html>

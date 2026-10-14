@@ -1,0 +1,5 @@
+One-time owner-approved deployment request for Heavenly Key Accounts 1, 2, and 3.
+Approval: 2026-10-08. Require staging and Account 4 verification before production.
+Source base: 16c5b4810d55b1640ef369575acd45b5c5c8d643
+Repair release requested on 2026-10-08: fix Account 2 production resource discovery and Account 3 outdated test and first-install resource resolution. Base c810821220d6ecb0795cbb1b81d8cdfc53248a64.
+Final Account 2 repair: reuse legacy KV ID or first-install a new namespace after verifying none exists; preserve D1. Base f2928a7f0fbaa9187ed2c0459691101fe6f1b712.

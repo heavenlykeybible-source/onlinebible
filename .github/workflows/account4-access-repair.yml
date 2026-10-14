@@ -1,0 +1,26 @@
+name: Repair Account 4 Secure Login
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_owner_access_change:
+        description: "Owner only: type AUTHORIZE to modify Cloudflare Access configuration"
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  secure-login:
+    if: ${{ github.actor == 'aoemeta247-cell' && inputs.confirm_owner_access_change == 'AUTHORIZE' }}
+    runs-on: ubuntu-latest
+    environment: account4-security-recovery
+    timeout-minutes: 12
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.ACCOUNT_4_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Create protected Cloudflare account member login or explain precise missing permissions
+        run: node scripts/setup-account4-access.mjs

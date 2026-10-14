@@ -1,0 +1,83 @@
+name: Heavenly Key CI
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Enforce immutable user credentials, CMS and storage baseline
+        run: |
+          node scripts/protected-state-gate.mjs
+          node --test scripts/test-protected-state-gate.mjs
+      - name: Deployment preflight (placeholders allowed in CI)
+        run: npm run preflight:local
+      - name: Preserve Account 1 administrator identity and session resources
+        run: |
+          node scripts/account1-auth-permanence-gate.mjs
+          node --check scripts/configure-runtime.mjs
+          node --check scripts/account1-auth-diagnostics.mjs
+      - name: Website API contract check
+        run: npm run check:api-contract
+      - name: Architecture regression check
+        run: npm run check:architecture
+      - name: Frontend JavaScript syntax check
+        run: npm run check:frontend
+      - name: Full website link and anchor audit
+        run: npm run check:links
+      - name: TypeScript check
+        run: npx tsc --noEmit --pretty false
+      - name: Global Community TypeScript check
+        run: npx tsc -p global-community/tsconfig.json --noEmit --pretty false
+      - name: Royal Community release regression checks
+        run: node --test scripts/test-royal-community-release.mjs
+      - name: Global Community browser syntax check
+        run: node --check global-community/public/app.js
+      - name: Global Community preflight (must remain undeployed)
+        run: node global-community/scripts/preflight.mjs
+      - name: Social sign-in and advert regressions
+        run: node --test global-community/test/social-adverts.checks.mjs
+      - name: Unit tests
+        run: npm test
+      - name: Worker bundle dry run
+        run: npx --yes wrangler@4.145.0 deploy --dry-run
+
+  validate-media-engine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: media-engine/package-lock.json
+      - name: Install Media Engine dependencies
+        working-directory: media-engine
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Media Engine TypeScript check
+        working-directory: media-engine
+        run: npm run check
+      - name: Media Engine preflight
+        working-directory: media-engine
+        run: npm run preflight
+      - name: Media Engine bundle dry run
+        working-directory: media-engine
+        run: npx wrangler deploy --dry-run

@@ -1,0 +1,76 @@
+name: Account 4 Stage All Accounts
+run-name: Account 4 stage all · ${{ inputs.target_ref }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "Exact 40-character commit SHA to send to all waiting rooms"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: heavenlykey-account-4-stage-all
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.sha.outputs.sha }}
+    steps:
+      - id: sha
+        shell: bash
+        env:
+          TARGET_REF: ${{ inputs.target_ref }}
+        run: |
+          set -euo pipefail
+          SHA="$(printf '%s' "$TARGET_REF" | tr '[:upper:]' '[:lower:]')"
+          if ! [[ "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Exact 40-character commit SHA required." >&2
+            exit 1
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+  stage-account-1:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch Account 1 to Account 4 isolated waiting room
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.validate.outputs.sha }}
+        run: gh workflow run account4-review-stage.yml --repo "${{ github.repository }}" -f account=1 -f target_ref="$SHA"
+
+  stage-account-2:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch Account 2 to Account 4 isolated waiting room
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.validate.outputs.sha }}
+        run: gh workflow run account4-review-stage.yml --repo "${{ github.repository }}" -f account=2 -f target_ref="$SHA"
+
+  stage-account-3:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch Account 3 to Account 4 isolated waiting room
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.validate.outputs.sha }}
+        run: gh workflow run account4-review-stage.yml --repo "${{ github.repository }}" -f account=3 -f target_ref="$SHA"
+
+  stage-bible:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Bible through Account 4 quality gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run bible-quality.yml --repo "${{ github.repository }}" --ref main

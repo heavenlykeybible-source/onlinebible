@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "product": "Heavenly Key Visual CMS",
+  "version": "1.0.0",
+  "minCmsApi": 1,
+  "migration": "0039_visual_cms.sql",
+  "description": "Visual website builder with image library, sliders, section arrangement, drafts and revision history.",
+  "requiresOwnerApproval": true,
+  "protectExistingData": true
+}

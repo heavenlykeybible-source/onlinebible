@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Christian Platform — Evangelism</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--wine:#7A1F2B;--royal:#1E3A6E;--gold:#C9A227;--gold-light:#E8C766;--white:#FFFFFF;--paper:#FBFAF8;
+        --charcoal:#33322F;--charcoal-soft:#5A5854;--orange:#D9702E;--black:#0B0B0C;--border:#E7E2D8;--error:#B3261E;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--charcoal);background:var(--paper);line-height:1.55;}
+  h1,h2{font-family:'Fraunces',Georgia,serif;font-weight:600;color:var(--wine);margin:0 0 .4em;}
+  .screen{max-width:640px;margin:0 auto;padding:32px 20px 100px;min-height:100vh;display:none;}
+  .screen.active{display:block;}
+  .top-nav{text-align:center;margin-bottom:16px;}
+  .top-nav .logo{font-family:'Fraunces',serif;font-weight:700;color:var(--wine);font-size:1.05rem;}
+  .eyebrow{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;display:block;margin-bottom:.4em;}
+  .card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px;}
+  .nation-badge{display:inline-flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--border);border-radius:30px;padding:8px 16px;font-size:.85rem;font-weight:600;margin-bottom:14px;}
+  .nation-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--orange);}
+  .queue-item{display:flex;justify-content:space-between;align-items:center;padding:14px;border:1px solid var(--border);border-radius:8px;margin-bottom:10px;background:var(--white);}
+  .priority-tag{font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:10px;}
+  .p-normal{background:#EEF1F7;color:var(--royal);}
+  .p-high{background:#FDF3E4;color:#8A6A0E;}
+  .p-urgent{background:#FBEAEA;color:var(--error);}
+  .safeguard-locked{background:#F3F0E8;border:2px dashed var(--charcoal-soft);border-radius:8px;padding:16px;font-size:.82rem;color:var(--charcoal-soft);margin-top:16px;}
+  .safeguard-locked strong{color:var(--wine);}
+  .btn{display:inline-block;padding:10px 18px;border-radius:6px;font-weight:700;font-size:.85rem;border:2px solid transparent;cursor:pointer;text-decoration:none;}
+  .btn-primary{background:var(--wine);color:var(--white);}
+  .btn-outline{background:transparent;border-color:var(--wine);color:var(--wine);}
+  .btn-disabled{background:#D8D4C8;color:#8A867C;cursor:not-allowed;}
+  .demo-switcher{position:fixed;bottom:0;left:0;right:0;background:var(--black);color:#fff;padding:8px;font-size:.7rem;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;z-index:99;}
+  .demo-switcher button{background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 9px;border-radius:4px;font-size:.7rem;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- PRAYING FOR THE NATIONS -->
+<div class="screen active" id="nations">
+  <div class="top-nav"><span class="logo">Praying for the Nations</span></div>
+  <div class="nation-badge"><span class="dot"></span> Today: Kenya</div>
+  <div class="card">
+    <h2 style="font-size:1.1rem;">Kenya 🇰🇪</h2>
+    <p style="color:var(--charcoal-soft);font-size:.88rem;">Praying for revival among the youth of Kenya and for the ministry's upcoming outreach in Nairobi.</p>
+    <div style="border-top:1px solid var(--border);padding-top:10px;margin-top:10px;">
+      <strong style="font-size:.82rem;">Member prayers for Kenya:</strong>
+      <p style="font-size:.85rem;color:var(--charcoal-soft);margin-top:6px;">"Lord, raise up laborers for the harvest in Kenya." — Sister Naomi</p>
+    </div>
+  </div>
+  <p style="font-size:.78rem;color:var(--charcoal-soft);">Nation rotates automatically each day — tomorrow: Japan.</p>
+</div>
+
+<!-- FOLLOW-UP WORKER DASHBOARD -->
+<div class="screen" id="followup-dashboard">
+  <div class="top-nav"><span class="logo">My Follow-up Queue</span></div>
+  <span class="eyebrow">Assigned to: Sister Grace (Follow-up Worker)</span>
+
+  <div class="queue-item">
+    <div>
+      <strong>Decision for Christ</strong> — Nigeria<br>
+      <span style="font-size:.78rem;color:var(--charcoal-soft);">Heard via: Website · Wants follow-up</span>
+    </div>
+    <span class="priority-tag p-normal">New</span>
+  </div>
+
+  <div class="queue-item">
+    <div>
+      <strong>Counselling Request</strong> — Category: Family<br>
+      <span style="font-size:.78rem;color:var(--charcoal-soft);">Preferred contact: Email</span>
+    </div>
+    <span class="priority-tag p-high">High</span>
+  </div>
+
+  <div class="queue-item">
+    <div>
+      <strong>Counselling Request</strong> — Category: Spiritual Growth<br>
+      <span style="font-size:.78rem;color:var(--charcoal-soft);">Preferred contact: Phone</span>
+    </div>
+    <span class="priority-tag p-normal">Normal</span>
+  </div>
+
+  <div class="safeguard-locked">
+    <strong>🔒 Safeguarding Escalation — Not Yet Active</strong><br>
+    This workflow is intentionally disabled pending the ministry's approved safeguarding policy. If a submission indicates the respondent is under 18, or discloses a safety concern, contact the Super Administrator directly using your existing internal process — do not rely on this system to route or flag it yet.
+    <div style="margin-top:10px;"><button class="btn btn-disabled" disabled>Escalate (Disabled)</button></div>
+  </div>
+</div>
+
+<div class="demo-switcher">
+  <button onclick="show('nations')">Praying for the Nations</button>
+  <button onclick="show('followup-dashboard')">Follow-up Dashboard</button>
+</div>
+
+<script>
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+</script>
+</body>
+</html>

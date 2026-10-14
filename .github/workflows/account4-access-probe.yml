@@ -1,0 +1,63 @@
+name: Diagnose Account 4 Login
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/account4-access-probe.yml'
+      - 'scripts/diagnose-account4-access.mjs'
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.ACCOUNT_4_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Identify Account 4 Access setup and browser response (read-only)
+        run: node scripts/diagnose-account4-access.mjs
+      - name: Check live login backend without attempting a password
+        run: |
+          node --input-type=module -e '
+            const url="https://heavenlykey-recovery-control.emmanuel2026miracle.workers.dev/api/status";
+            const r=await fetch(url,{redirect:"manual",signal:AbortSignal.timeout(15000)});
+            const body=await r.text();
+            console.log(JSON.stringify({check:"unauthenticated-session",http:r.status,body:body.slice(0,220)}));
+            if(r.status!==401)process.exitCode=1;
+          '
+      - name: Inspect Account 4 D1 tables read-only
+        if: always()
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          npx --yes wrangler@4.145.0 d1 list --json > /tmp/account4-d1-list.json
+          DB_ID=$(node -e 'const x=require("/tmp/account4-d1-list.json");const a=Array.isArray(x)?x:(x.result||[]);const d=a.find(q=>q.name==="heavenlykey-recovery-control-db");process.stdout.write(d?.uuid||d?.id||"")')
+          test -n "$DB_ID"
+          cp recovery-control/wrangler.toml recovery-control/wrangler.diagnostic.toml
+          sed -i "s/REPLACE_ACCOUNT4_D1_ID/$DB_ID/g" recovery-control/wrangler.diagnostic.toml
+          npx --yes wrangler@4.145.0 d1 execute heavenlykey-recovery-control-db --remote --config recovery-control/wrangler.diagnostic.toml --command "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('account4_security_state','d1_migrations') ORDER BY name;"
+          npx --yes wrangler@4.145.0 d1 execute heavenlykey-recovery-control-db --remote --config recovery-control/wrangler.diagnostic.toml --command "SELECT COUNT(*) AS owner_password_records FROM account4_security_state WHERE key='hkem-control-password-v2';"
+          npx --yes wrangler@4.145.0 d1 execute heavenlykey-recovery-control-db --remote --config recovery-control/wrangler.diagnostic.toml --command "SELECT length(value) AS record_length, CASE WHEN substr(value,1,6)='pbkdf2' THEN 'pbkdf2' WHEN length(value)=64 THEN 'sha256' ELSE 'other' END AS password_scheme FROM account4_security_state WHERE key='hkem-control-password-v2';"
+      - name: Test login error handling with invalid probe username
+        run: |
+          node --input-type=module <<'JS'
+          const origin='https://heavenlykey-recovery-control.emmanuel2026miracle.workers.dev';
+          const r=await fetch(origin+'/api/login',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify({username:'__health_probe__',password:'not-a-real-password'}),signal:AbortSignal.timeout(15000)});
+          const d=await r.json();
+          console.log(JSON.stringify({check:'invalid-username-login',http:r.status,error:d.error||null}));
+          if(r.status!==401)process.exitCode=1;
+          JS
+      - name: Test admin password verifier using an invalid test password
+        run: |
+          node --input-type=module <<'JS'
+          const origin='https://heavenlykey-recovery-control.emmanuel2026miracle.workers.dev';
+          const r=await fetch(origin+'/api/login',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify({username:'admin',password:'incorrect-probe-password'}),signal:AbortSignal.timeout(15000)});
+          const d=await r.json();
+          console.log(JSON.stringify({check:'password-verifier',http:r.status,error:d.error||null}));
+          if(r.status!==401)process.exitCode=1;
+          JS

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Christian Platform — Spiritual Resources (Placeholder Content)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--wine:#7A1F2B;--royal:#1E3A6E;--gold:#C9A227;--gold-light:#E8C766;--white:#FFFFFF;--paper:#FBFAF8;
+        --charcoal:#33322F;--charcoal-soft:#5A5854;--orange:#D9702E;--black:#0B0B0C;--border:#E7E2D8;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--charcoal);background:var(--paper);line-height:1.55;}
+  h1,h2{font-family:'Fraunces',Georgia,serif;font-weight:600;color:var(--wine);margin:0 0 .4em;}
+  .screen{max-width:600px;margin:0 auto;padding:32px 20px 100px;min-height:100vh;display:none;}
+  .screen.active{display:block;}
+  .top-nav{text-align:center;margin-bottom:16px;}
+  .top-nav .logo{font-family:'Fraunces',serif;font-weight:700;color:var(--wine);font-size:1.05rem;}
+  .placeholder-banner{background:#FDF3E4;border:1px solid var(--gold);color:#8A6A0E;padding:10px 14px;border-radius:6px;font-size:.76rem;margin-bottom:18px;text-align:center;}
+  .card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px;}
+  .book-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .book-chip{background:var(--white);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center;font-size:.82rem;cursor:pointer;}
+  .verse-line{padding:10px 0;border-bottom:1px solid var(--border);font-size:1rem;}
+  .verse-num{color:var(--gold);font-weight:700;font-size:.75rem;margin-right:6px;}
+  .verse-line.highlighted{background:#FBF3D8;}
+  .toolbar{display:flex;gap:8px;margin-top:8px;}
+  .toolbar button{background:var(--paper);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:.75rem;cursor:pointer;}
+  .player-bar{position:fixed;bottom:0;left:0;right:0;background:var(--black);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;font-size:.82rem;}
+  .player-bar button{background:var(--gold);color:var(--black);border:none;border-radius:50%;width:34px;height:34px;font-size:1rem;cursor:pointer;}
+  .hymn-list-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
+  .tag-status{font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;background:#FDF3E4;color:#8A6A0E;}
+  .devo-card{background:var(--white);border-left:4px solid var(--gold);border-radius:0 8px 8px 0;padding:20px;}
+  .devo-card blockquote{font-family:'Fraunces',serif;font-style:italic;margin:0 0 .6em;font-size:1.05rem;}
+  .reflect-q{background:var(--paper);border:1px dashed var(--border);border-radius:6px;padding:10px 14px;font-size:.85rem;margin-top:8px;}
+  .demo-switcher{position:fixed;bottom:56px;left:0;right:0;background:rgba(11,11,12,.9);color:#fff;padding:6px;font-size:.66rem;display:flex;flex-wrap:wrap;gap:5px;justify-content:center;z-index:99;}
+  .demo-switcher button{background:rgba(255,255,255,.15);border:none;color:#fff;padding:4px 7px;border-radius:4px;font-size:.66rem;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- BIBLE: BOOK PICKER -->
+<div class="screen active" id="bible-books">
+  <div class="top-nav"><span class="logo">Holy Bible — KJV</span></div>
+  <div class="placeholder-banner">⚠ Structure demo only — full KJV text pending BIBLE-SOURCE-RECOMMENDATION.md approval</div>
+  <div class="book-grid">
+    <div class="book-chip" onclick="show('bible-chapter')">John</div>
+    <div class="book-chip">Genesis</div><div class="book-chip">Psalms</div>
+    <div class="book-chip">Matthew</div><div class="book-chip">Romans</div><div class="book-chip">Revelation</div>
+  </div>
+</div>
+
+<!-- BIBLE: CHAPTER VIEW -->
+<div class="screen" id="bible-chapter">
+  <div class="top-nav"><span class="logo">John 3</span></div>
+  <div class="placeholder-banner">⚠ Placeholder text below — NOT the real KJV</div>
+  <div class="verse-line"><span class="verse-num">15</span>[Placeholder] Sample verse text representing verse fifteen.</div>
+  <div class="verse-line highlighted"><span class="verse-num">16</span>[Placeholder] Sample verse text representing the well-known verse sixteen.
+    <div class="toolbar"><button>🔖 Bookmark</button><button>🖍 Highlight</button><button>📝 Note</button><button>📋 Copy</button></div>
+  </div>
+  <div class="verse-line"><span class="verse-num">17</span>[Placeholder] Sample verse text representing verse seventeen.</div>
+  <button class="btn-outline" onclick="show('bible-books')" style="margin-top:16px;background:none;border:1px solid var(--wine);color:var(--wine);padding:10px;border-radius:6px;width:100%;">← Back to Books</button>
+</div>
+
+<!-- AUDIO BIBLE -->
+<div class="screen" id="audio-bible">
+  <div class="top-nav"><span class="logo">Audio Bible</span></div>
+  <div class="placeholder-banner">⚠ No audio imported yet — pending AUDIO-BIBLE-RECOMMENDATION.md approval</div>
+  <div class="card">
+    <h2 style="font-size:1rem;">John, Chapter 3</h2>
+    <p style="color:var(--charcoal-soft);font-size:.85rem;">Tap play to preview the player interface (silent demo — no audio file attached)</p>
+  </div>
+  <div class="player-bar">
+    <button onclick="alert('Demo only — no audio source approved yet')">▶</button>
+    <span>John 3 — 00:00 / --:--</span>
+    <span style="margin-left:auto;">1.0x</span>
+  </div>
+</div>
+
+<!-- HYMNS -->
+<div class="screen" id="hymns">
+  <div class="top-nav"><span class="logo">Gospel Hymns</span></div>
+  <div class="placeholder-banner">⚠ Lyrics/audio pending HYMN-CONTENT-RECOMMENDATION.md approval</div>
+  <div class="hymn-list-item"><span>[Placeholder Hymn Title 1]</span><span class="tag-status">Pending Review</span></div>
+  <div class="hymn-list-item"><span>[Placeholder Hymn Title 2]</span><span class="tag-status">Pending Review</span></div>
+  <div class="hymn-list-item"><span>[Placeholder Hymn Title 3]</span><span class="tag-status">Pending Review</span></div>
+</div>
+
+<!-- DAILY DEVOTIONAL -->
+<div class="screen" id="devotional">
+  <div class="top-nav"><span class="logo">Today's Devotional</span></div>
+  <div class="placeholder-banner">⚠ Devotional Scripture reference pending KJV source approval</div>
+  <div class="devo-card">
+    <blockquote>"[Placeholder Scripture reference — awaiting approved KJV source]"</blockquote>
+    <p style="font-size:.9rem;color:var(--charcoal-soft);">[Placeholder meditation text discussing today's theme goes here.]</p>
+    <p style="font-size:.9rem;color:var(--charcoal-soft);"><strong>Prayer:</strong> [Placeholder prayer text.]</p>
+  </div>
+</div>
+
+<!-- KINGDOM KEYS -->
+<div class="screen" id="kingdom-keys">
+  <div class="top-nav"><span class="logo">Kingdom Keys — This Week</span></div>
+  <div class="card">
+    <h2 style="font-size:1.05rem;">[Placeholder Teaching Title]</h2>
+    <p style="font-size:.88rem;color:var(--charcoal-soft);">[Placeholder teaching body text — authored by ministry staff.]</p>
+    <div class="reflect-q">Reflection: [Placeholder reflection question]</div>
+  </div>
+</div>
+
+<!-- FAITH CHALLENGE -->
+<div class="screen" id="faith-challenge">
+  <div class="top-nav"><span class="logo">Faith Challenge — This Week</span></div>
+  <div class="card">
+    <h2 style="font-size:1.05rem;">Which Scripture changed your life this week?</h2>
+    <p style="font-size:.85rem;color:var(--charcoal-soft);">Share your response below — responses use the universal Comments pattern from Module 2.</p>
+  </div>
+</div>
+
+<div class="demo-switcher">
+  <button onclick="show('bible-books')">Bible</button>
+  <button onclick="show('audio-bible')">Audio Bible</button>
+  <button onclick="show('hymns')">Hymns</button>
+  <button onclick="show('devotional')">Devotional</button>
+  <button onclick="show('kingdom-keys')">Kingdom Keys</button>
+  <button onclick="show('faith-challenge')">Faith Challenge</button>
+</div>
+
+<script>
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+</script>
+</body>
+</html>

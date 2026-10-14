@@ -1,0 +1,102 @@
+name: Emergency Restore Account 2
+run-name: Account 2 emergency restore · ${{ inputs.target_ref }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "Exact previously successful Account 2 production commit SHA"
+        required: true
+        type: string
+      restore_proof:
+        description: "Fresh action-specific owner-signed proof issued by Account 4"
+        required: true
+        type: string
+      confirm_restore:
+        description: "Emergency restore this known-good release?"
+        required: true
+        type: choice
+        options:
+          - "NO"
+          - "RESTORE"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: heavenlykey-account-2-production
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    if: ${{ github.actor == 'aoemeta247-cell' && inputs.confirm_restore == 'RESTORE' }}
+    runs-on: ubuntu-latest
+    environment: media-engine-production
+    timeout-minutes: 15
+
+    steps:
+      - name: Prove known-good Account 2 production release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_REF: ${{ inputs.target_ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$TARGET_REF" =~ ^[0-9a-fA-F]{40}$ ]] || exit 1
+
+          curl -fsS \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/cloudflare-media-engine.yml/runs?event=workflow_dispatch&status=success&per_page=100" \
+            > /tmp/runs.json
+
+          node - "$TARGET_REF" <<'NODE'
+          const fs = require("fs");
+          const target = process.argv[2];
+          const data = JSON.parse(fs.readFileSync("/tmp/runs.json", "utf8"));
+
+          const knownGood = (data.workflow_runs || []).some(
+            r =>
+              r.conclusion === "success" &&
+              r.display_title === `Account 2 approved release · ${target}`
+          );
+
+          if (!knownGood) {
+            console.error("Target is not a verified previous Account 2 production release.");
+            process.exit(1);
+          }
+          NODE
+
+      - name: Load immutable emergency-restore policy
+        uses: actions/checkout@v4
+        with:
+          ref: 4e41aad0d0c3e0388449ff3c0c6e5684d2c34b6c
+          path: .trusted-owner-restore
+          persist-credentials: false
+      - name: Require fresh Account 4 owner-signed restore authorization
+        env:
+          TARGET_REF: ${{ inputs.target_ref }}
+          RESTORE_PROOF: ${{ inputs.restore_proof }}
+          APPROVAL_SECRET: ${{ secrets.HKEM_CONTROL_TOKEN }}
+        run: node .trusted-owner-restore/scripts/verify-account4-restore.mjs 2
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install deployment dependencies only
+        working-directory: media-engine
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Emergency deploy exact known-good Account 2 code only
+        working-directory: media-engine
+        run: npx --yes wrangler@4.145.0 deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_2_TOKEN }}
+
+# Emergency restore deliberately performs no D1 migration
+# and no runtime-secret mutation.

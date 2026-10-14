@@ -1,0 +1,133 @@
+name: Promote Heavenly Key Media Engine (Account 2)
+run-name: Account 2 approved release · ${{ inputs.target_ref }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "Exact tested 40-character Account 2 commit SHA"
+        required: true
+        type: string
+      release_note:
+        description: "Approval note"
+        required: true
+        type: string
+      approval_proof:
+        description: "Time-limited proof signed by Account 4 after owner approval"
+        type: string
+        required: true
+      confirm_production:
+        description: "Promote this tested Account 2 release?"
+        required: true
+        type: choice
+        options: ["NO", "PROMOTE"]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: heavenlykey-account-2-production
+  cancel-in-progress: false
+
+jobs:
+  promote-account-2:
+    if: ${{ inputs.confirm_production == 'PROMOTE' }}
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_ACCOUNT_ID: c324d871146f8fcc5e7dcd3da057011c
+    environment: media-engine-production
+    timeout-minutes: 20
+    steps:
+      - name: Prove exact Account 2 Waiting Room success
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_REF: ${{ inputs.target_ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$TARGET_REF" =~ ^[0-9a-fA-F]{40}$ ]] || { echo '::error::Production requires an exact 40-character commit SHA.'; exit 1; }
+          curl -fsS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/account4-review-stage.yml/runs?event=workflow_dispatch&status=success&per_page=100" > /tmp/staging-runs.json
+          node - "$TARGET_REF" <<'NODE'
+          const fs=require('fs');
+          const target=process.argv[2];
+          const data=JSON.parse(fs.readFileSync('/tmp/staging-runs.json','utf8'));
+          const expected=`Account 4 preview 2 · ${target}`;
+          const ok=(data.workflow_runs||[]).some(r=>r.status==='completed'&&r.conclusion==='success'&&r.display_title===expected);
+          if(!ok){console.error(`::error::Refusing production: ${target} has no exact successful Account 2 Waiting Room run.`);process.exit(1)}
+          console.log(`Verified exact Account 2 Waiting Room release: ${target}`);
+          NODE
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+      - name: Load immutable Account 4 approval verifier
+        uses: actions/checkout@v4
+        with:
+          ref: b36dde78ced6a0fe92ba3bdf8cf1d4c348d99b22
+          path: .trusted-account4-approval
+          persist-credentials: false
+      - name: Require cryptographically signed Account 4 owner approval
+        env:
+          TARGET_REF: ${{ inputs.target_ref }}
+          APPROVAL_PROOF: ${{ inputs.approval_proof }}
+          APPROVAL_SECRET: ${{ secrets.HKEM_CONTROL_TOKEN }}
+        run: node .trusted-account4-approval/scripts/verify-account4-approval.mjs 2
+      - name: Verify Account 2 credential contract without resetting saved credentials
+        env:
+          RAW_CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_2_TOKEN }}
+        run: node scripts/check-deployment-credentials.mjs 2
+      - name: Load independent protected-state release policy
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: .trusted-release-policy
+          persist-credentials: false
+      - name: Verify Account 2 identity, media and SQL are unchanged
+        run: node .trusted-release-policy/scripts/protected-state-gate.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: media-engine/package-lock.json
+      - name: Install Account 2 dependencies
+        working-directory: media-engine
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Revalidate Account 2 only
+        working-directory: media-engine
+        run: |
+          npm run check
+          npm run preflight
+          npx wrangler deploy --dry-run
+      - name: Verify Account 2 credentials
+        run: test -n "$CLOUDFLARE_API_TOKEN"
+      - name: Confirm immutable Account 2 production bindings, without recreating anything
+        working-directory: media-engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID"
+          AUTH="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          curl -fsS -H "$AUTH" "$API/d1/database?per_page=100" > /tmp/account2-d1.json
+          curl -fsS -H "$AUTH" "$API/storage/kv/namespaces?per_page=100" > /tmp/account2-kv.json
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          const expectedD1='c0fe5ca1-cb39-4fbb-bad0-e6b2fa8c825a';
+          const expectedKV='48b29391b8534b1aaea98552264c3a66';
+          const db=JSON.parse(readFileSync('/tmp/account2-d1.json','utf8'));
+          const kv=JSON.parse(readFileSync('/tmp/account2-kv.json','utf8'));
+          if(db.success===false||kv.success===false)throw Error('Cloudflare account resource lookup failed');
+          const d=(db.result||[]).find(x=>x.name==='heavenlykey-media-db');
+          const k=(kv.result||[]).find(x=>x.id===expectedKV);
+          if((d?.uuid||d?.id)!==expectedD1||!k)
+            throw Error('ACCOUNT 2 PROTECTED STORAGE MISMATCH — owner verification required. Never bind a new or empty database or KV.');
+          console.log('Account 2 D1 and KV IDs match original protected resources.');
+          NODE
+          npx --yes wrangler@4.145.0 r2 bucket info heavenlykey-media-engine --json >/tmp/account2-r2-verified.json
+          npx --yes wrangler@4.145.0 secret list --format json > /tmp/account2-secret-names.json
+          cp wrangler.toml wrangler.deploy.toml
+          echo 'Account 2 original R2, D1, KV and existing secrets were checked without mutation.'
+      # No migration, secret put, KV creation or R2 creation is permitted in a normal release.
+      - name: Promote approved Account 2 release
+        working-directory: media-engine
+        run: npx wrangler deploy --config wrangler.deploy.toml

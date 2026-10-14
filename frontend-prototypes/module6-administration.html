@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Christian Platform — Administration</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--wine:#7A1F2B;--royal:#1E3A6E;--gold:#C9A227;--gold-light:#E8C766;--white:#FFFFFF;--paper:#FBFAF8;
+        --charcoal:#33322F;--charcoal-soft:#5A5854;--orange:#D9702E;--black:#0B0B0C;--border:#E7E2D8;--error:#B3261E;--success:#2E7D46;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--charcoal);background:var(--paper);line-height:1.55;}
+  h1,h2{font-family:'Fraunces',Georgia,serif;font-weight:600;color:var(--wine);margin:0 0 .4em;}
+  .screen{max-width:700px;margin:0 auto;padding:32px 20px 100px;min-height:100vh;display:none;}
+  .screen.active{display:block;}
+  .top-nav{text-align:center;margin-bottom:16px;}
+  .top-nav .logo{font-family:'Fraunces',serif;font-weight:700;color:var(--wine);font-size:1.05rem;}
+  .view-toggle{display:flex;gap:8px;margin-bottom:18px;}
+  .view-toggle button{flex:1;padding:10px;border-radius:8px;border:1.5px solid var(--border);background:var(--white);font-weight:600;font-size:.85rem;cursor:pointer;color:var(--charcoal-soft);}
+  .view-toggle button.active{background:var(--wine);color:#fff;border-color:var(--wine);}
+  .metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .metric-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:16px;}
+  .metric-num{font-family:monospace;font-size:1.5rem;font-weight:700;color:var(--wine);display:block;}
+  .metric-num.health{color:var(--success);}
+  .metric-label{font-size:.75rem;color:var(--charcoal-soft);}
+  .case-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;cursor:pointer;}
+  .case-meta{display:flex;justify-content:space-between;font-size:.75rem;color:var(--charcoal-soft);margin-bottom:6px;}
+  .badge{font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;}
+  .badge-flag{background:#FBEAEA;color:var(--error);}
+  .badge-report{background:#FDF3E4;color:#8A6A0E;}
+  .ladder{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0;}
+  .ladder-step{padding:8px 12px;border-radius:20px;font-size:.78rem;border:1.5px solid var(--border);background:var(--white);cursor:pointer;color:var(--charcoal-soft);}
+  .ladder-step.current{background:var(--gold);border-color:var(--gold);color:var(--black);font-weight:700;}
+  .ladder-step.locked{opacity:.4;cursor:not-allowed;}
+  label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;}
+  textarea{width:100%;padding:12px;border:1.5px solid var(--border);border-radius:6px;font-size:.9rem;min-height:80px;margin-bottom:16px;font-family:inherit;}
+  .notes-box{background:#F3F0E8;border:1px dashed var(--charcoal-soft);border-radius:8px;padding:14px;font-size:.82rem;color:var(--charcoal-soft);margin-bottom:16px;}
+  .notes-box strong{color:var(--wine);}
+  .btn{display:inline-block;padding:11px 18px;border-radius:6px;font-weight:700;font-size:.85rem;border:2px solid transparent;cursor:pointer;text-decoration:none;}
+  .btn-primary{background:var(--wine);color:var(--white);}
+  .btn-danger{background:var(--error);color:#fff;}
+  .btn-outline{background:transparent;border-color:var(--wine);color:var(--wine);}
+  .btn-disabled{background:#D8D4C8;color:#8A867C;cursor:not-allowed;}
+  .demo-switcher{position:fixed;bottom:0;left:0;right:0;background:var(--black);color:#fff;padding:8px;font-size:.68rem;display:flex;flex-wrap:wrap;gap:5px;justify-content:center;z-index:99;}
+  .demo-switcher button{background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 8px;border-radius:4px;font-size:.68rem;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- MODERATOR DASHBOARD -->
+<div class="screen active" id="dashboard">
+  <div class="top-nav"><span class="logo">Moderator Dashboard</span></div>
+  <div class="view-toggle">
+    <button class="active" onclick="toggleView(this,'moderation')">Moderation</button>
+    <button onclick="toggleView(this,'health')">Community Health</button>
+  </div>
+
+  <div id="moderation-view">
+    <div class="metric-grid">
+      <div class="metric-card"><span class="metric-num">7</span><span class="metric-label">Pending Testimonies</span></div>
+      <div class="metric-card"><span class="metric-num">3</span><span class="metric-label">Flagged Posts</span></div>
+      <div class="metric-card"><span class="metric-num">2</span><span class="metric-label">Open Reports</span></div>
+      <div class="metric-card"><span class="metric-num">154</span><span class="metric-label">Active Prayer Requests</span></div>
+      <div class="metric-card"><span class="metric-num">12</span><span class="metric-label">Decisions Today</span></div>
+      <div class="metric-card"><span class="metric-num">4</span><span class="metric-label">Counselling Requests</span></div>
+      <div class="metric-card"><span class="metric-num">28</span><span class="metric-label">New Registrations</span></div>
+      <div class="metric-card"><span class="metric-num">5</span><span class="metric-label">AI-Flagged, Awaiting Review</span></div>
+    </div>
+    <h2 style="margin-top:24px;font-size:1.05rem;">Queue</h2>
+    <div class="case-card" onclick="show('case-detail')">
+      <div class="case-meta"><span class="badge badge-flag">AI-Flagged</span><span>2h ago</span></div>
+      <strong>Discussion post flagged for profanity</strong>
+    </div>
+    <div class="case-card" onclick="show('case-detail')">
+      <div class="case-meta"><span class="badge badge-report">User Report</span><span>5h ago</span></div>
+      <strong>Member reported for repeated spam links</strong>
+    </div>
+  </div>
+
+  <div id="health-view" style="display:none;">
+    <div class="metric-grid">
+      <div class="metric-card"><span class="metric-num health">312</span><span class="metric-label">Prayer Requests This Week</span></div>
+      <div class="metric-card"><span class="metric-num health">18</span><span class="metric-label">Testimonies Approved</span></div>
+      <div class="metric-card"><span class="metric-num health">47</span><span class="metric-label">Bible Questions Answered</span></div>
+      <div class="metric-card"><span class="metric-num health">63</span><span class="metric-label">Active Groups</span></div>
+      <div class="metric-card"><span class="metric-num health">8</span><span class="metric-label">Mission Teams</span></div>
+      <div class="metric-card"><span class="metric-num health">41</span><span class="metric-label">Countries Represented</span></div>
+      <div class="metric-card"><span class="metric-num health">12</span><span class="metric-label">New Believers Today</span></div>
+      <div class="metric-card"><span class="metric-num health">87%</span><span class="metric-label">Follow-up Completion Rate</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CASE DETAIL — WARNING LADDER -->
+<div class="screen" id="case-detail">
+  <div class="top-nav"><span class="logo">Moderation Case</span></div>
+  <a href="#" onclick="show('dashboard')" style="font-size:.85rem;">← Back to Dashboard</a>
+  <h2 style="margin-top:14px;">Member: Brother David</h2>
+  <p style="font-size:.85rem;color:var(--charcoal-soft);">Flagged content: repeated spam links in Community Discussions</p>
+
+  <div class="notes-box">
+    <strong>Moderator Notes (internal only — never visible to the member)</strong><br>
+    Second occurrence this month. First was a Friendly Reminder on Jan 14. No response to reminder.
+  </div>
+
+  <label>Escalation Ladder</label>
+  <div class="ladder">
+    <div class="ladder-step">No Action</div>
+    <div class="ladder-step">Friendly Reminder</div>
+    <div class="ladder-step current">Official Warning</div>
+    <div class="ladder-step">Temporary Restriction</div>
+    <div class="ladder-step">Temporary Suspension</div>
+    <div class="ladder-step locked" title="Administrator only">Permanent Ban 🔒</div>
+  </div>
+  <p style="font-size:.75rem;color:var(--charcoal-soft);">🔒 Permanent Ban is restricted to Administrator role and above — not available to Moderators.</p>
+
+  <label>Reason (required, audit logged)</label>
+  <textarea placeholder="Explain the reason for this action..."></textarea>
+  <button class="btn btn-primary">Confirm Official Warning</button>
+</div>
+
+<!-- APPEAL FORM -->
+<div class="screen" id="appeal-form">
+  <div class="top-nav"><span class="logo">Submit an Appeal</span></div>
+  <p style="color:var(--charcoal-soft);font-size:.88rem;">If you believe a moderation action was made in error, you may submit an appeal below.</p>
+  <label>Reason for Appeal</label>
+  <textarea placeholder="Explain why you believe this decision should be reconsidered..."></textarea>
+  <button class="btn btn-primary">Submit Appeal</button>
+  <p style="font-size:.78rem;color:var(--charcoal-soft);margin-top:10px;">Appeals are reviewed by a moderator or administrator, and you will be notified of the decision.</p>
+</div>
+
+<div class="demo-switcher">
+  <button onclick="show('dashboard')">Dashboard</button>
+  <button onclick="show('case-detail')">Case Detail</button>
+  <button onclick="show('appeal-form')">Appeal Form</button>
+</div>
+
+<script>
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  function toggleView(btn, view){
+    document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('moderation-view').style.display = view === 'moderation' ? 'block' : 'none';
+    document.getElementById('health-view').style.display = view === 'health' ? 'block' : 'none';
+  }
+</script>
+</body>
+</html>

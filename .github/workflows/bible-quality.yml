@@ -1,0 +1,42 @@
+name: HEAVENLY KEY BIBLE quality checks
+on:
+  push:
+    paths:
+      - 'bible/**'
+      - 'heavenly-key-website/bible/**'
+      - '.github/workflows/bible-quality.yml'
+  pull_request:
+    paths:
+      - 'bible/**'
+      - 'heavenly-key-website/bible/**'
+      - '.github/workflows/bible-quality.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bible-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Bible scripts and worker
+        run: |
+          node --check heavenly-key-website/bible/app.js
+          node --check heavenly-key-website/bible/study-tools.js
+          node --check heavenly-key-website/bible/sw.js
+          node --check bible/worker.js
+      - name: Verify all scripture checksums and book totals
+        run: node bible/tests/scripture.mjs
+      - name: Verify reading, search, notes and media behavior
+        run: node bible/tests/reader.cjs
+      - name: Verify offline integrity and private API exclusion
+        run: node bible/tests/offline.cjs
+      - name: Verify public media proxy authorization boundaries
+        run: node bible/tests/worker.mjs
+      - name: Verify UI wiring and install assets
+        run: node bible/tests/assets.mjs
+      - name: Verify plans and backup validation
+        run: node bible/tests/study-tools.cjs

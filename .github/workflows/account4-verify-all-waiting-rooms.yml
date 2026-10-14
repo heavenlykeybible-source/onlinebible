@@ -1,0 +1,63 @@
+name: Account 4 Verify All Waiting Rooms
+run-name: Account 4 verify waiting rooms · ${{ inputs.target_ref }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "Exact 40-character commit SHA tested in all waiting rooms"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate exact SHA
+        id: target
+        shell: bash
+        env:
+          TARGET_REF: ${{ inputs.target_ref }}
+        run: |
+          set -euo pipefail
+          SHA="$(printf '%s' "$TARGET_REF" | tr '[:upper:]' '[:lower:]')"
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "Exact 40-character commit SHA required." >&2; exit 1; }
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Verify Accounts 1, 2 and 3 independently passed Waiting Room
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ steps.target.outputs.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          check() {
+            local workflow="$1"
+            local title="$2"
+            local account="$3"
+            result="$(gh api --paginate "/repos/$REPO/actions/workflows/$workflow/runs?event=workflow_dispatch&per_page=100" --jq ".workflow_runs[] | select(.display_title == \"$title$SHA\" and .status == \"completed\" and .conclusion == \"success\") | .id" | head -1)"
+            if [ -z "$result" ]; then
+              echo "Account $account: exact SHA has NOT passed its Waiting Room." >&2
+              return 1
+            fi
+            echo "Account $account: verified Waiting Room success (run $result)."
+          }
+
+          failed=0
+          check account4-review-stage.yml "Account 4 preview 1 · " 1 || failed=1
+          check account4-review-stage.yml "Account 4 preview 2 · " 2 || failed=1
+          check account4-review-stage.yml "Account 4 preview 3 · " 3 || failed=1
+
+          if [ "$failed" -ne 0 ]; then
+            echo "Verification gate CLOSED. Production remains unchanged." >&2
+            exit 1
+          fi
+
+          echo "Verification gate OPEN: all three independent waiting rooms passed the exact same SHA."
+          echo "No production deployment was performed by this workflow."

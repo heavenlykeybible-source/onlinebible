@@ -1,0 +1,51 @@
+name: Stage Account 1 Main Website
+run-name: Account 1 candidate · ${{ inputs.target_ref || 'main' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "Commit/ref to test without changing production"
+        required: false
+        default: "main"
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: heavenlykey-account-1-staging
+  cancel-in-progress: true
+jobs:
+  stage-account-1:
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 20
+    env:
+      DEPLOY_ENV: staging
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || 'main' }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install and validate Account 1
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run preflight
+          npm run check:api-contract
+          npm run check:architecture
+          npx tsc --noEmit --pretty false
+          npm test
+      - name: Apply staging migrations only
+        run: npx --yes wrangler@4.145.0 d1 migrations apply heavenlykey-db-staging --env staging --remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Deploy Account 1 candidate only
+        run: npx --yes wrangler@4.145.0 deploy --env staging
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Preview reminder
+        run: echo "Account 1 production was not changed. Review the staging Worker before promoting this exact ref."

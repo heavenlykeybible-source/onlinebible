@@ -1,0 +1,47 @@
+name: Account 4 Direct Upload and CMS Protection — Review Only
+on:
+  push:
+    branches:
+      - feature/wordpress-style-visual-cms
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-no-deployment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Enforce Account 4 permanent core locks
+        run: node scripts/account4-core-lock-gate.mjs
+      - name: Compile control plane, intake and surgical maintenance in safe CI
+        run: |
+          npx --yes esbuild@0.25.12 recovery-control/src/index.ts --bundle --platform=browser --format=esm --outfile=/tmp/hkem-account4-control.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/package-intake.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-upload-intake.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/scoped-repair-intake.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-scoped-repair-intake.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/scoped-source-reader.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-source-reader.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/repair-work-orders.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-work-orders.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/local-auth.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-local-auth.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/agent-bridge.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-agent-bridge.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/repair-scopes.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-repair-scopes.mjs
+          npx --yes esbuild@0.25.12 recovery-control/src/maintenance-intent.ts --bundle --platform=neutral --format=esm --outfile=/tmp/hkem-account4-maintenance-intent.mjs
+      - name: Validate ZIP structural inspection, scoped AI repair and admin UI
+        run: |
+          node --test scripts/test-account4-direct-upload.mjs
+          node --test scripts/test-account4-agent-bridge.mjs
+      - name: Check Account 4 isolated D1 migrations
+        run: |
+          python3 scripts/test-account4-migrations.py
+      - name: Verify existing Account 4 dashboard tests and independent password login
+        run: |
+          node --test scripts/test-account4-update-centre.mjs
+          node --test scripts/test-account4-local-login.mjs
+      - name: Enforce permanent CMS compatibility
+        run: node scripts/cms-permanence-gate.mjs
+      - name: No production deployment
+        run: echo "Review-only completed. Account 4 and Accounts 1–3 have not been deployed."

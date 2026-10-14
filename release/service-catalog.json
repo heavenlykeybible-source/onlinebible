@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "workspace": "aoemeta247-cell/All-Nations-For-Christ-Outreach",
+  "purpose": "non-destructive coordinated release of six existing services",
+  "services": [
+    {
+      "id": "website",
+      "account": 1,
+      "repository": "alldaywow247-ops/heavenlykey",
+      "path": ".",
+      "owner": "account-1",
+      "interfaces": [
+        "/api/site-content/homepage",
+        "/api/events"
+      ],
+      "protected": [
+        "production D1",
+        "KV",
+        "R2",
+        "user records"
+      ]
+    },
+    {
+      "id": "studio",
+      "account": 2,
+      "repository": null,
+      "owner": "account-2",
+      "interfaces": [
+        "media engine",
+        "broadcast status"
+      ],
+      "protected": [
+        "media storage",
+        "social credentials"
+      ]
+    },
+    {
+      "id": "community",
+      "account": 3,
+      "repository": "aoemeta247-cell/All-Nations-For-Christ-Outreach",
+      "path": "global-community",
+      "owner": "account-3",
+      "interfaces": [
+        "/api/feed",
+        "/api/auth/login",
+        "/api/me",
+        "/api/discipleship/tracks"
+      ],
+      "protected": [
+        "members",
+        "sessions",
+        "moderation records"
+      ]
+    },
+    {
+      "id": "control",
+      "account": 4,
+      "repository": null,
+      "owner": "account-4",
+      "interfaces": [
+        "system updates",
+        "ministry administration"
+      ],
+      "protected": [
+        "administrator credentials",
+        "audit logs"
+      ]
+    },
+    {
+      "id": "app",
+      "account": 5,
+      "repository": "aoemeta247-cell/heavenly-key-mobile-app",
+      "owner": "account-5",
+      "interfaces": [
+        "/api/site-sync",
+        "/api/community/feed",
+        "/api/member/session"
+      ],
+      "protected": [
+        "offline user downloads",
+        "local preferences"
+      ]
+    },
+    {
+      "id": "bible",
+      "account": 6,
+      "repository": null,
+      "owner": "account-6",
+      "interfaces": [
+        "KJV text",
+        "audio catalogue"
+      ],
+      "protected": [
+        "approved Bible text",
+        "original narrator voice assets"
+      ]
+    }
+  ],
+  "sync": {
+    "siteToApp": "implemented gateway; runtime unverified",
+    "communityToApp": "implemented gateway; feature disabled in configuration",
+    "bibleToAppAndCommunity": "not verified",
+    "appToCommunity": "no automatic executable-code deployment permitted"
+  },
+  "copyStages": [
+    "AOE Meta integration",
+    "AllDayWow approved snapshot",
+    "new deployment GitHub account"
+  ],
+  "immutablePolicy": "Do not rewrite or overwrite stable code or databases without verified need and approved migration"
+}

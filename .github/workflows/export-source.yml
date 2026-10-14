@@ -1,0 +1,24 @@
+name: Export Source Package
+on:
+  push:
+    paths:
+      - '.deploy/source-export-trigger'
+      - '.github/workflows/export-source.yml'
+  workflow_dispatch:
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build clean source package
+        run: |
+          mkdir -p export
+          zip -r export/heavenlykey-full-source.zip .             -x '.git/*'                'node_modules/*'                'media-engine/node_modules/*'                'export/*'                '*.env'                '.env*'                '*.pem'                '*.key'                '*.p12'                '*.pfx'
+      - name: Upload source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: heavenlykey-full-source
+          path: export/heavenlykey-full-source.zip
+          if-no-files-found: error
+          retention-days: 7

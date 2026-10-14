@@ -1,0 +1,14 @@
+name: Archived One-Time Automatic Release — Disabled
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  archived:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Automatic production promotion has been retired
+        run: |
+          echo "This one-time automatic promotion is permanently retired."
+          echo "New releases must be staged in Cloudflare Account 4 and approved individually by the owner."
+          echo "No production changes were made."

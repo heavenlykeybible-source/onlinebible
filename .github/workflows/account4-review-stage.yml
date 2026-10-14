@@ -1,0 +1,88 @@
+name: Account 4 Central Waiting Room
+run-name: Account 4 preview ${{ inputs.account }} · ${{ inputs.target_ref }}
+on:
+  workflow_dispatch:
+    inputs:
+      account:
+        type: choice
+        description: "Preview Account 1, 2 or 3 inside Cloudflare Account 4"
+        required: true
+        options: ["1", "2", "3"]
+      target_ref:
+        type: string
+        required: true
+        description: "Exact 40-character commit SHA (never production)"
+permissions:
+  contents: read
+concurrency:
+  group: account4-review-${{ inputs.account }}
+  cancel-in-progress: false
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.ACCOUNT_4_ACCOUNT_ID }}
+      REVIEW_SEED: ${{ secrets.HKEM_CONTROL_TOKEN }}
+      REVIEW_ACCOUNT: ${{ inputs.account }}
+      TARGET_SHA: ${{ inputs.target_ref }}
+    steps:
+      - name: Require Account 4 credentials and an exact commit
+        run: |
+          set -euo pipefail
+          [[ "$TARGET_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test -n "$REVIEW_SEED"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+      - name: Load protected policy from independent main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: .trusted-release-policy
+          persist-credentials: false
+      - name: Check protected SQL and storage before staging
+        run: node .trusted-release-policy/scripts/protected-state-gate.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Account 4 preview source
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$REVIEW_ACCOUNT" in
+            1) npm ci --ignore-scripts --no-audit --no-fund; npm run preflight; npm run check:architecture; npm test ;;
+            2) cd media-engine; npm ci --ignore-scripts --no-audit --no-fund; npm run check; npm run preflight ;;
+            3) cd global-community; npm install --ignore-scripts --no-audit --no-fund --legacy-peer-deps; npm run check; npm run frontend; npm run test:feed; npm run preflight ;;
+            *) exit 1 ;;
+          esac
+      - name: Resolve only Account 4 sandbox resources
+        run: node review/provision.mjs "$REVIEW_ACCOUNT"
+      - name: Apply migrations to the isolated Account 4 review database
+        run: npx --yes wrangler@4.145.0 d1 migrations apply "heavenlykey-review-$REVIEW_ACCOUNT-db" --remote --config "review/account-$REVIEW_ACCOUNT.toml"
+      - name: Deploy only the isolated Account 4 preview
+        run: npx --yes wrangler@4.145.0 deploy --config "review/account-$REVIEW_ACCOUNT.toml"
+      - name: Configure Account 4 preview-only secrets
+        run: node review/set-secrets.mjs "$REVIEW_ACCOUNT"
+      - name: Confirm Account 4 preview homepage loads without extra authentication
+        shell: bash
+        run: |
+          set -euo pipefail
+          PREVIEW="https://heavenlykey-review-$REVIEW_ACCOUNT.emmanuel2026miracle.workers.dev/"
+          for attempt in 1 2 3 4 5 6; do
+            HTTP=$(curl -sS -o /tmp/account4-preview-home.html -w '%{http_code}' --max-time 12 "$PREVIEW" || true)
+            if [[ "$HTTP" == "200" ]]; then
+              echo "Account 4 preview $REVIEW_ACCOUNT accessible without custom authentication"
+              exit 0
+            fi
+            echo "Account 4 preview HTTP $HTTP; retrying"
+            sleep 3
+          done
+          echo "::error::Account 4 preview homepage is not responding with HTTP 200."
+          exit 1
+      - name: Record waiting room result
+        run: echo "Account 4 preview $REVIEW_ACCOUNT created at $TARGET_SHA. No production updates were performed."

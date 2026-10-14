@@ -1,0 +1,24 @@
+name = "heavenlykey-recovery-control"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "heavenlykey-recovery-control-db"
+database_id = "REPLACE_ACCOUNT4_D1_ID"
+
+[[r2_buckets]]
+binding = "RECOVERY_VAULT"
+bucket_name = "heavenlykey-recovery-vault"
+
+[[r2_buckets]]
+binding = "CODE_INTAKE"
+bucket_name = "heavenlykey-account4-code-quarantine"
+
+[[kv_namespaces]]
+binding = "RECOVERY_STATE"
+id = "3a46b850f62b457f8e79ec022a7bd97c"
+
+[vars]
+GITHUB_REPOSITORY = "aoemeta247-cell/All-Nations-For-Christ-Outreach"

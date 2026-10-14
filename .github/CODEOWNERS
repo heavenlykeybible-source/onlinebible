@@ -1,0 +1,27 @@
+# Essential CMS and release control files — require owner review when branch protection is enabled.
+/.github/workflows/ @aoemeta247-cell
+/recovery-control/ @aoemeta247-cell
+/scripts/cms-permanence-gate.mjs @aoemeta247-cell
+/src/routes/site-cms.ts @aoemeta247-cell
+/migrations/ @aoemeta247-cell
+/cms/ @aoemeta247-cell
+/heavenly-key-website/js/site-cms.js @aoemeta247-cell
+# Protected state / identity policy. Enforce mandatory owner reviews in GitHub Rulesets.
+/scripts/protected-state-gate.mjs @aoemeta247-cell
+/scripts/configure-runtime.mjs @aoemeta247-cell
+/wrangler.toml @aoemeta247-cell
+/media-engine/wrangler.toml @aoemeta247-cell
+/global-community/wrangler.toml @aoemeta247-cell
+/recovery-control/wrangler.toml @aoemeta247-cell
+/media-engine/migrations/ @aoemeta247-cell
+/global-community/migrations/ @aoemeta247-cell
+/recovery-control/migrations/ @aoemeta247-cell
+/src/services/auth-service.ts @aoemeta247-cell
+/src/routes/auth.ts @aoemeta247-cell
+/src/middleware/session.ts @aoemeta247-cell
+/recovery-control/src/local-auth.ts @aoemeta247-cell
+/recovery-control/src/password-recovery.ts @aoemeta247-cell
+/media-engine/src/livekit-config.ts @aoemeta247-cell
+/media-engine/src/public-broadcast.ts @aoemeta247-cell
+/global-community/src/auth.ts @aoemeta247-cell
+/global-community/src/social-auth.ts @aoemeta247-cell

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Christian Platform — Community</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wine:#7A1F2B;--wine-dark:#5C1620;--royal:#1E3A6E;--gold:#C9A227;--gold-light:#E8C766;
+    --white:#FFFFFF;--paper:#FBFAF8;--charcoal:#33322F;--charcoal-soft:#5A5854;
+    --orange:#D9702E;--black:#0B0B0C;--border:#E7E2D8;--success:#2E7D46;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--charcoal);background:var(--paper);line-height:1.55;}
+  h1,h2,.display{font-family:'Fraunces',Georgia,serif;font-weight:600;color:var(--wine);margin:0 0 .4em;}
+  .screen{max-width:600px;margin:0 auto;padding:32px 20px 90px;min-height:100vh;display:none;}
+  .screen.active{display:block;}
+  .top-nav{text-align:center;margin-bottom:18px;}
+  .top-nav .logo{font-family:'Fraunces',serif;font-weight:700;color:var(--wine);font-size:1.05rem;}
+  .eyebrow{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;display:block;margin-bottom:.4em;}
+  .filter-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;}
+  .chip{flex:0 0 auto;padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);font-size:.8rem;white-space:nowrap;cursor:pointer;}
+  .chip.active{background:var(--royal);color:var(--white);border-color:var(--royal);}
+  .card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px;}
+  .card-meta{display:flex;justify-content:space-between;align-items:center;font-size:.75rem;color:var(--charcoal-soft);margin-bottom:6px;}
+  .badge{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:12px;text-transform:uppercase;letter-spacing:.03em;}
+  .badge-cat{background:#EEF1F7;color:var(--royal);}
+  .badge-anon{background:#F3F0E8;color:var(--charcoal-soft);}
+  .badge-pinned{background:var(--gold);color:var(--black);}
+  .badge-recommended{background:var(--wine);color:var(--white);}
+  .card h3{font-size:1rem;margin:0 0 4px;color:var(--charcoal);font-family:'Inter',sans-serif;font-weight:700;}
+  .card p{font-size:.88rem;color:var(--charcoal-soft);margin:0 0 10px;}
+  .reaction-bar{display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:10px;}
+  .reaction-btn{display:flex;align-items:center;gap:5px;background:var(--paper);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:.78rem;cursor:pointer;}
+  .reaction-btn:hover{border-color:var(--royal);}
+  .reaction-btn.active{background:var(--royal);color:var(--white);border-color:var(--royal);}
+  .fab{position:fixed;bottom:80px;right:20px;background:var(--wine);color:var(--white);width:52px;height:52px;border-radius:50%;
+       display:flex;align-items:center;justify-content:center;font-size:1.4rem;border:none;box-shadow:0 6px 16px rgba(0,0,0,.2);cursor:pointer;}
+  label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;}
+  input[type=text],select,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:6px;font-size:.92rem;font-family:inherit;margin-bottom:16px;background:var(--white);}
+  textarea{min-height:100px;resize:vertical;}
+  .toggle-row{display:flex;gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:18px;}
+  .toggle-opt{flex:1;text-align:center;padding:10px;font-size:.82rem;font-weight:600;cursor:pointer;background:var(--white);color:var(--charcoal-soft);}
+  .toggle-opt.selected{background:var(--wine);color:var(--white);}
+  .mod-note{font-size:.76rem;color:var(--charcoal-soft);background:#F3F0E8;border-radius:6px;padding:8px 12px;margin-bottom:16px;}
+  .btn{display:block;width:100%;padding:14px;border-radius:6px;font-weight:700;font-size:.92rem;border:2px solid transparent;cursor:pointer;text-align:center;text-decoration:none;}
+  .btn-primary{background:var(--wine);color:var(--white);}
+  .btn-outline{background:transparent;border-color:var(--wine);color:var(--wine);margin-top:8px;}
+  .success-banner{background:#EAF6EC;border:1px solid var(--success);color:var(--success);padding:12px 16px;border-radius:6px;font-size:.85rem;margin-bottom:18px;}
+  .pending-banner{background:#FDF3E4;border:1px solid var(--gold);color:#8A6A0E;padding:12px 16px;border-radius:6px;font-size:.85rem;margin-bottom:18px;}
+  .comment-thread{margin-top:10px;}
+  .comment{padding:8px 0;border-top:1px solid var(--border);font-size:.85rem;}
+  .comment strong{color:var(--wine);}
+  .comment-box{display:flex;gap:8px;margin-top:10px;}
+  .comment-box input{margin-bottom:0;}
+  .comment-box button{white-space:nowrap;background:var(--royal);color:#fff;border:none;padding:0 16px;border-radius:6px;font-weight:600;font-size:.8rem;}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);display:inline-block;margin-right:4px;animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .lock-note{font-size:.78rem;color:var(--charcoal-soft);font-style:italic;margin-bottom:10px;}
+  .demo-switcher{position:fixed;bottom:0;left:0;right:0;background:var(--black);color:#fff;padding:8px;font-size:.68rem;display:flex;flex-wrap:wrap;gap:5px;justify-content:center;z-index:99;}
+  .demo-switcher button{background:rgba(255,255,255,.12);border:none;color:#fff;padding:5px 8px;border-radius:4px;font-size:.68rem;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- PRAYER FEED -->
+<div class="screen active" id="prayer-feed">
+  <div class="top-nav"><span class="logo">Prayer Centre</span></div>
+  <span class="eyebrow">Praying for Kenya today 🙏</span>
+  <div class="filter-row">
+    <div class="chip active">All</div><div class="chip">Healing</div><div class="chip">Family</div>
+    <div class="chip">Financial Needs</div><div class="chip">Thanksgiving</div>
+  </div>
+  <div class="card">
+    <div class="card-meta"><span><span class="badge badge-cat">Employment</span> <span class="badge badge-anon">Anonymous</span></span><span>2h ago</span></div>
+    <h3>Please pray — I lost my job this week</h3>
+    <p>Trusting God for a new door to open. Please stand with me in prayer.</p>
+    <div class="reaction-bar">
+      <button class="reaction-btn active" onclick="this.classList.toggle('active')">🙏 I'm Praying (24)</button>
+      <button class="reaction-btn">📖 Share a Verse</button>
+      <button class="reaction-btn">💬 Encourage</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-meta"><span><span class="badge badge-cat">Healing</span></span>·Sister Grace · 5h ago</span></div>
+    <h3>Prayer for my mother's recovery</h3>
+    <p>She's in the hospital in Lagos. Please join me in prayer for full healing.</p>
+    <div class="reaction-bar">
+      <button class="reaction-btn">🙏 I'm Praying (58)</button>
+      <button class="reaction-btn">📖 Share a Verse</button>
+      <button class="reaction-btn">💬 Encourage</button>
+    </div>
+  </div>
+  <button class="fab" onclick="show('prayer-submit')">+</button>
+</div>
+
+<!-- SUBMIT PRAYER REQUEST -->
+<div class="screen" id="prayer-submit">
+  <div class="top-nav"><span class="logo">Submit a Prayer Request</span></div>
+  <div class="mod-note">Posts are reviewed by our community team to keep this a safe, Christ-centered space.</div>
+  <form onsubmit="event.preventDefault(); show('prayer-feed');">
+    <label>Category</label>
+    <select><option>Employment</option><option>Healing</option><option>Family</option><option>Financial Needs</option></select>
+    <label>Title</label>
+    <input type="text" placeholder="A short summary">
+    <label>Your Request</label>
+    <textarea placeholder="Share what's on your heart..."></textarea>
+    <label>Visibility</label>
+    <select><option>Public — visible to the community</option><option>Ministry-Only — visible to staff only</option></select>
+    <label>Posting As</label>
+    <div class="toggle-row">
+      <div class="toggle-opt selected" onclick="toggleSel(this)">Post as Myself</div>
+      <div class="toggle-opt" onclick="toggleSel(this)">Post Anonymously</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Prayer Request</button>
+  </form>
+</div>
+
+<!-- TESTIMONY FEED -->
+<div class="screen" id="testimony-feed">
+  <div class="top-nav"><span class="logo">Testimonies</span></div>
+  <div class="filter-row">
+    <div class="chip active">All</div><div class="chip">Healing</div><div class="chip">Salvation</div><div class="chip">Provision</div>
+  </div>
+  <div class="card">
+    <div class="card-meta"><span class="badge badge-cat">Healing</span><span>Approved · Featured ⭐</span></div>
+    <h3>"God healed my daughter completely"</h3>
+    <p>A mother from Nigeria shares how persistent prayer led to her daughter's full recovery...</p>
+    <div class="reaction-bar">
+      <button class="reaction-btn">❤️ Encouraged (112)</button>
+      <button class="reaction-btn">✔ Amen (89)</button>
+    </div>
+  </div>
+  <button class="fab" onclick="show('testimony-submit')">+</button>
+</div>
+
+<!-- SUBMIT TESTIMONY -->
+<div class="screen" id="testimony-submit">
+  <div class="top-nav"><span class="logo">Share Your Testimony</span></div>
+  <div class="mod-note">Testimonies are reviewed by our team before appearing publicly — this protects the credibility of every story shared here.</div>
+  <form onsubmit="event.preventDefault(); show('testimony-pending');">
+    <label>Category</label>
+    <select><option>Salvation</option><option>Healing</option><option>Deliverance</option><option>Restoration</option></select>
+    <label>Title</label>
+    <input type="text" placeholder="Give your testimony a title">
+    <label>Your Story</label>
+    <textarea placeholder="Tell us what God has done..."></textarea>
+    <label>Posting As</label>
+    <div class="toggle-row">
+      <div class="toggle-opt selected" onclick="toggleSel(this)">Post as Myself</div>
+      <div class="toggle-opt" onclick="toggleSel(this)">Post Anonymously</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Testimony</button>
+  </form>
+</div>
+
+<div class="screen" id="testimony-pending">
+  <div class="top-nav"><span class="logo">Testimonies</span></div>
+  <div class="pending-banner">Thank you for sharing! Your testimony is being reviewed and will appear once approved.</div>
+  <a href="#" class="btn btn-outline" onclick="show('testimony-feed')">Back to Testimonies</a>
+</div>
+
+<!-- QUESTION DETAIL -->
+<div class="screen" id="question-detail">
+  <div class="top-nav"><span class="logo">Bible Questions</span></div>
+  <div class="card">
+    <div class="card-meta"><span class="badge badge-cat">Bible Doctrine</span><span>134 views</span></div>
+    <h3>What does John 3:16 mean by "only begotten Son"?</h3>
+    <p>I keep hearing this phrase but want to understand it more deeply.</p>
+  </div>
+  <div class="card">
+    <div class="card-meta"><span class="badge badge-recommended">✔ Recommended Answer</span><span>Moderator-marked</span></div>
+    <p style="color:var(--charcoal);margin-bottom:6px;">"Only begotten" points to the unique, one-of-a-kind relationship between the Father and the Son — Christ isn't one son among many, but uniquely God's own.</p>
+    <div class="reaction-bar"><button class="reaction-btn">👍 Helpful (41)</button></div>
+  </div>
+  <div class="card">
+    <p style="color:var(--charcoal);margin-bottom:6px;">Adding to that — it also emphasizes the depth of God's love, that He gave His unique Son for us.</p>
+    <div class="reaction-bar"><button class="reaction-btn">👍 Helpful (12)</button></div>
+  </div>
+  <label>Add Your Answer</label>
+  <textarea placeholder="Share a biblical answer..."></textarea>
+  <button class="btn btn-primary">Submit Answer</button>
+</div>
+
+<!-- DISCUSSION THREAD -->
+<div class="screen" id="discussion-thread">
+  <div class="top-nav"><span class="logo">Community Discussions</span></div>
+  <div class="card">
+    <div class="card-meta"><span class="badge badge-pinned">📌 Pinned</span><span class="badge badge-cat">Evangelism</span></div>
+    <h3>Who did you witness to this week?</h3>
+    <p>This week's Faith Challenge — share your story of stepping out in evangelism.</p>
+    <div class="lock-note">🔒 This discussion is open for replies.</div>
+    <div class="comment-thread">
+      <div class="comment"><strong>Brother John</strong> — I shared the Gospel with a coworker today, please pray she considers it.</div>
+      <div class="comment"><strong>Sister Ade</strong> — Amen! Praying for a harvest of souls this week.</div>
+    </div>
+    <div class="comment-box">
+      <input type="text" placeholder="Add a comment...">
+      <button>Post</button>
+    </div>
+  </div>
+</div>
+
+<div class="demo-switcher">
+  <button onclick="show('prayer-feed')">Prayer Feed</button>
+  <button onclick="show('prayer-submit')">Submit Prayer</button>
+  <button onclick="show('testimony-feed')">Testimonies</button>
+  <button onclick="show('testimony-submit')">Submit Testimony</button>
+  <button onclick="show('question-detail')">Q&A</button>
+  <button onclick="show('discussion-thread')">Discussion</button>
+</div>
+
+<script>
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  function toggleSel(el){
+    el.parentElement.querySelectorAll('.toggle-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+name = "heavenlykey-media"
+main = "src/index.ts"
+keep_vars = true
+compatibility_date = "2025-01-01"
+
+# Account 2 owns media/broadcast infrastructure. Production resources provisioned.
+[[d1_databases]]
+binding = "DB"
+database_name = "heavenlykey-media-db"
+database_id = "c0fe5ca1-cb39-4fbb-bad0-e6b2fa8c825a"
+
+[[r2_buckets]]
+binding = "MEDIA_R2"
+bucket_name = "heavenlykey-media-engine"
+
+[[kv_namespaces]]
+binding = "LIVE_STATUS_KV"
+id = "48b29391b8534b1aaea98552264c3a66"
+
+[vars]
+MEDIA_ENGINE_VERSION = "v1"
+
+[triggers]
+# One-minute monitor is required for the 180s heartbeat / 10-minute reconnect contract.
+crons = ["* * * * *"]
+
+# Secret (set with wrangler secret put):
+# MEDIA_ENGINE_SHARED_SECRET
+
+# LiveKit transport credentials are intentionally secrets/vars, never committed.
+# Set LIVEKIT_URL as a variable and LIVEKIT_API_KEY/LIVEKIT_API_SECRET as secrets.

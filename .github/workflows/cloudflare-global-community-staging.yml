@@ -1,0 +1,76 @@
+name: Stage Account 3 Global Community
+run-name: Account 3 candidate · ${{ inputs.target_ref || 'main' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "Commit/ref to test without changing production"
+        required: false
+        default: "main"
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: heavenlykey-account-3-staging
+  cancel-in-progress: true
+jobs:
+  stage-account-3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_ACCOUNT3_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT3_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref || 'main' }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install and validate Account 3
+        working-directory: global-community
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund --legacy-peer-deps
+          npm run check
+          npm run frontend
+          node scripts/preflight.mjs
+      - name: Resolve isolated Account 3 staging resources
+        working-directory: global-community
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          npx --yes wrangler@4.145.0 d1 list > /tmp/d1.txt
+          D1_ID=$(grep 'heavenly-key-global-community-db-staging' /tmp/d1.txt | grep -Eo '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' | head -1 || true)
+          if [ -z "$D1_ID" ]; then
+            npx --yes wrangler@4.145.0 d1 create heavenly-key-global-community-db-staging > /tmp/newd1.txt
+            D1_ID=$(grep -Eo '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' /tmp/newd1.txt | head -1 || true)
+          fi
+
+          # Use structured Cloudflare API results, not same-line grep of title and ID.
+          fetch_staging_kv_id() {
+            curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces?per_page=100" \
+              > /tmp/account3-staging-kv.json
+            node -e 'const r=require("/tmp/account3-staging-kv.json");if(r.success===false)process.exit(1);const hit=(r.result||[]).find(x=>x.title==="heavenly-key-global-community-sessions-staging");process.stdout.write(hit?.id||"")'
+          }
+          KV_ID="$(fetch_staging_kv_id)"
+          if [ -z "$KV_ID" ]; then
+            npx --yes wrangler@4.145.0 kv namespace create heavenly-key-global-community-sessions-staging >/tmp/newkv.txt 2>&1 || true
+            KV_ID="$(fetch_staging_kv_id)"
+          fi
+
+          test -n "$D1_ID"
+          test -n "$KV_ID"
+          npx --yes wrangler@4.145.0 r2 bucket create heavenly-key-global-community-media-staging >/dev/null 2>&1 || true
+          cp wrangler.staging.toml wrangler.staging.deploy.toml
+          sed -i "s/REPLACE_ACCOUNT3_STAGING_D1_ID/$D1_ID/g;s/REPLACE_ACCOUNT3_STAGING_KV_ID/$KV_ID/g" wrangler.staging.deploy.toml
+      - name: Apply Account 3 staging migrations only
+        working-directory: global-community
+        run: npx --yes wrangler@4.145.0 d1 migrations apply heavenly-key-global-community-db-staging --remote --config wrangler.staging.deploy.toml
+      - name: Deploy Account 3 candidate only
+        working-directory: global-community
+        run: npx --yes wrangler@4.145.0 deploy --config wrangler.staging.deploy.toml
+      - name: Show Account 3 preview
+        run: echo "Preview is the heavenly-key-global-community-staging Worker on Account 3. Production was not changed."

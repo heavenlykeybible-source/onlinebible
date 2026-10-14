@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Christian Platform — Groups & Fellowship</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--wine:#7A1F2B;--royal:#1E3A6E;--gold:#C9A227;--gold-light:#E8C766;--white:#FFFFFF;--paper:#FBFAF8;
+        --charcoal:#33322F;--charcoal-soft:#5A5854;--orange:#D9702E;--black:#0B0B0C;--border:#E7E2D8;--success:#2E7D46;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--charcoal);background:var(--paper);line-height:1.55;}
+  h1,h2{font-family:'Fraunces',Georgia,serif;font-weight:600;color:var(--wine);margin:0 0 .4em;}
+  .screen{max-width:640px;margin:0 auto;padding:32px 20px 100px;min-height:100vh;display:none;}
+  .screen.active{display:block;}
+  .top-nav{text-align:center;margin-bottom:16px;}
+  .top-nav .logo{font-family:'Fraunces',serif;font-weight:700;color:var(--wine);font-size:1.05rem;}
+  .eyebrow{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:700;display:block;margin-bottom:.4em;}
+  .filter-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;}
+  .chip{flex:0 0 auto;padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--white);font-size:.8rem;white-space:nowrap;cursor:pointer;}
+  .chip.active{background:var(--royal);color:var(--white);border-color:var(--royal);}
+  .card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px;cursor:pointer;}
+  .card-meta{display:flex;justify-content:space-between;align-items:center;font-size:.75rem;color:var(--charcoal-soft);margin-bottom:6px;}
+  .badge{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:12px;text-transform:uppercase;letter-spacing:.03em;}
+  .badge-type{background:#EEF1F7;color:var(--royal);}
+  .badge-private{background:#F3F0E8;color:var(--charcoal-soft);}
+  .badge-verified{background:var(--gold);color:var(--black);}
+  .card h3{font-size:1rem;margin:0 0 4px;color:var(--charcoal);font-family:'Inter',sans-serif;font-weight:700;}
+  .card p{font-size:.86rem;color:var(--charcoal-soft);margin:0;}
+  .member-count{font-size:.75rem;color:var(--charcoal-soft);}
+  .tabs{display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--border);margin-bottom:16px;}
+  .tab{padding:10px 14px;font-size:.82rem;font-weight:600;color:var(--charcoal-soft);white-space:nowrap;cursor:pointer;border-bottom:2px solid transparent;}
+  .tab.active{color:var(--wine);border-bottom-color:var(--wine);}
+  label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;}
+  input[type=text],select,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:6px;font-size:.92rem;font-family:inherit;margin-bottom:16px;background:var(--white);}
+  textarea{min-height:80px;resize:vertical;}
+  .privacy-row{display:flex;gap:8px;margin-bottom:18px;}
+  .privacy-opt{flex:1;text-align:center;padding:10px 6px;border:1.5px solid var(--border);border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--charcoal-soft);}
+  .privacy-opt.selected{background:var(--wine);color:#fff;border-color:var(--wine);}
+  .btn{display:block;width:100%;padding:14px;border-radius:6px;font-weight:700;font-size:.92rem;border:2px solid transparent;cursor:pointer;text-align:center;text-decoration:none;}
+  .btn-primary{background:var(--wine);color:var(--white);}
+  .btn-outline{background:transparent;border-color:var(--wine);color:var(--wine);margin-top:8px;}
+  .role-tag{font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--royal);color:#fff;}
+  .poll-option{display:flex;justify-content:space-between;padding:10px 14px;border:1px solid var(--border);border-radius:6px;margin-bottom:8px;background:var(--white);font-size:.85rem;cursor:pointer;}
+  .poll-bar{height:4px;background:var(--gold);border-radius:2px;margin-top:6px;}
+  .minister-field{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.85rem;}
+  .demo-switcher{position:fixed;bottom:0;left:0;right:0;background:var(--black);color:#fff;padding:8px;font-size:.68rem;display:flex;flex-wrap:wrap;gap:5px;justify-content:center;z-index:99;}
+  .demo-switcher button{background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 8px;border-radius:4px;font-size:.68rem;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- GROUP DIRECTORY -->
+<div class="screen active" id="directory">
+  <div class="top-nav"><span class="logo">Groups & Fellowship</span></div>
+  <div class="filter-row">
+    <div class="chip active">All</div><div class="chip">Prayer</div><div class="chip">Bible Study</div>
+    <div class="chip">Mission Teams</div><div class="chip">Ministers Fellowship</div>
+  </div>
+  <div class="card" onclick="show('group-detail')">
+    <div class="card-meta"><span class="badge badge-type">Prayer Group</span><span class="member-count">1,204 members</span></div>
+    <h3>🔥 7 Days Prayer for Nigeria</h3>
+    <p>A sustained prayer chain uniting believers worldwide for revival in Nigeria.</p>
+  </div>
+  <div class="card" onclick="show('group-detail')">
+    <div class="card-meta"><span class="badge badge-type">Bible Study</span><span class="badge badge-private">🔒 Private</span></div>
+    <h3>KJV Bible Study — Romans</h3>
+    <p>Working verse-by-verse through the book of Romans together.</p>
+  </div>
+  <div class="card" onclick="show('minister-profile')">
+    <div class="card-meta"><span class="badge badge-verified">✔ Verified</span><span class="badge badge-type">Ministers Fellowship</span></div>
+    <h3>Ministers Fellowship — West Africa</h3>
+    <p>A protected space for pastors, evangelists, and ministry leaders.</p>
+  </div>
+  <button class="btn btn-primary" onclick="show('create-group')" style="margin-top:10px;">+ Create a Group</button>
+</div>
+
+<!-- CREATE GROUP -->
+<div class="screen" id="create-group">
+  <div class="top-nav"><span class="logo">Create a Group</span></div>
+  <form onsubmit="event.preventDefault(); show('directory');">
+    <label>Group Name</label>
+    <input type="text" placeholder="e.g. Young Evangelists Network">
+    <label>Christian Purpose (required)</label>
+    <textarea placeholder="What is this group for, and how does it serve the ministry's mission?"></textarea>
+    <label>Group Type</label>
+    <select><option>Prayer Group</option><option>Bible Study Group</option><option>Mission Team</option><option>Regional Group</option><option>Youth Fellowship</option><option>Custom Christian Group</option></select>
+    <label>Privacy Level</label>
+    <div class="privacy-row">
+      <div class="privacy-opt selected" onclick="selectPrivacy(this)">Public</div>
+      <div class="privacy-opt" onclick="selectPrivacy(this)">Private</div>
+      <div class="privacy-opt" onclick="selectPrivacy(this)">Hidden</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Create Group</button>
+  </form>
+</div>
+
+<!-- GROUP DETAIL -->
+<div class="screen" id="group-detail">
+  <div class="top-nav"><span class="logo">7 Days Prayer for Nigeria</span></div>
+  <div class="card-meta" style="margin-bottom:10px;"><span class="role-tag">You: Member</span><span class="member-count">1,204 members</span></div>
+  <div class="tabs">
+    <div class="tab active">Prayer Wall</div><div class="tab">Discussions</div><div class="tab">Announcements</div>
+    <div class="tab">Events</div><div class="tab">Files</div><div class="tab">Polls</div><div class="tab">Stats</div>
+  </div>
+  <div class="card">
+    <p style="font-size:.85rem;color:var(--charcoal-soft);">Day 3 of 7 — "Lord, raise up laborers for the harvest across Nigeria."</p>
+  </div>
+  <div class="card">
+    <p style="font-size:.85rem;">"Praying with everyone here — my sister just gave her life to Christ this week!" — Brother Samuel</p>
+  </div>
+  <button class="btn btn-outline">Share a Prayer</button>
+</div>
+
+<!-- MINISTERS FELLOWSHIP PROFILE -->
+<div class="screen" id="minister-profile">
+  <div class="top-nav"><span class="logo">Ministers Fellowship</span></div>
+  <div class="card">
+    <span class="badge badge-verified">✔ Verified by Ministry Administration</span>
+    <div class="minister-field"><span>Ministry Name</span><span>Grace Chapel International</span></div>
+    <div class="minister-field"><span>Country</span><span>Nigeria</span></div>
+    <div class="minister-field"><span>Region</span><span>West Africa</span></div>
+    <div class="minister-field"><span>Denomination</span><span>Pentecostal (optional field)</span></div>
+  </div>
+  <div class="card"><h3 style="font-size:.95rem;">Sermon Sharing</h3><p>Ministers in this fellowship may share sermons and ministry resources here.</p></div>
+  <div class="card"><h3 style="font-size:.95rem;">Private Minister Discussions</h3><p>A protected space for prayer requests between ministers.</p></div>
+</div>
+
+<!-- POLL DEMO -->
+<div class="screen" id="poll-demo">
+  <div class="top-nav"><span class="logo">Group Poll</span></div>
+  <div class="card">
+    <h3 style="font-size:.95rem;">What should our next Bible Study series be?</h3>
+    <div class="poll-option">Book of James <span>62%</span></div>
+    <div class="poll-bar" style="width:62%;"></div>
+    <div class="poll-option" style="margin-top:10px;">Sermon on the Mount <span>38%</span></div>
+    <div class="poll-bar" style="width:38%;"></div>
+  </div>
+</div>
+
+<div class="demo-switcher">
+  <button onclick="show('directory')">Directory</button>
+  <button onclick="show('create-group')">Create Group</button>
+  <button onclick="show('group-detail')">Group Detail</button>
+  <button onclick="show('minister-profile')">Ministers Fellowship</button>
+  <button onclick="show('poll-demo')">Poll</button>
+</div>
+
+<script>
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  function selectPrivacy(el){
+    el.parentElement.querySelectorAll('.privacy-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+</script>
+</body>
+</html>

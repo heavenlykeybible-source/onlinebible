@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discipleship Centre — Salvation</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--wine:#7A1F2B;--royal:#1E3A6E;--gold:#C9A227;--gold-light:#E8C766;--white:#FFFFFF;--paper:#FBFAF8;
+        --charcoal:#33322F;--charcoal-soft:#5A5854;--orange:#D9702E;--black:#0B0B0C;--border:#E7E2D8;--success:#2E7D46;}
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--charcoal);background:var(--paper);line-height:1.6;}
+  h1,h2{font-family:'Fraunces',Georgia,serif;font-weight:600;color:var(--wine);margin:0 0 .4em;}
+  .screen{max-width:640px;margin:0 auto;padding:0 20px 90px;min-height:100vh;display:none;}
+  .screen.active{display:block;}
+  .hero{background:linear-gradient(135deg,var(--wine),var(--royal));color:#fff;padding:40px 24px;margin:0 -20px 24px;text-align:center;}
+  .hero .eyebrow{color:var(--gold-light);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;}
+  .hero h1{color:#fff;font-size:1.8rem;margin-top:.3em;}
+  .lesson-num{font-size:.8rem;color:rgba(255,255,255,.8);}
+  .verse-card{background:var(--white);border-left:4px solid var(--gold);border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:18px;}
+  .verse-card p{font-family:'Fraunces',serif;font-style:italic;margin:0 0 .3em;}
+  .verse-card cite{font-size:.78rem;color:var(--charcoal-soft);font-style:normal;font-weight:600;}
+  .accordion-item{border-bottom:1px solid var(--border);}
+  .accordion-header{width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:16px 4px;font-weight:700;font-size:.95rem;color:var(--wine);display:flex;justify-content:space-between;}
+  .accordion-panel{max-height:0;overflow:hidden;transition:max-height .25s ease;font-size:.88rem;color:var(--charcoal-soft);}
+  .accordion-item.open .accordion-panel{max-height:400px;}
+  .accordion-panel-inner{padding:0 4px 16px;}
+  .quiz-option{padding:10px 14px;border:1.5px solid var(--border);border-radius:6px;margin-bottom:8px;font-size:.88rem;cursor:pointer;background:var(--white);}
+  .quiz-option.correct{background:#EAF6EC;border-color:var(--success);}
+  .related-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px;}
+  .related-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:.85rem;}
+  .btn{display:block;width:100%;padding:14px;border-radius:6px;font-weight:700;font-size:.92rem;border:2px solid transparent;cursor:pointer;text-align:center;text-decoration:none;background:var(--wine);color:#fff;margin-top:20px;}
+
+  /* Discipleship Insight — reusable widget, shown embedded here for demo */
+  .insight-widget{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:18px;margin:24px 0;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+  .insight-widget .eyebrow{color:var(--gold);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;}
+  .insight-widget h3{font-size:1rem;margin:.3em 0;color:var(--wine);font-family:'Fraunces',serif;}
+  .insight-widget .verse{font-size:.82rem;font-style:italic;color:var(--charcoal-soft);margin-bottom:10px;}
+  .insight-widget .btn{margin-top:8px;padding:9px;font-size:.82rem;}
+  .demo-switcher{position:fixed;bottom:0;left:0;right:0;background:var(--black);color:#fff;padding:8px;font-size:.7rem;display:flex;gap:6px;justify-content:center;z-index:99;}
+  .demo-switcher button{background:rgba(255,255,255,.15);border:none;color:#fff;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:.7rem;}
+</style>
+</head>
+<body>
+
+<!-- FULL LESSON PAGE -->
+<div class="screen active" id="lesson">
+  <div class="hero">
+    <span class="eyebrow">Discipleship Centre · Lesson 1 of 21</span>
+    <h1>Salvation</h1>
+    <div class="lesson-num">From Conversion to Spiritual Maturity</div>
+  </div>
+
+  <h2 style="font-size:1.05rem;">Lesson Overview</h2>
+  <p style="color:var(--charcoal-soft);font-size:.9rem;"><span style="background:#FDF3E4;padding:2px 6px;border-radius:4px;">[Placeholder — lesson overview text authored by Ministry Leadership]</span></p>
+
+  <div class="verse-card">
+    <span style="font-size:.72rem;color:var(--gold);font-weight:700;text-transform:uppercase;">Memory Verse</span>
+    <p>"[Placeholder KJV memory verse text]"</p>
+    <cite>— Reference pending approved KJV source</cite>
+  </div>
+
+  <div id="accordion">
+    <div class="accordion-item open">
+      <button class="accordion-header"><span>Main Bible Reading</span><span>+</span></button>
+      <div class="accordion-panel"><div class="accordion-panel-inner">[Placeholder — main KJV passage for this lesson]</div></div>
+    </div>
+    <div class="accordion-item">
+      <button class="accordion-header"><span>Scripture Explanation</span><span>+</span></button>
+      <div class="accordion-panel"><div class="accordion-panel-inner">[Placeholder — teaching text, Ministry Leadership authored]</div></div>
+    </div>
+    <div class="accordion-item">
+      <button class="accordion-header"><span>Supporting Scriptures</span><span>+</span></button>
+      <div class="accordion-panel"><div class="accordion-panel-inner">[Placeholder — collapsible cross-reference list]</div></div>
+    </div>
+    <div class="accordion-item">
+      <button class="accordion-header"><span>Reflection Questions</span><span>+</span></button>
+      <div class="accordion-panel"><div class="accordion-panel-inner">[Placeholder — reflection prompts]</div></div>
+    </div>
+    <div class="accordion-item">
+      <button class="accordion-header"><span>Prayer Points</span><span>+</span></button>
+      <div class="accordion-panel"><div class="accordion-panel-inner">[Placeholder — prayer points for this lesson]</div></div>
+    </div>
+  </div>
+
+  <h2 style="font-size:1.05rem;margin-top:20px;">Knowledge Check</h2>
+  <p style="font-size:.85rem;color:var(--charcoal-soft);">What must a person do to receive salvation, according to this lesson?</p>
+  <div class="quiz-option correct">Believe and receive Christ ✓</div>
+  <div class="quiz-option">Attend church regularly</div>
+  <div class="quiz-option">Perform good works</div>
+
+  <h2 style="font-size:1.05rem;margin-top:20px;">Related Content</h2>
+  <div class="related-grid">
+    <div class="related-card">📖 Related Sermon: "The Simplicity of Salvation"</div>
+    <div class="related-card">🙏 Related Devotional: Today's reading on new life in Christ</div>
+    <div class="related-card">💬 3 testimonies linked to this lesson</div>
+  </div>
+
+  <button class="btn">Continue to Lesson 2: Assurance of Salvation →</button>
+</div>
+
+<!-- DISCIPLESHIP INSIGHT WIDGET — shown here as it would appear on homepage/dashboard/groups -->
+<div class="screen" id="widget-demo">
+  <h2 style="margin-top:24px;">Where "Discipleship Insight" Appears</h2>
+  <p style="font-size:.85rem;color:var(--charcoal-soft);">Same component, reused on the homepage, member dashboard, group pages, and Prayer Centre — not rebuilt per page.</p>
+
+  <div class="insight-widget">
+    <span class="eyebrow">Discipleship Insight</span>
+    <h3>Lesson 1: Salvation</h3>
+    <p class="verse">"[Placeholder KJV memory verse]" — Reference pending</p>
+    <a href="#" class="btn" onclick="show('lesson')">Continue Reading →</a>
+  </div>
+</div>
+
+<div class="demo-switcher">
+  <button onclick="show('lesson')">Full Lesson Page</button>
+  <button onclick="show('widget-demo')">Discipleship Insight Widget</button>
+</div>
+
+<script>
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  document.querySelectorAll('.accordion-header').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var item = btn.closest('.accordion-item');
+      item.classList.toggle('open');
+    });
+  });
+</script>
+</body>
+</html>

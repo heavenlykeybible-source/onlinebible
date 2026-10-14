@@ -1,0 +1,728 @@
+ARCHIVAL SOURCE COPY — NOT A WEBSITE PAGE OR DEPLOYABLE RELEASE
+Origin: alldaywow247-ops/heavenlykey@60c4487831a4065873c23e605a7dd08f4981ca16
+Path: heavenly-key-website/index.html
+Preserved to support selective restoration. Do not replace the AOE Meta active homepage wholesale.
+--- BEGIN ORIGINAL SOURCE ---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1B3A6B">
+<title>Heavenly Key Evangelistic Movement — Taking Christ to the Nations of the World</title>
+<meta name="description" content="Heavenly Key Evangelistic Movement exists to reach the lost, revive the Church, and prepare souls for eternity through crusades, discipleship, and world missions.">
+<link rel="canonical" href="https://www.heavenlykey.org/">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+<link rel="alternate" type="application/rss+xml" title="Heavenly Key Evangelistic Movement — Blog" href="rss.xml">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Heavenly Key Evangelistic Movement">
+<meta property="og:description" content="Taking Christ to the Nations of the World.">
+<meta property="og:url" content="https://www.heavenlykey.org/">
+<meta property="og:image" content="/assets/og-image.jpg">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Heavenly Key Evangelistic Movement">
+<meta name="twitter:description" content="Taking Christ to the Nations of the World.">
+
+<!-- Schema.org: Organization -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Church",
+  "name": "Heavenly Key Evangelistic Movement",
+  "url": "https://www.heavenlykey.org/",
+  "sameAs": []
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Preload the one genuine LCP-critical resource: the eagerly-loaded
+     hero slide (see fetchpriority="high" on the same image below).
+     No other preload added — fonts already have preconnect above
+     (sufficient, since the actual font file URLs come from Google's
+     dynamic CSS and can't be preloaded without guessing a fragile
+     URL), and every other image on the site is intentionally
+     lazy-loaded, so preloading them would work against that. -->
+<link rel="preload" as="image" href="assets/ministry/outreach-1.jpg" fetchpriority="high">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,500&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="css/tokens.css?v=1.2.6">
+<link rel="stylesheet" href="css/base.css?v=1.2.6">
+<link rel="stylesheet" href="css/components.css?v=2.0.0">
+<link rel="stylesheet" href="css/ui-components.css?v=1.2.6">
+<link rel="stylesheet" href="css/home.css?v=2.0.0">
+<link rel="stylesheet" href="css/portal.css?v=1.2.6">
+</head>
+<body>
+<div class="reading-progress" aria-hidden="true"><span></span></div>
+<button class="motion-toggle" type="button" aria-pressed="false">Pause animation</button>
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- ============ TOP MINISTRY STRIP ============ -->
+<div class="top-strip" role="complementary" aria-label="Ministry vision statement">
+  <svg class="globe-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+    <circle cx="12" cy="12" r="10"/>
+    <ellipse cx="12" cy="12" rx="4.2" ry="10"/>
+    <path d="M2 12h20M3.5 7h17M3.5 17h17"/>
+  </svg>
+  <div class="ticker" aria-live="off">
+    <span class="ticker-track">
+      <span>REVIVAL &nbsp;◆&nbsp; HOLINESS &nbsp;◆&nbsp; POWER &nbsp;◆&nbsp; GLOBAL CHRISTIAN COMMUNITY &nbsp;◆&nbsp; WATCH WEBCAST LIVE &nbsp;◆&nbsp; ONLINE REVIVAL RADIO &nbsp;◆&nbsp; TAKING CHRIST TO THE NATIONS OF THE WORLD &nbsp;◆&nbsp; </span>
+      <span>REVIVAL &nbsp;◆&nbsp; HOLINESS &nbsp;◆&nbsp; POWER &nbsp;◆&nbsp; GLOBAL CHRISTIAN COMMUNITY &nbsp;◆&nbsp; WATCH WEBCAST LIVE &nbsp;◆&nbsp; ONLINE REVIVAL RADIO &nbsp;◆&nbsp; TAKING CHRIST TO THE NATIONS OF THE WORLD &nbsp;◆&nbsp; </span>
+    </span>
+  </div>
+  <div class="flags premium-flags" aria-label="Nations connected with the ministry vision">
+    <span title="Germany">🇩🇪</span><span title="United Kingdom">🇬🇧</span><span title="United States">🇺🇸</span><span title="Canada">🇨🇦</span><span title="Ghana">🇬🇭</span><span title="Nigeria">🇳🇬</span><span title="Uganda">🇺🇬</span><span title="Pakistan">🇵🇰</span><span title="India">🇮🇳</span><span title="France">🇫🇷</span>
+  </div>
+</div>
+
+<!-- ============ HEADER / NAV ============ -->
+<header class="site-header">
+  <div class="utility-bar">
+    <div class="container utility-bar-inner">
+      <a href="pages/community.html#prayer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7 7.1L12 20.3l8.8-8.6a5 5 0 0 0 0-7Z"/></svg>Prayer Request</a>
+      <a href="pages/community.html#testimonies"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Testimonies</a>
+      <a href="pages/partner.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Give / Support</a>
+      <a class="nav-login" href="https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev/account.html" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Login</a>
+      <a class="btn btn-primary utility-cta" href="pages/i-said-yes.html">I Said Yes to Jesus</a>
+    </div>
+  </div>
+  <div class="container header-inner">
+    <a class="brand" href="index.html" aria-label="Heavenly Key Evangelistic Movement — Home">
+      <img src="assets/ministry/logo.png" alt="Heavenly Key Evangelistic Movement logo" width="56" height="56">
+      <span>
+        <span class="brand-name">Heavenly Key<br>Evangelistic Movement</span>
+        <span class="brand-subline">Revival • Evangelism • World Mission</span>
+      </span>
+    </a>
+
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="main-nav">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18"/>
+      </svg>
+    </button>
+
+    <nav class="main-nav" id="main-nav" data-open="false" aria-label="Primary">
+      <ul>
+        <li><a href="index.html" aria-current="page"><svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>Home</a></li>
+        <li><a href="pages/about.html"><svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg>About</a></li>
+        <li><a href="pages/ministries.html"><svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2 9l10 6 10-6-10-6Z"/><path d="M6 12v6c0 1 3 3 6 3s6-2 6-3v-6"/></svg>Ministries</a></li>
+        <li><a href="pages/missions.html"><svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 0 1 0 18 13 13 0 0 1 0-18Z"/></svg>Missions</a></li>
+        <li><a href="pages/events.html"><svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Events</a></li>
+        <li><a href="pages/radio.html" target="_blank" rel="noopener"><span class="nav-radio-blink" aria-hidden="true"></span><svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 9l6 3-6 3V9Z"/></svg>ONLINE REVIVAL RADIO</a></li><li><a href="pages/video.html" target="_blank" rel="noopener">FAITH OF OUR FATHERS TV</a></li>
+        <li><a href="pages/resources.html"><svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z"/></svg>Resources</a></li>
+        <li><a class="nav-community-gateway" href="https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev" target="_blank" rel="noopener"><svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Global Christian Community <span aria-hidden="true">↗</span></a></li>
+        <li><a href="pages/partner.html"><svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7 7.1L12 20.3l8.8-8.6a5 5 0 0 0 0-7Z"/></svg>Partner With Us</a></li>
+        <li><a href="pages/contact.html"><svg class="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg>Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ PREMIUM GLOBAL HERO ============ -->
+  <section class="hero premium-global-hero" aria-labelledby="hero-heading">
+    <div class="premium-hero-slideshow slideshow" data-interval="3500" aria-label="Heavenly Key global evangelistic mission">
+      <img src="assets/ministry/outreach-1.jpg" alt="Heavenly Key Evangelistic Movement outreach gathering" class="is-active" fetchpriority="high">
+      <img loading="lazy" src="assets/ministry/outreach-2.jpg" alt="Heavenly Key revival outreach">
+      <img loading="lazy" src="assets/ministry/outreach-3.jpg" alt="Evangelistic outreach and prayer gathering">
+      <img loading="lazy" src="assets/ministry/outreach-4.jpg" alt="Heavenly Key community evangelism">
+      <img loading="lazy" src="assets/ministry/outreach-5.jpg" alt="Sharing Christ through evangelistic mission">
+      <img loading="lazy" src="assets/ministry/outreach-6.png" alt="Heavenly Key global mission vision">
+    </div>
+    <div class="premium-hero-effects" aria-hidden="true">
+      <span class="hero-orbit orbit-a"></span><span class="hero-orbit orbit-b"></span><span class="hero-flare"></span>
+    </div>
+    <div class="premium-hero-shade" aria-hidden="true"></div>
+    <div class="container premium-hero-inner">
+      <div class="premium-hero-copy">
+        <span class="premium-welcome">WELCOME TO</span>
+        <h1 id="hero-heading">HEAVENLY KEY <span>EVANGELISTIC MOVEMENT</span></h1>
+        <p class="premium-identity">END-TIME, INTERDENOMINATIONAL, APOSTOLIC &amp; EVANGELISTIC MOVEMENT</p>
+        <p class="premium-mandate">Taking Christ to the Nations of the World</p>
+        <p class="premium-powerline">Revival <b>◆</b> Holiness <b>◆</b> Power</p>
+        <div class="premium-hero-actions">
+          <a class="premium-action action-gold" href="https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev" target="_blank" rel="noopener">👥 <span>Join Global Christian Community</span> <b>→</b></a>
+          <a class="premium-action action-blue" href="pages/radio.html" target="_blank" rel="noopener"><span class="nav-radio-blink" aria-hidden="true"></span><span>Listen to ONLINE REVIVAL RADIO</span> <b>▶</b></a>
+          <a class="premium-action action-wine" href="pages/video.html" target="_blank" rel="noopener">▶ <span>Watch Webcast Live</span> <b>→</b></a>
+        </div>
+      </div>
+      <blockquote class="premium-hero-scripture">“Go ye into all the world, and preach the gospel to every creature.”<strong>Mark 16:15 KJV</strong></blockquote>
+    </div>
+    <div class="premium-hero-controls" aria-label="Hero slides">
+      <button class="screen-nav-prev" type="button" aria-label="Previous slide">‹</button>
+      <div class="premium-hero-dots" role="tablist" aria-label="Choose hero slide">
+        <button class="screen-dot hero-dot is-active" type="button" role="tab" aria-selected="true" aria-label="Slide 1"></button>
+        <button class="screen-dot hero-dot" type="button" role="tab" aria-selected="false" aria-label="Slide 2"></button>
+        <button class="screen-dot hero-dot" type="button" role="tab" aria-selected="false" aria-label="Slide 3"></button>
+        <button class="screen-dot hero-dot" type="button" role="tab" aria-selected="false" aria-label="Slide 4"></button>
+        <button class="screen-dot hero-dot" type="button" role="tab" aria-selected="false" aria-label="Slide 5"></button>
+        <button class="screen-dot hero-dot" type="button" role="tab" aria-selected="false" aria-label="Slide 6"></button>
+      </div>
+      <button class="screen-nav-next" type="button" aria-label="Next slide">›</button>
+    </div>
+  </section>
+
+  <section class="premium-mission-board" aria-labelledby="premium-mission-title">
+    <div class="container premium-mission-grid">
+      <div class="premium-mission-copy">
+        <span class="premium-overline">OUR MISSION &amp; VISION</span>
+        <h2 id="premium-mission-title">A Global Movement for Christ in the End-Time</h2>
+        <p>Heavenly Key Evangelistic Movement is an end-time, interdenominational, apostolic and evangelistic movement committed to raising believers for revival, holiness and power, and taking Christ to the nations of the world.</p>
+        <a class="premium-inline-cta" href="pages/about.html">Learn More About Our Mission →</a>
+      </div>
+      <div class="premium-three-pillars" aria-label="Revival Holiness Power">
+        <article class="premium-pillar">
+          <span class="pillar-icon">🔥</span><h3>Revival</h3><p>A fresh awakening of hearts to Christ and a revived Church across the nations.</p>
+        </article>
+        <article class="premium-pillar">
+          <span class="pillar-icon">♛</span><h3>Holiness</h3><p>A people set apart for God, living in righteousness and wholehearted consecration.</p>
+        </article>
+        <article class="premium-pillar">
+          <span class="pillar-icon">⚡</span><h3>Power</h3><p>Demonstrating the power of the Holy Spirit through the Gospel of Jesus Christ.</p>
+        </article>
+      </div>
+      <aside class="endtime-army-board">
+        <span class="premium-overline light">RAISING AN</span>
+        <h2>END-TIME ARMY OF CHRIST</h2>
+        <p class="army-roles">Apostles <b>•</b> Pastors <b>•</b> Evangelists <b>•</b> Teachers <b>•</b> Kingdom Financiers <b>•</b> Sound Believers</p>
+        <div class="army-programs">
+          <a href="pages/events.html">Revival Programs</a>
+          <a href="pages/missions.html">End-Time Harvest</a>
+          <a href="pages/events.html">Crusades</a>
+          <a href="pages/contact.html">Crusade Order</a>
+        </div>
+        <div class="army-icons" aria-hidden="true"><span>👥<small>Apostles</small></span><span>📖<small>Pastors</small></span><span>📣<small>Evangelists</small></span><span>🎓<small>Teachers</small></span><span>◉<small>Financiers</small></span><span>✝<small>Believers</small></span></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="premium-media-family" aria-label="Media and Global Christian Family">
+    <div class="container premium-media-family-grid">
+      <div class="premium-media-zone">
+        <div class="premium-zone-head"><span class="premium-overline light">OUR MEDIA</span><h2>FAITH FOR A GREATER GENERATION</h2></div>
+        <div class="premium-media-cards">
+          <a class="premium-media-card radio-card" href="pages/radio.html" target="_blank" rel="noopener"><span class="media-live">ON AIR</span><span class="media-symbol">🎙</span><strong>ONLINE REVIVAL RADIO</strong><small>Messages • Prayers • Revival • Global Impact</small><em>Listen Now →</em></a>
+          <a class="premium-media-card tv-card" href="pages/video.html" target="_blank" rel="noopener"><span class="media-live">LIVE</span><span class="media-symbol">🎥</span><strong>FAITH OF OUR FATHERS TV</strong><small>Inspiring • Equipping • Transforming Nations</small><em>Watch Now →</em></a>
+        </div>
+      </div>
+      <div class="premium-family-zone">
+        <span class="premium-overline light">OUR COMMUNITY</span>
+        <h2>Be Part of a Global Christian Family</h2>
+        <p>Join our global social network communities of believers across the nations of the world.</p>
+        <a class="premium-action action-gold family-cta" href="https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev" target="_blank" rel="noopener">👥 <span>Join the Global Christian Community</span> <b>→</b></a>
+      </div>
+      <div class="premium-action-rail">
+        <a href="pages/community.html#testimonies"><span>▣</span><strong>Testimony</strong><small>Share what God has done in your life.</small><b>›</b></a>
+        <a href="pages/community.html#prayer"><span>🙏</span><strong>Prayer Request</strong><small>Let us stand with you in prayer.</small><b>›</b></a>
+        <a href="pages/partner.html"><span>♥</span><strong>Support Us</strong><small>Help us take the Gospel to the nations.</small><b>›</b></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="ministry-pulse" aria-label="Connect with Heavenly Key">
+    <div class="container ministry-pulse-grid">
+      <a class="pulse-card pulse-live" href="pages/video.html" target="_blank" rel="noopener">
+        <span class="pulse-icon" aria-hidden="true">▶</span>
+        <span><small>FAITH OF OUR FATHERS TV</small><strong>Watch the Webcast</strong><em>Messages • Revival • Prayer</em></span>
+        <span class="pulse-arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="pulse-card" href="pages/radio.html" target="_blank" rel="noopener">
+        <span class="pulse-icon" aria-hidden="true">♫</span>
+        <span><small>ONLINE REVIVAL RADIO</small><strong>Listen & Be Strengthened</strong><em>Low-data audio access</em></span>
+        <span class="pulse-arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="pulse-card" href="pages/community.html#prayer">
+        <span class="pulse-icon" aria-hidden="true">✦</span>
+        <span><small>PRAYER</small><strong>Let Brethren Pray for You</strong><em>Send a prayer request</em></span>
+        <span class="pulse-arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="pulse-card pulse-gospel" href="pages/i-said-yes.html">
+        <span class="pulse-icon" aria-hidden="true">✝</span>
+        <span><small>YOUR ETERNITY MATTERS</small><strong>I Said Yes to Jesus</strong><em>Begin your journey with Christ</em></span>
+        <span class="pulse-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="community-gateway" aria-labelledby="gcp-heading">
+    <div class="container">
+      <div class="community-gateway-card" data-reveal>
+        <div class="community-gateway-copy">
+          <span class="community-overline" data-site-content="community_eyebrow">THE GLOBAL CHRISTIAN COMMUNITY</span>
+          <h2 id="gcp-heading"><span data-site-content="community_title_line1">One faith.</span> <span data-site-content="community_title_line2">Many nations.</span><br><span class="community-accent" data-site-content="community_title_highlight">A place for you.</span></h2>
+          <p data-site-content="community_intro">Beyond the meeting, beyond the borders—walk with believers who share a desire for revival, holiness and a life that points others to Christ.</p>
+          <div class="community-benefits" aria-label="Community features">
+            <span>Prayer</span><span>Fellowship</span><span>Groups</span><span>Spaces</span><span>Messages</span><span>Growth</span>
+          </div>
+          <div class="community-action-wrap">
+            <span class="pointing-hand" aria-hidden="true">☞</span>
+            <a class="community-mega-cta" href="https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev" target="_blank" rel="noopener">
+              <span class="community-mega-icon" aria-hidden="true">✦</span>
+              <span><small>OPEN IN A NEW TAB</small><strong>JOIN GLOBAL CHRISTIAN COMMUNITY</strong></span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <p class="community-note">Connect with believers across nations. Share faith. Pray together. Grow in Christ.</p>
+        </div>
+        <div class="community-gateway-art" aria-hidden="true">
+          <div class="community-orbit orbit-one"></div>
+          <div class="community-orbit orbit-two"></div>
+          <div class="community-globe">
+            <span class="globe-cross">✚</span>
+            <span class="globe-word">GLOBAL</span>
+          </div>
+          <div class="community-person person-a"><span>PRAY</span></div>
+          <div class="community-person person-b"><span>GROW</span></div>
+          <div class="community-person person-c"><span>GO</span></div>
+          <div class="community-person person-d"><span>SHARE</span></div>
+          <p class="community-art-caption">ONE BODY • MANY NATIONS • JESUS CHRIST</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ END-TIME WARNING BANNER ============ -->
+  <section style="padding-block:var(--space-3)" aria-labelledby="endtime-heading">
+    <div class="container">
+      <div class="card" style="border-left:4px solid var(--color-warm-orange);text-align:center">
+        <h2 id="endtime-heading" style="font-size:var(--text-lg);margin-bottom:0.5em">
+          <span style="color:var(--color-warm-orange)">END-TIME HAS COME</span> — WHERE WILL YOU SPEND ETERNITY? <span style="color:var(--color-gold)">HEAVEN</span> OR <span style="color:var(--color-warm-orange)">HELL</span>?
+        </h2>
+        <p style="font-size:var(--text-sm)"><strong>Pray Hard, Keep Watch, Stand Firm;</strong> Love God, Praise Jesus, Live Crucified; Serve Others, Share Christ, Show Grace; Be Humble, Bear Fruit, Obey Christ; Fear God, Fight Darkness, Shun Evil, Stay Pure; <strong>Win Souls, Souls, Souls for Jesus Christ.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="revival-feature" aria-labelledby="revival-feature-heading">
+    <div class="container revival-feature-shell">
+      <div class="revival-feature-copy">
+        <span class="section-kicker light">GLOBAL PRAYER • REVIVAL • DESTINY</span>
+        <h2 id="revival-feature-heading">A praying people. A revived Church. A harvest of souls.</h2>
+        <p>Heavenly Key Evangelistic Movement is calling believers across nations back to prayer, holiness, the Word of God and active evangelism.</p>
+        <div class="revival-feature-actions">
+          <a class="btn btn-gold" href="pages/video.html" target="_blank" rel="noopener">Watch Live Ministry</a>
+          <a class="btn btn-outline" href="pages/community.html#prayer">Send a Prayer Request</a>
+        </div>
+      </div>
+      <div class="revival-program-card">
+        <span class="revival-program-badge">GLOBAL REVIVAL &amp; DESTINY PRAYER CRY</span>
+        <h3>Join the Cry</h3>
+        <p>Calling upon God for revival, salvation, deliverance, restoration and destiny fulfilment in Christ.</p>
+        <div class="revival-program-scriptures">
+          <span>“And Jabez called on the God of Israel...”</span>
+          <strong>1 Chronicles 4:10</strong>
+        </div>
+        <a href="pages/video.html" target="_blank" rel="noopener" class="revival-program-link">Enter the live broadcast <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUICK LINKS ============ -->
+  <section class="quick-links" aria-labelledby="quicklinks-heading">
+    <div class="container">
+      <div class="premium-section-head">
+        <span class="section-kicker">DISCOVER • GROW • GO</span>
+        <h2 id="quicklinks-heading" data-site-content="ministry_intro_title">Explore the Ministry</h2>
+        <p>Find a clear pathway into prayer, the Word, evangelism, discipleship, missions and live ministry.</p>
+      </div>
+      <ul>
+        <li>
+          <div class="icon-circle" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 0 1 0 18 13 13 0 0 1 0-18Z"/></svg>
+          </div>
+          <h3><a href="pages/missions.html">Nations of the World</a></h3>
+          <p>Explore every nation and pray for the lost.</p>
+        </li>
+        <li>
+          <div class="icon-circle" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20V6a2 2 0 0 1 2-2h5v18M20 20V10a2 2 0 0 0-2-2h-5"/></svg>
+          </div>
+          <h3><a href="pages/ministries.html">Revival &amp; Crusade</a></h3>
+          <p>Reaching communities with the Gospel.</p>
+        </li>
+        <li>
+          <div class="icon-circle" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z"/></svg>
+          </div>
+          <h3><a href="pages/resources.html#bible">Bible Study</a></h3>
+          <p>Study the Word and be established.</p>
+        </li>
+        <li>
+          <div class="icon-circle" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 9l6 3-6 3V9Z"/></svg>
+          </div>
+          <h3><a href="pages/video.html" target="_blank" rel="noopener">Live Broadcast</a></h3>
+          <p>Watch our live programs, crusades and revival.</p>
+        </li>
+        <li>
+          <div class="icon-circle" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9"/><circle cx="18" cy="18" r="3"/><path d="M18 16.5v1.5l1 1"/></svg>
+          </div>
+          <h3><a href="pages/resources.html">Training &amp; Discipleship</a></h3>
+          <p>Take your class and grow in the Word of God.</p>
+        </li>
+        <li>
+          <div class="icon-circle" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.8 4.6a5 5 0 0 0-7.1 0L12 6.3l-1.7-1.7a5 5 0 1 0-7 7.1L12 20.3l8.8-8.6a5 5 0 0 0 0-7Z"/></svg>
+          </div>
+          <h3><a href="pages/partner.html">Give &amp; Support</a></h3>
+          <p>Partner with us to rescue the perishing.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ STATS BAR ("Lives Transformed" counter) ============ -->
+
+
+  <!-- ============ AFRICA MUST BE SAVED BANNER ============ -->
+  <section class="africa-banner" aria-labelledby="africa-heading">
+    <div class="container">
+      <svg class="africa-outline" width="140" height="140" viewBox="0 0 200 200" aria-hidden="true" fill="none" stroke="var(--color-gold)" stroke-width="3">
+        <path d="M100 15c18 0 28 14 34 26 5 10 4 20 14 26 12 8 16 20 10 32-5 10-4 18 2 26 8 10 4 24-6 30-8 5-10 14-16 22-7 10-10 22-22 26-10 3-16-4-24-2-10 2-18-6-20-16-2-9-10-14-14-22-5-10 0-20-6-28-7-9-6-20 0-28 5-7 3-16 8-24 6-10 4-20 10-28 6-8 12-20 30-30Z"/>
+      </svg>
+      <div>
+        <h2 id="africa-heading" data-site-content="africa_title">Africa Must Be Saved!</h2>
+        <p>Millions across the continent have not yet heard the saving Gospel of Jesus Christ. Join us in prayer as we take revival and crusade programs across the soil of Africa.</p>
+        <a class="btn btn-gold" href="pages/missions.html#pray">Pray for Africa</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MISSION FOCUS TODAY ============ -->
+  <section class="mission-focus" aria-labelledby="mission-focus-heading">
+    <div class="container">
+      <div>
+        <span class="eyebrow" style="color:var(--color-gold-light)">Mission Focus Today · Part of the Africa Must Be Saved Vision</span>
+        <h2 id="mission-focus-heading">Pray for the nations</h2>
+        <p style="color:#EADFE1">Join the movement in prayer for communities, families and the spread of the Gospel around the world.</p>
+        <blockquote class="scripture-quote">"How shall they hear without a preacher?" — Romans 10:14 (KJV)</blockquote>
+        <div class="btn-row">
+          <a class="btn btn-gold" href="pages/missions.html#pray">Pray</a>
+          <a class="btn btn-outline" href="pages/missions.html">Learn More</a>
+          <a class="btn btn-outline" href="pages/missions.html">Explore our mission</a>
+        </div>
+      </div>
+      <div class="mission-focus-visual">
+        <img loading="lazy" src="assets/ministry/outreach-1.jpg" alt="Heavenly Key ministry outreach">
+        <div class="mission-focus-stamp"><strong>AFRICA</strong><span>MUST BE SAVED</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LATEST MINISTRY UPDATES ============ -->
+  <section aria-labelledby="updates-heading">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="updates-heading">Latest Ministry Updates</h2>
+        <a href="pages/ministries.html">View All Updates</a>
+      </div>
+      <div class="grid-3" id="hk-ministry-updates" data-component="blog" data-params='{"status":"published","limit":3}'>
+        <article class="card">
+          <span class="eyebrow">Teaching</span>
+          <h3>What Is Revival? When a Pastor Vibrates or People Fall Down</h3>
+          <p>From the ministry's teaching archive.</p>
+        </article>
+        <article class="card">
+          <span class="eyebrow">Teaching</span>
+          <h3>You Must Be Hard-Working as a Christian</h3>
+          <p>From the ministry's teaching archive.</p>
+        </article>
+        <article class="card">
+          <span class="eyebrow">Teaching</span>
+          <h3>You Must Be Born Again</h3>
+          <p>By Evangelist Emmanuel Ogheneochuko Adiohwo.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INFO STRIP: Events / Testimonies / Prayer / Prayer Form ============ -->
+  <section class="info-strip" aria-label="Events, testimonies, and prayer">
+    <div class="container info-strip-grid">
+
+      <div class="info-col">
+        <div class="section-head">
+          <h2 id="events-heading">Upcoming Events</h2>
+          <a href="pages/events.html">View All</a>
+        </div>
+        <div id="hk-upcoming-events" data-component="events" data-params='{"status":"published","when":"upcoming","limit":3}'><p class="empty-state">Upcoming programmes will appear here when announced.</p>
+        </div>
+      </div>
+
+      <div class="info-col">
+        <div class="section-head">
+          <h2 id="testimonies-heading">Latest Testimonies</h2>
+          <a href="pages/community.html#testimonies">View All</a>
+        </div>
+        <div id="hk-latest-testimonies" data-component="testimonies" data-params='{"status":"approved","limit":3}'><p class="empty-state">Approved community testimonies will appear here.</p>
+        </div>
+      </div>
+
+      <div class="info-col">
+        <div class="section-head">
+          <h2 id="prayer-heading" data-site-content="prayer_title">Let Brethren Pray for You</h2>
+          <a href="https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev" target="_blank" rel="noopener">View All</a>
+        </div>
+        <div id="hk-community-prayers"><p class="empty-state">Read public prayer requests and pray with the community.</p></div>
+        <a class="btn btn-primary info-col-cta" href="https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev/account.html" target="_blank" rel="noopener">Share a community prayer</a>
+      </div>
+
+      <div class="info-col prayer-form-col">
+        <h2>Prayer Request <span class="ministry-only">(Ministry Only)</span></h2>
+        <form class="form-grid" novalidate data-api-endpoint="/api/public/prayer" data-api-method="POST" data-success-message="Thank you — your prayer request has been received by the ministry.">
+          <div><label class="visually-hidden" for="hero-pr-name">Your Name</label><input type="text" id="hero-pr-name" name="name" placeholder="Your Name" autocomplete="name"></div>
+          <div><label class="visually-hidden" for="hero-pr-email">Your Email</label><input type="email" id="hero-pr-email" name="email" placeholder="Your Email" autocomplete="email"></div>
+          <div>
+            <label class="visually-hidden" for="hero-pr-country">Country</label>
+            <select id="hero-pr-country" name="country"><option value="">Select Country</option><option>Nigeria</option><option>Ghana</option><option>Uganda</option><option>Other</option></select>
+          </div>
+          <div><label class="visually-hidden" for="hero-pr-request">Request</label><textarea id="hero-pr-request" name="request" placeholder="What do you want God to do for you?"></textarea></div>
+          <button type="submit" class="btn btn-primary">Send Prayer Request</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
+          <p class="form-lock-note">🔒 Your request is confidential. It goes directly to the ministry.</p>
+        </form>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="conversion-journey" aria-labelledby="conversion-heading">
+    <div class="container">
+      <div class="conversion-intro premium-section-head">
+        <span class="section-kicker">FROM THE NATIONS TO YOUR HEART</span>
+        <h2 id="conversion-heading">The Gospel Has Reached You — What Will You Do With Jesus?</h2>
+        <p>Heavenly Key Evangelistic Movement exists not only to reach nations, but to lead individuals to Christ, establish believers in the faith, equip them for service, and send them back into the world as witnesses.</p>
+      </div>
+
+      <div class="conversion-grid">
+        <article class="conversion-card conversion-card-primary">
+          <div class="conversion-icon" aria-hidden="true">✝</div>
+          <span class="conversion-label">SALVATION</span>
+          <h3>I Need Jesus</h3>
+          <p>Turn to Christ today. Receive the Gospel, pray, and begin your new life in Jesus.</p>
+          <a class="btn btn-gold" href="pages/i-said-yes.html">Come to Jesus</a>
+        </article>
+
+        <article class="conversion-card">
+          <div class="conversion-icon" aria-hidden="true">✦</div>
+          <span class="conversion-label">PRAYER</span>
+          <h3>I Need Prayer</h3>
+          <p>Share your burden and let brethren stand with you in faith and prayer.</p>
+          <a class="conversion-link" href="pages/community.html#prayer">Send a Prayer Request <span aria-hidden="true">→</span></a>
+        </article>
+
+        <article class="conversion-card">
+          <div class="conversion-icon" aria-hidden="true">◫</div>
+          <span class="conversion-label">DISCIPLESHIP</span>
+          <h3>I Want to Grow</h3>
+          <p>Build your life on the Word through Bible study, sermons, discipleship and training.</p>
+          <a class="conversion-link" href="pages/resources.html">Start Growing <span aria-hidden="true">→</span></a>
+        </article>
+
+        <article class="conversion-card">
+          <div class="conversion-icon" aria-hidden="true">◎</div>
+          <span class="conversion-label">MISSION</span>
+          <h3>I Want to Go</h3>
+          <p>Join evangelism, missions, crusades and the work of taking Christ to the nations.</p>
+          <a class="conversion-link" href="pages/missions.html">Join the Mission <span aria-hidden="true">→</span></a>
+        </article>
+      </div>
+
+      <div class="ministry-pathway" aria-label="Heavenly Key discipleship pathway">
+        <span><strong>SAVED</strong><small>Come to Christ</small></span>
+        <i aria-hidden="true">→</i>
+        <span><strong>ESTABLISHED</strong><small>Rooted in the Word</small></span>
+        <i aria-hidden="true">→</i>
+        <span><strong>EQUIPPED</strong><small>Prepared to serve</small></span>
+        <i aria-hidden="true">→</i>
+        <span><strong>SENT</strong><small>Witness to the nations</small></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURED SERMON ============ -->
+  <section class="featured-sermon-section" aria-labelledby="sermon-heading" id="sermons">
+    <div class="container">
+      <div class="premium-section-head">
+        <span class="section-kicker">PREACHING CHRIST • BUILDING FAITH</span>
+        <h2 id="sermon-heading">Featured Sermon</h2>
+        <p>Messages for salvation, revival, holy living and steadfast faith in Jesus Christ.</p>
+      </div>
+      <div class="grid-2" style="align-items:center" id="hk-featured-sermon" data-component="sermons" data-params='{"limit":1,"sort":"recent"}'>
+        <a class="video-player" href="https://www.youtube.com/watch?v=lVQShyqynhA" target="_blank" rel="noopener">
+          <img loading="lazy" src="https://i.ytimg.com/vi/lVQShyqynhA/hqdefault.jpg" alt="Evangelist Emmanuel Ogheneochuko Adiohwo praying">
+          <span class="play-button">▶</span>
+        </a>
+        <div>
+          <span class="eyebrow">This Week's Message</span>
+          <h3>The Cost of Discipleship</h3>
+          <p>Watch and subscribe on <a href="https://www.youtube.com/@heavenlykeyministry" target="_blank" rel="noopener">YouTube</a> for sermons, crusade highlights, and revival meetings.</p>
+          <a class="btn btn-primary" href="pages/ministries.html#sermons">Watch More Messages</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DAILY DEVOTIONAL + VERSE OF THE DAY ============ -->
+  <section style="background:var(--surface-alt)" aria-labelledby="devotional-heading">
+    <div class="container grid-2">
+      <div class="card" id="hk-daily-devotional" data-component="devotionals" data-params='{"limit":1,"sort":"recent"}'>
+        <span class="eyebrow">Daily Devotional</span>
+        <h3>Daily devotional</h3>
+        <p>Ministry devotionals will appear here when published.</p>
+        <a href="pages/resources.html#devotional">Read Today's Devotional →</a>
+      </div>
+      <div class="card" id="hk-verse-of-day" data-component="verse-of-day">
+        <span class="eyebrow">Bible Verse of the Day</span>
+        <h3 id="devotional-heading" class="visually-hidden">Bible Verse of the Day</h3>
+        <p class="verse-text" style="color:var(--color-charcoal);font-style:italic">"Be strong and of a good courage; be not afraid, neither be thou dismayed."</p>
+        <p style="font-weight:700;color:var(--color-wine)">Joshua 1:9 (KJV)</p>
+        <a href="pages/resources.html#bible">Read in Context →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PARTNER WITH US ============ -->
+  <section aria-labelledby="partner-heading">
+    <div class="container u-text-center">
+      <h2 id="partner-heading" data-site-content="partner_title">Partner With Us</h2>
+      <p class="u-max-content u-mb-3">Your partnership helps rescue the perishing and take the Gospel to the nations.</p>
+      <a class="btn btn-primary" href="pages/partner.html">Become a Partner</a>
+    </div>
+  </section>
+
+  <!-- ============ JOIN GLOBAL CHRISTIAN PLATFORM ============ -->
+
+
+  <!-- ============ QUICK-LINK TILES ============ -->
+  <section class="tile-strip">
+    <div class="container tile-strip-grid">
+      <a class="tile-item" href="https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev" target="_blank" rel="noopener">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+        <span><strong>Digital Revival Room</strong>Join our online revival meetings from anywhere in the world.</span>
+      </a>
+      <a class="tile-item" href="pages/radio.html" target="_blank" rel="noopener">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 9l6 3-6 3V9Z"/></svg>
+        <span><strong>ONLINE REVIVAL RADIO</strong>Listen to songs, messages and inspiring programs.</span>
+      </a>
+      <a class="tile-item" href="pages/ministries.html">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5-6-3.5Z"/></svg>
+        <span><strong>Media Center</strong>Sermons, crusades, songs, testimonies and more.</span>
+      </a>
+      <a class="tile-item" href="pages/ministries.html">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"/></svg>
+        <span><strong>Evangelism School</strong>Learn how to win souls and fulfil the Great Commission.</span>
+      </a>
+      <a class="tile-item" href="pages/community.html">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span><strong>THE GLOBAL CHRISTIAN COMMUNITY</strong>Connect, sign in and grow with believers across nations.</span>
+      </a>
+      <a class="tile-item tile-africa" href="pages/missions.html#pray">
+        <span class="tile-africa-text"><strong>AFRICA MUST BE SAVED!</strong>Together we can reach Africa with the Gospel.</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="gospel-declaration" aria-label="Heavenly Key mission declaration">
+    <div class="container gospel-declaration-inner">
+      <div>
+        <span class="section-kicker light">JESUS ONLY IS OUR MESSAGE</span>
+        <h2>Until every nation hears.</h2>
+        <p>Revival in the Church. Salvation for the lost. Holiness unto the Lord. Christ to the nations of the world.</p>
+      </div>
+      <div class="gospel-declaration-actions">
+        <a class="btn btn-gold" href="pages/i-said-yes.html">Come to Jesus</a>
+        <a class="btn btn-outline" href="pages/missions.html">Join the Mission</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ NEWSLETTER ============ -->
+  <section class="newsletter" aria-labelledby="newsletter-heading">
+    <div class="container">
+      <h2 id="newsletter-heading" data-site-content="stay_connected_title">Stay Connected</h2>
+      <p style="color:#DCE3EE">Get ministry updates, devotionals, and mission reports in your inbox.</p>
+      <form class="newsletter-form" novalidate data-api-endpoint="/api/newsletter" data-api-method="POST" data-success-message="Thank you — you're on the list.">
+        <label class="visually-hidden" for="newsletter-email">Email address</label>
+        <input type="email" id="newsletter-email" name="email" placeholder="you@example.com" required autocomplete="email">
+        <button type="submit" class="btn btn-gold">Subscribe</button>
+      </form>
+      <p class="form-status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<div class="footer-utility-bar">
+  <div class="container footer-utility-grid">
+    <div><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.4 2.1L8.1 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2Z"/></svg>
+      <span><strong>Call / WhatsApp</strong>+234 706 709 2254<br>+234 905 027 2274</span></div>
+    <div><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 0 1 0 18 13 13 0 0 1 0-18Z"/></svg>
+      <span><strong>Our Website</strong>www.heavenlykey.org</span></div>
+    <div><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg>
+      <span><strong>Email Us</strong>contact@heavenlykey.org</span></div>
+    <div><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span><strong>Our Location</strong>Nigeria, Africa</span></div>
+    <div class="footer-social"><strong>Follow Us On</strong>
+      <span class="social-icons">
+        <a href="https://web.facebook.com/heavenlykey" target="_blank" rel="noopener" aria-label="Facebook"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"/></svg></a>
+        <a href="https://www.youtube.com/@heavenlykeyministry" target="_blank" rel="noopener" aria-label="YouTube"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.6-.5-5.3a3 3 0 0 0-2.1-2.1C18.7 4 12 4 12 4s-6.7 0-8.4.6a3 3 0 0 0-2.1 2.1C1 8.4 1 12 1 12s0 3.6.5 5.3a3 3 0 0 0 2.1 2.1C5.3 20 12 20 12 20s6.7 0 8.4-.6a3 3 0 0 0 2.1-2.1C23 15.6 23 12 23 12ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg></a>
+        <a href="https://www.instagram.com/heavenlykey247" target="_blank" rel="noopener" aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
+        <a href="https://www.tiktok.com/@heavenlykey" target="_blank" rel="noopener" aria-label="TikTok"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.8a4.3 4.3 0 0 1-3.1-3.6h-3v13a2.6 2.6 0 1 1-1.8-2.5v-3.1a5.6 5.6 0 1 0 4.8 5.5V9.5a7.3 7.3 0 0 0 4 1.2V7.6a4.3 4.3 0 0 1-.9-1.8Z"/></svg></a>
+        <a href="https://twitter.com/EAdiohwo" target="_blank" rel="noopener" aria-label="X (Twitter)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.2 8.3L23 22h-6.6l-5.2-6.8L5.2 22H2l7.7-8.8L1.5 2H8.3l4.7 6.2L18.9 2Z"/></svg></a>
+      </span>
+    </div>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <h3>Heavenly Key Evangelistic Movement</h3>
+      <p style="color:#BFBFBF">An End-time, Non-denominational, Apostolic, and Evangelistic Movement. Revival, Holiness, Power!</p>
+      <p style="margin-top:var(--space-1)">
+        <a href="https://www.youtube.com/@heavenlykeyministry" target="_blank" rel="noopener" aria-label="YouTube">YouTube</a> &middot;
+        <a href="https://web.facebook.com/heavenlykey" target="_blank" rel="noopener" aria-label="Facebook">Facebook</a> &middot;
+        <a href="https://www.instagram.com/heavenlykey247" target="_blank" rel="noopener" aria-label="Instagram">Instagram</a> &middot;
+        <a href="https://twitter.com/EAdiohwo" target="_blank" rel="noopener" aria-label="X (Twitter)">X</a> &middot;
+        <a href="https://www.tiktok.com/@heavenlykey" target="_blank" rel="noopener" aria-label="TikTok">TikTok</a>
+      </p>
+    </div>
+    <div>
+      <h3>Navigate</h3>
+      <p><a href="pages/about.html">About</a></p>
+      <p><a href="pages/ministries.html">Ministries</a></p>
+      <p><a href="pages/events.html">Events</a></p>
+      <p><a href="pages/contact.html">Contact</a></p>
+    </div>
+    <div>
+      <h3>Contact</h3>
+      <p style="color:#BFBFBF"><a href="https://wa.me/2347067092254" target="_blank" rel="noopener">+234 706 709 2254</a><br>+234 905 027 2274<br><a href="mailto:contact@heavenlykey.org">contact@heavenlykey.org</a><br>Nigeria, Africa</p>
+    </div>
+    <div>
+      <h3>Weekly Memory Verse</h3>
+      <p class="memory-verse" id="hk-memory-verse" data-component="memory-verse">"For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life." — John 3:16</p>
+    </div>
+  </div>
+  <div class="footer-bottom"><p>&copy; 2026 Heavenly Key Evangelistic Movement. All rights reserved.</p>
+    <button id="hk-install-btn" class="btn btn-gold" type="button" hidden style="margin-top:var(--space-1)">Install App</button>
+  </div>
+</footer>
+
+<script src="js/api-client.js?v=1.2.6" defer></script>
+<script src="js/homepage-components.js?v=1.2.6" defer></script>
+<script src="js/ui-components.js?v=1.2.6" defer></script>
+<script src="js/main.js?v=1.2.6" defer></script>
+<script src="js/motion.js?v=1.2.6" defer></script>
+</body>
+</html>
+

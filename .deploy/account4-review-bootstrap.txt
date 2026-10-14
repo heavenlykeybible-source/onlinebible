@@ -1,0 +1,3 @@
+Account 4 central waiting rooms initial installation.
+This push may stage Account 1, Account 2 and Account 3 code ONLY inside Cloudflare Account 4.
+It MUST NOT promote any production release. Each future production update requires dashboard approval.
