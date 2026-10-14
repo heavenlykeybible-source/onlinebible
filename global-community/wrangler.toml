@@ -12,8 +12,9 @@ binding = "AI"
 directory = "./public"
 run_worker_first = ["/api", "/api/*"]
 
-# Account 3 resources are intentionally left as placeholders until the new
-# Cloudflare account is created. Do not deploy this configuration yet.
+# Account 3 resource IDs must be provided from the existing Cloudflare account.
+# The deployment release preflight blocks unresolved placeholders to prevent
+# accidentally binding another account's D1 or KV resources.
 [[d1_databases]]
 binding = "DB"
 database_name = "heavenly-key-global-community-db"
