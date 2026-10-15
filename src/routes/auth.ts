@@ -75,8 +75,9 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
     return jsonResponse({ error: { code: "rate_limited", message: "Too many attempts. Please try again later." } }, 429);
   }
 
-  const centralOwner=body.email==='owner'?await centralOwnerLogin(env,body.password):null;
-  const result = body.email==='owner' ? centralOwner?{success:true,userId:centralOwner,error:undefined}:{success:false,userId:undefined,error:'Owner sign-in failed. Check your normal dashboard password.'} : await loginUser(env, body.email, body.password);
+  let ownerStage='credentials-not-confirmed';
+  const centralOwner=body.email==='owner'?await centralOwnerLogin(env,body.password,fetch,stage=>{ownerStage=stage}):null;
+  const result = body.email==='owner' ? centralOwner?{success:true,userId:centralOwner,error:undefined}:{success:false,userId:undefined,error:'Owner sign-in failed ('+ownerStage+').'} : await loginUser(env, body.email, body.password);
 
   if (!result.success) {
     return jsonResponse({ error: { code: "login_failed", message: result.error } }, 401);
