@@ -30,6 +30,40 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Resolve existing Account 4 resources and Access application
+        run: |
+          python3 - <<'PY'
+          import json, os, re, urllib.request, urllib.parse, urllib.error
+          expected='404ebf05a781fcccbbed44aeb02cb72b'
+          assert os.environ['CLOUDFLARE_ACCOUNT_ID']==expected, 'Wrong Cloudflare account: abort'
+          values={
+            'ACCOUNT4_D1_ID':os.environ.get('ACCOUNT4_D1_ID') or '25536a81-63ed-41e3-85f1-4f17bb977628',
+            'ACCOUNT4_R2_BUCKET':os.environ.get('ACCOUNT4_R2_BUCKET') or 'heavenlykey-control-room-media'
+          }
+          host='heavenlykey-control-room.emmanuel2026miracle.workers.dev'
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args): return None
+          opener=urllib.request.build_opener(NoRedirect)
+          try:
+              response=opener.open('https://'+host+'/',timeout=30)
+          except urllib.error.HTTPError as e:
+              response=e
+          assert response.code in (302,303,307), 'Expected existing Cloudflare Access protection'
+          location=urllib.parse.urlparse(response.headers.get('Location',''))
+          assert location.scheme=='https' and re.fullmatch(r'[a-z0-9-]+\.cloudflareaccess\.com',location.hostname or ''), 'Invalid Access team redirect'
+          assert location.path.startswith('/cdn-cgi/access/login/'+host), 'Unexpected Access application redirect'
+          audience=urllib.parse.parse_qs(location.query).get('kid',[''])[0]
+          assert re.fullmatch(r'[a-f0-9]{64}',audience), 'Access audience missing from protected application redirect'
+          for name,actual in [('ACCESS_TEAM_DOMAIN',location.hostname),('ACCESS_AUD',audience)]:
+              configured=os.environ.get(name)
+              assert not configured or configured==actual, name+' differs from the live protected application'
+              values[name]=actual
+          with open(os.environ['GITHUB_ENV'],'a') as out:
+              for name,value in values.items():
+                  assert '\n' not in value and '\r' not in value
+                  out.write(name+'='+value+'\n')
+          print('Resolved fixed CMS resources and existing Access application; protection unchanged')
+          PY
       - name: Validate explicit Account 4 configuration
         run: |
           for var in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID ACCOUNT4_D1_ID ACCOUNT4_R2_BUCKET ACCESS_TEAM_DOMAIN ACCESS_AUD; do
@@ -41,7 +75,7 @@ jobs:
           test "${#ACCESS_AUD}" -ge 20 || exit 1
       - name: Install and typecheck
         run: |
-          npm install --no-audit --no-fund
+          npm ci --no-audit --no-fund
           npm run check
       - name: Configure account-specific resources (never print tokens)
         run: |
