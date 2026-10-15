@@ -20,12 +20,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Use npm 10
+        run: npm install --global npm@10
       - name: Generate reproducible dependency lockfile
         working-directory: account4-control-room
-        run: npm install --ignore-scripts --no-audit --no-fund
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
       - name: Verify npm ci with regenerated lockfile
         working-directory: account4-control-room
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify TypeScript
+        working-directory: account4-control-room
+        run: npm run check
       - name: Commit lockfile if changed
         run: |
           git add account4-control-room/package-lock.json
