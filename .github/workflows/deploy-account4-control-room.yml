@@ -41,20 +41,24 @@ jobs:
             'ACCOUNT4_R2_BUCKET':os.environ.get('ACCOUNT4_R2_BUCKET') or 'heavenlykey-control-room-media'
           }
           host='heavenlykey-control-room.emmanuel2026miracle.workers.dev'
-          class NoRedirect(urllib.request.HTTPRedirectHandler):
-              def redirect_request(self,*args): return None
-          opener=urllib.request.build_opener(NoRedirect)
-          try:
-              response=opener.open('https://'+host+'/',timeout=30)
-          except urllib.error.HTTPError as e:
-              response=e
-          assert response.code in (302,303,307), 'Expected existing Cloudflare Access protection'
-          location=urllib.parse.urlparse(response.headers.get('Location',''))
-          assert location.scheme=='https' and re.fullmatch(r'[a-z0-9-]+\.cloudflareaccess\.com',location.hostname or ''), 'Invalid Access team redirect'
-          assert location.path.startswith('/cdn-cgi/access/login/'+host), 'Unexpected Access application redirect'
-          audience=urllib.parse.parse_qs(location.query).get('kid',[''])[0]
-          assert re.fullmatch(r'[a-f0-9]{64}',audience), 'Access audience missing from protected application redirect'
-          for name,actual in [('ACCESS_TEAM_DOMAIN',location.hostname),('ACCESS_AUD',audience)]:
+          api='https://api.cloudflare.com/client/v4/accounts/'+expected
+          def get(path):
+              request=urllib.request.Request(api+path,headers={'Authorization':'Bearer '+os.environ['CLOUDFLARE_API_TOKEN']})
+              try:
+                  with urllib.request.urlopen(request,timeout=30) as response: result=json.load(response)
+              except urllib.error.HTTPError as e:
+                  raise RuntimeError('Cloudflare read '+path+' returned HTTP '+str(e.code)) from None
+              assert result.get('success'), 'Cloudflare configuration lookup failed'
+              return result['result']
+          organization=get('/access/organizations')
+          domain=organization['auth_domain']
+          assert re.fullmatch(r'[a-z0-9-]+\.cloudflareaccess\.com',domain), 'Invalid Access team domain'
+          apps=get('/access/apps?per_page=100')
+          matches=[app for app in apps if app.get('domain')==host]
+          assert len(matches)==1, 'Exactly one Access application must protect the control room hostname'
+          audience=matches[0]['aud']
+          assert re.fullmatch(r'[a-f0-9]{64}',audience), 'Invalid application JWT audience'
+          for name,actual in [('ACCESS_TEAM_DOMAIN',domain),('ACCESS_AUD',audience)]:
               configured=os.environ.get(name)
               assert not configured or configured==actual, name+' differs from the live protected application'
               values[name]=actual
