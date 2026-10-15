@@ -74,11 +74,11 @@
  function assistant(){
   if(document.getElementById('hkem-public-assistant'))return;
   const root=document.createElement('aside');root.id='hkem-public-assistant';root.dataset.cmsIgnore='';root.setAttribute('aria-label','Heavenly Key AI chat');root.className='hkem-ui-2';
-  const toggle=document.createElement('button');toggle.type='button';toggle.className='hkem-ui-3';toggle.setAttribute('aria-label','Open Heavenly Key AI chat');toggle.setAttribute('aria-expanded','false');
+  const toggle=document.createElement('button');toggle.type='button';toggle.className='hkem-ui-3';toggle.setAttribute('aria-label','Open Online Assistant chat');toggle.setAttribute('aria-expanded','false');
   const avatar=document.createElement('span');avatar.className='hkem-ai-avatar';avatar.textContent='✦';avatar.setAttribute('aria-hidden','true');
-  const label=document.createElement('span');label.className='hkem-ai-label';label.innerHTML='<strong>Heavenly Key AI</strong><small class="hkem-ai-tagline">Ask Me Anything</small>';toggle.append(avatar,label);
+  const label=document.createElement('span');label.className='hkem-ai-label';label.innerHTML='<strong>Online Assistant</strong><small class="hkem-ai-tagline">Ask Me Anything<span class="hkem-ai-dots" aria-hidden="true">...</span></small>';toggle.append(avatar,label);
   const panel=document.createElement('section');panel.className='hkem-ui-4 hkem-chat-panel';panel.hidden=true;panel.setAttribute('aria-label','AI conversation');
-  const header=document.createElement('div');header.className='hkem-chat-header';header.innerHTML='<span aria-hidden="true">✦</span><span><strong>Heavenly Key Assistant</strong><small>Ministry & website help</small></span>';
+  const header=document.createElement('div');header.className='hkem-chat-header';header.innerHTML='<span aria-hidden="true">✦</span><span><strong>Online Assistant</strong><small>Ministry & website help</small></span>';
   const close=document.createElement('button');close.type='button';close.textContent='×';close.className='hkem-chat-close';close.setAttribute('aria-label','Close chat');header.append(close);
   const messages=document.createElement('div');messages.className='hkem-chat-messages';messages.setAttribute('role','log');messages.setAttribute('aria-live','polite');messages.setAttribute('aria-relevant','additions');
   const addMessage=(who,value)=>{const bubble=document.createElement('div');bubble.className='hkem-chat-bubble '+(who==='visitor'?'hkem-chat-visitor':'hkem-chat-bot');bubble.textContent=value;messages.append(bubble);messages.scrollTop=messages.scrollHeight;return bubble};
