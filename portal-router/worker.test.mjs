@@ -10,6 +10,13 @@ test('forwards the exact path and query to the fixed community host', async () =
   });
   assert.equal(await result.text(), 'existing application');
 });
+test('routes Bible scripture only to the verified Bible Worker', async () => {
+  const result = await route(new Request('https://bible.heavenlykey.org/api/bible/Genesis/1'), async request => {
+    assert.equal(request.url, 'https://onlinebible.heavenlykeybible.workers.dev/api/bible/Genesis/1');
+    return Response.json({success: true, translation: 'KJV'});
+  });
+  assert.equal((await result.json()).translation, 'KJV');
+});
 test('preserves authenticated same-origin writes and session cookies', async () => {
   const result = await route(new Request('https://global.heavenlykey.org/api/posts', {
     method: 'POST', headers: {Origin: 'https://global.heavenlykey.org', Cookie: 'session=existing', 'Content-Type': 'application/json'}, body: '{"message":"hello"}'
