@@ -1,0 +1,61 @@
+name: Verify Heavenly Key Deployment Inventory
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/verified-deployment-audit.yml']
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TOKEN_1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TOKEN_2: ${{ secrets.ACCOUNT_2_TOKEN }}
+      TOKEN_3: ${{ secrets.CF_ACCOUNT3_API_TOKEN || secrets.CLOUDFLARE_ACCOUNT3_API_TOKEN }}
+      TOKEN_4: ${{ secrets.ACCOUNT_4_TOKEN }}
+      TOKEN_5: ${{ secrets.ACCOUNT_5_TOKEN || secrets.CF_ACCOUNT5_API_TOKEN }}
+      TOKEN_6: ${{ secrets.ACCOUNT_6_TOKEN || secrets.CF_ACCOUNT6_API_TOKEN }}
+    steps:
+      - name: Read existing Workers, resource bindings, domains and public responses
+        run: |
+          node --input-type=module <<'JS'
+          const accounts={1:'a160ba9fc74911bd4b3005eac86eefcb',2:'c324d871146f8fcc5e7dcd3da057011c',3:'cd095c096c2d5a42501e7d77cecbb34c',4:'404ebf05a781fcccbbed44aeb02cb72b',6:'8532b1db24dc074ff1e09cc513915825'};
+          async function publicProbe(url){
+            try{
+              const r=await fetch(url,{redirect:'manual',signal:AbortSignal.timeout(20000)});
+              const body=await r.text();
+              const location=r.headers.get('location');
+              let destination=null;
+              if(location){const u=new URL(location,url);destination=u.origin+u.pathname}
+              console.log(JSON.stringify({publicUrl:url,http:r.status,destination,title:body.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]||null,bytes:body.length,footer:body.includes('talkmoney.uk'),viewport:body.includes('name="viewport"')}));
+            }catch(e){console.log(JSON.stringify({publicUrl:url,error:e.message}))}
+          }
+          async function audit(n){
+            const token=(process.env['TOKEN_'+n]||'').trim().replace(/^Bearer\s+/i,'');
+            if(!token){console.log(JSON.stringify({account:n,blocked:'No available account token in this workflow scope'}));return}
+            async function get(path){
+              const r=await fetch('https://api.cloudflare.com/client/v4'+path,{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(20000)});
+              const data=await r.json();
+              if(!r.ok||!data.success){console.log(JSON.stringify({account:n,path,http:r.status,errors:(data.errors||[]).map(e=>({code:e.code,message:e.message}))}));return null}
+              return data.result
+            }
+            let id=accounts[n];
+            if(!id){const list=await get('/accounts?per_page=50');if(list?.length===1)id=list[0].id;else{console.log(JSON.stringify({account:n,accountCandidates:list?.map(a=>({id:a.id,name:a.name}))}));return}}
+            const base='/accounts/'+id;
+            const [scripts,subdomain,domains,dbs,buckets]=await Promise.all([get(base+'/workers/scripts'),get(base+'/workers/subdomain'),get(base+'/workers/domains'),get(base+'/d1/database?per_page=100'),get(base+'/r2/buckets')]);
+            console.log(JSON.stringify({account:n,id,subdomain,domains,databases:dbs?.map(d=>({id:d.uuid,name:d.name})),buckets:buckets?.buckets?.map(b=>b.name),workers:scripts?.map(s=>({id:s.id,modified_on:s.modified_on,last_deployed_from:s.last_deployed_from}))}));
+            for(const s of scripts||[]){
+              const [settings,versions]=await Promise.all([get(base+'/workers/scripts/'+encodeURIComponent(s.id)+'/settings'),get(base+'/workers/scripts/'+encodeURIComponent(s.id)+'/versions?per_page=1')]);
+              console.log(JSON.stringify({account:n,worker:s.id,bindings:settings?.bindings?.map(b=>({name:b.name,type:b.type,database_id:b.id,bucket_name:b.bucket_name})),latestVersions:versions?.items?.slice(0,1).map(v=>({id:v.id,metadata:v.metadata,annotations:v.annotations}))}));
+              if(subdomain?.subdomain)await publicProbe('https://'+s.id+'.'+subdomain.subdomain+'.workers.dev/');
+            }
+            if(n===1){
+              const zones=await get('/zones?name=heavenlykey.org');
+              for(const z of zones||[]){const dns=await get('/zones/'+z.id+'/dns_records?per_page=100');console.log(JSON.stringify({zone:z.name,id:z.id,dns:dns?.map(d=>({id:d.id,type:d.type,name:d.name,content:d.content,proxied:d.proxied}))}));}
+            }
+          }
+          await Promise.all([1,2,3,4,5,6].map(n=>audit(n).catch(e=>console.log(JSON.stringify({account:n,error:e.message})))));
+          await Promise.all(['https://heavenlykey.org','https://global.heavenlykey.org','https://bible.heavenlykey.org'].map(publicProbe));
+          JS
