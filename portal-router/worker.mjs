@@ -1,4 +1,5 @@
 const targets = Object.freeze({
+  'app.heavenlykey.org': 'https://heavenly-key-app-recovery.alldaywow247.workers.dev',
   'global.heavenlykey.org': 'https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev',
   'bible.heavenlykey.org': 'https://onlinebible.heavenlykeybible.workers.dev'
 });
