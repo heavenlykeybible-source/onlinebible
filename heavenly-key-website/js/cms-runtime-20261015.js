@@ -74,7 +74,7 @@
  function assistant(){
   if(document.getElementById('hkem-public-assistant'))return;
   const root=document.createElement('aside');root.id='hkem-public-assistant';root.dataset.cmsIgnore='';root.setAttribute('aria-label','Heavenly Key AI assistant');root.classList.add('hkem-ui-2');
-  const toggle=document.createElement('button');toggle.type='button';toggle.textContent='AI';toggle.setAttribute('aria-label','Open Heavenly Key AI assistant');toggle.title='Heavenly Key AI';toggle.setAttribute('aria-expanded','false');toggle.classList.add('hkem-ui-3');
+  const toggle=document.createElement('button');toggle.type='button';toggle.textContent='Heavenly Key AI';toggle.setAttribute('aria-label','Open Heavenly Key AI assistant');toggle.title='Heavenly Key AI';toggle.insertAdjacentHTML('afterbegin','<span class="hkem-ai-avatar" aria-hidden="true">✦</span>');const tagline=document.createElement('span');tagline.className='hkem-ai-tagline';tagline.textContent='Ask Me Anything';toggle.append(tagline);toggle.setAttribute('aria-expanded','false');toggle.classList.add('hkem-ui-3');
   const panel=document.createElement('section');panel.hidden=true;panel.classList.add('hkem-ui-4');
   const title=document.createElement('strong');title.textContent='Heavenly Key AI';const close=document.createElement('button');close.type='button';close.textContent='Close';close.classList.add('hkem-ui-5');
   const answer=document.createElement('div');answer.setAttribute('role','status');answer.classList.add('hkem-ui-6');answer.textContent='Ask about the ministry, a Bible passage, prayer wording or Christian writing.';
@@ -87,7 +87,7 @@
  }
  function sharing(){if(!document.querySelector('main')||site==='account4')return;const container=document.createElement('div');container.className='hkem-share-tools';container.dataset.cmsIgnore='';const b=document.createElement('button');b.type='button';b.textContent=site==='account3'?'Share & invite to the community':'Share this app or page';const status=document.createElement('span');status.setAttribute('role','status');b.onclick=async()=>{const u=new URL(location.href);for(const key of ['hkem-cms','hkem-session','hkem-control'])u.searchParams.delete(key);const data={title:document.title,url:u.href};try{if(navigator.share){await navigator.share(data);status.textContent=''}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(u.href);status.textContent='Link copied. Share it with your family and friends.'}else{prompt('Copy this link to share',u.href)}}catch(e){if(e.name!=='AbortError')status.textContent='Sharing could not open. Please copy the page link.'}};container.append(b,status);const footer=document.querySelector('footer');if(footer)footer.prepend(container);else document.querySelector('main').append(container)}
  async function start(){collect();sharing();try{const response=await fetch(PUBLIC+'/v1/content?site='+site+'&page='+encodeURIComponent(key),{credentials:'omit',cache:'no-store'});if(response.ok){const data=await response.json();apply(data.content?.fields);applyMenu(data.menu);applyFooter(data.footer)}}catch{}
-  if(editing)editor();else if(!['account3','account4'].includes(site))assistant();
+  if(editing)editor();else if(!['account3','account4'].includes(site)&&!/(^|\.)((social|community|global-community)\.)/.test(host)&&!/(^|\/)(community|social|global-community)(\/|\.|$)/.test(path))assistant();
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,450),{once:true});else setTimeout(start,450);
 })();
