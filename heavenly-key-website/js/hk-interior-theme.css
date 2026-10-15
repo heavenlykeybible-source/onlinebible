@@ -1,0 +1,13 @@
+/* Heavenly Key interior-page palette. Homepage remains on its approved design. */
+:root{--hk-cream:#fffdeb;--hk-cream-soft:#fffef4;--hk-forest:#135c3d;--hk-wine:#79223c;--hk-gold:#edcd62}
+html body:not(.hk-homepage){background-color:var(--hk-cream)!important;color:#191919}
+body:not(.hk-homepage) main,body:not(.hk-homepage) [role="main"],body:not(.hk-homepage) .main-content,body:not(.hk-homepage) .page-content{color:#191919}
+body:not(.hk-homepage) main{background-color:var(--hk-cream);background-image:linear-gradient(135deg,#fffef4 0%,#fffbea 60%,#fffdf3 100%)}
+body:not(.hk-homepage) main p,body:not(.hk-homepage) main li,body:not(.hk-homepage) main label,body:not(.hk-homepage) main td{color:#1d1d1d}
+body:not(.hk-homepage) main h1,body:not(.hk-homepage) main h2,body:not(.hk-homepage) main h3{color:var(--hk-forest)}
+body:not(.hk-homepage) main h2::after{border-color:var(--hk-gold)}
+body:not(.hk-homepage) main a:not(.btn):not(.button):not([class*="button"]){text-decoration-color:var(--hk-wine)}
+body:not(.hk-homepage) main a:not(.btn):not(.button):not([class*="button"]):hover{color:var(--hk-wine)}
+body:not(.hk-homepage) main .card,body:not(.hk-homepage) main .panel,body:not(.hk-homepage) main article,body:not(.hk-homepage) main .content-card{border-color:#eee2b9;box-shadow:0 6px 22px #654e1d0a}
+body:not(.hk-homepage) main button:focus-visible,body:not(.hk-homepage) main a:focus-visible{outline:3px solid var(--hk-wine);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){body:not(.hk-homepage) main *,body:not(.hk-homepage) main *::before,body:not(.hk-homepage) main *::after{scroll-behavior:auto}}
