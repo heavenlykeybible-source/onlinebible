@@ -15,6 +15,7 @@ export function planDeployment(input:unknown){
  if(!input||typeof input!=="object"||Array.isArray(input))throw new Error("Invalid deployment request");
  const data=input as Record<string,unknown>;
  if(typeof data.site!=="string"||!Object.prototype.hasOwnProperty.call(SITES,data.site))throw new Error("Unknown account");
+ if(Object.keys(data).some(k=>!["site","reason"].includes(k)))throw new Error("Unexpected deployment parameters");
  if(typeof data.reason!=="string"||!data.reason.trim()||data.reason.length>500)throw new Error("Provide a short deployment reason");
  const site=data.site as SiteId;
  return {
