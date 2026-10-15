@@ -68,3 +68,37 @@ h1{font-weight:800}h2,h3{font-weight:750}strong,b{font-weight:750}
 a,button,input,textarea,select{overflow-wrap:break-word}
 p,li{overflow-wrap:break-word}
 @media(max-width:600px){body{line-height:1.65}main,article,section{max-width:100%}h1{line-height:1.18}h2,h3{line-height:1.28}}
+
+/* Responsive compatibility: iPhone, Android, tablet, laptop and desktop. */
+html,body{max-width:100%;min-width:0}
+body{overflow-x:clip}
+*,*::before,*::after{box-sizing:border-box}
+img,picture,video,canvas,svg{max-width:100%}
+img,video{height:auto}
+iframe,embed,object{max-width:100%}
+pre,code{overflow-wrap:anywhere}
+pre{max-width:100%;overflow-x:auto}
+table{max-width:100%}
+main,section,article,aside,header,footer,nav{min-width:0}
+input,textarea,select{max-width:100%;font-size:16px}
+button,[role="button"],input[type="submit"]{touch-action:manipulation}
+a,button{ -webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid #e7c15c;outline-offset:3px}
+@media(max-width:900px){
+  .shell,.container,.page-container,.content-wrap{max-width:100%;padding-inline:clamp(14px,3vw,26px)}
+  .hk-clean-footer .hk-footer-lower{gap:14px}
+  .hk-clean-footer #hk-footer-credit.hk-footer-main-layout{min-width:0;max-width:100%}
+}
+@media(max-width:600px){
+  html{-webkit-text-size-adjust:100%}
+  body{width:100%;margin:0}
+  h1{font-size:clamp(26px,7vw,42px)}
+  h2{font-size:clamp(22px,5.5vw,34px)}
+  h3{font-size:clamp(18px,4.5vw,25px)}
+  .hk-clean-footer .hk-footer-columns{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hk-clean-footer .hk-footer-lower #hk-footer-credit.hk-footer-main-layout{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+  .hk-clean-footer .hk-footer-main-layout .hk-footer-designed,.hk-clean-footer .hk-footer-main-layout .hk-footer-legal{grid-column:1!important;grid-row:auto!important;text-align:left!important;justify-content:flex-start!important;white-space:normal!important}
+  .hk-clean-footer .hk-footer-ministry{max-width:100%}
+}
+@media(max-width:380px){.hk-clean-footer .hk-footer-columns{grid-template-columns:1fr}.hk-clean-footer .hk-footer-app-tile{max-width:100%}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}}
