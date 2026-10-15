@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/account4-generate-lockfile.yml'
+      - 'account4-control-room/package-lock.json'
 permissions:
   contents: write
 jobs:
