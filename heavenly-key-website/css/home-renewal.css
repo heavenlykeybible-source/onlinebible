@@ -30,3 +30,10 @@
 .world-strip .flags{flex:0 0 auto;align-items:center;line-height:1}
 .world-strip .flags img{display:block!important;width:493px!important;min-width:493px!important;max-width:none!important;height:20px!important;max-height:20px!important;object-fit:fill!important;flex:none!important}
 @media(max-width:600px){.world-strip .flag-window{max-height:20px}.world-strip .flags img{width:444px!important;min-width:444px!important;height:18px!important;max-height:18px!important}}
+
+/* 2026-10-15: enforce uniform compact flags, including browsers with SVG intrinsic sizing quirks. */
+.world-strip .flag-window{overflow:hidden;min-width:0;max-height:22px!important}
+.world-strip .flag-track{display:flex;align-items:center;flex-wrap:nowrap}
+.world-strip .flags{display:flex;align-items:center;flex:0 0 auto;line-height:0!important;overflow:hidden}
+.world-strip .flags img[src*="flags-row"]{display:block!important;box-sizing:border-box!important;inline-size:493px!important;min-inline-size:493px!important;max-inline-size:493px!important;block-size:20px!important;min-block-size:20px!important;max-block-size:20px!important;object-fit:fill!important;flex:0 0 493px!important}
+@media(max-width:600px){.world-strip .flag-window{max-height:18px!important}.world-strip .flags img[src*="flags-row"]{inline-size:444px!important;min-inline-size:444px!important;max-inline-size:444px!important;block-size:18px!important;min-block-size:18px!important;max-block-size:18px!important;flex-basis:444px!important}}
