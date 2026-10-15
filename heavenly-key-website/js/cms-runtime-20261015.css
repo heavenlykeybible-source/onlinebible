@@ -36,3 +36,12 @@
 #hkem-public-assistant .hkem-chat-suggestion{display:block;width:100%;padding:10px;border:1px solid #b9d9c6;border-radius:20px;background:#e2f4e8;color:#075e54;font:600 12px/1.4 system-ui;cursor:pointer}
 #hkem-public-assistant .hkem-chat-suggestion:hover,#hkem-public-assistant .hkem-chat-suggestion:focus-visible{background:#c9e9d4}
 @media(max-width:600px){#hkem-public-assistant .hkem-iphone-chat{position:fixed!important;right:8px!important;bottom:165px!important;width:min(390px,calc(100vw - 16px))!important;height:min(610px,calc(100dvh - 180px))!important;max-height:calc(100dvh - 180px)!important;border-radius:32px!important}}
+
+/* Conversation hierarchy: assistant on left, visitor on right, newest message below. */
+#hkem-public-assistant .hkem-iphone-chat .hkem-chat-messages{display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;gap:10px!important;min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain!important}
+#hkem-public-assistant .hkem-iphone-chat .hkem-chat-bot{align-self:flex-start!important;max-width:84%!important;margin-right:auto!important;border-radius:4px 15px 15px 15px!important;background:#fff!important;color:#152a21!important}
+#hkem-public-assistant .hkem-iphone-chat .hkem-chat-visitor{align-self:flex-end!important;max-width:84%!important;margin-left:auto!important;border-radius:15px 4px 15px 15px!important;background:#d9fdd3!important;color:#152a21!important}
+#hkem-public-assistant .hkem-iphone-chat .hkem-chat-form textarea{background:#fff!important;color:#17241b!important}
+#hkem-public-assistant .hkem-iphone-chat .hkem-chat-form button{background:#008069!important}
+#hkem-public-assistant .hkem-iphone-chat .hkem-chat-header{min-height:72px;box-sizing:border-box}
+@media(max-height:580px){#hkem-public-assistant .hkem-iphone-chat{height:calc(100dvh - 110px)!important;max-height:calc(100dvh - 110px)!important}#hkem-public-assistant .hkem-iphone-chat .hkem-chat-header{min-height:55px}}
