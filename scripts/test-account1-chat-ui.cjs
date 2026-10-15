@@ -8,7 +8,7 @@ const assert=require('node:assert/strict');
   const page=await browser.newPage({viewport});
   await page.route('**/*',async route=>{
    const u=new URL(route.request().url());
-   if(u.pathname==='/v1/assistant')return route.fulfill({json:{response:'Please contact the ministry through our official WhatsApp contact.'}});
+   if(u.pathname==='/v1/assistant'){const body=route.request().postDataJSON();assert.deepEqual(Object.keys(body),['message']);return route.fulfill({json:{response:'Please contact the ministry through our official WhatsApp contact.'}});}
    if(u.pathname==='/v1/content')return route.fulfill({json:{content:null,menu:null,footer:null}});
    if(u.hostname!=='heavenlykey.org')return route.fulfill({body:''});
    const p=path.resolve(__dirname,'../heavenly-key-website','.'+(u.pathname==='/'?'/index.html':u.pathname));
@@ -24,6 +24,10 @@ const assert=require('node:assert/strict');
   await suggestion.waitFor();
   const frame=await page.locator('.hkem-iphone-chat').boundingBox();
   assert.ok(frame.x>=0&&frame.y>=0&&frame.x+frame.width<=viewport.width+1&&frame.y+frame.height<=viewport.height+1,'Chat stays in viewport');
+  const portrait=page.locator('.hkem-chat-header .hkem-ai-avatar img');
+  assert.ok(await portrait.evaluate(img=>img.complete&&img.naturalWidth>0),'Approved portrait loads in header');
+  if(viewport.width<600){assert.ok(frame.width<=320&&frame.height<=440,'Mobile chat is compact');assert.ok(frame.y>150,'Mobile chat sits lower');}
+  assert.match(await page.locator('.hkem-chat-header').textContent(),/HEAVENLY KEY EVANGELISTIC MOVEMENT AI ASSISTANT/);
   await suggestion.click();
   await page.locator('.hkem-chat-bot').filter({hasText:'Please contact'}).waitFor();
   assert.equal(await page.locator('.hkem-chat-welcome').count(),0);

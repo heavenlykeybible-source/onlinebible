@@ -105,7 +105,7 @@ jobs:
           node --input-type=module <<'JS'
           import {execFileSync} from 'node:child_process';
           import {writeFileSync,unlinkSync} from 'node:fs';
-          const artifact=await fetch('https://api.github.com/repos/heavenlykeybible-source/onlinebible/actions/artifacts/12004214593/zip',{headers:{Authorization:'Bearer '+process.env.GH_TOKEN}});
+          const artifact=await fetch('https://api.github.com/repos/heavenlykeybible-source/onlinebible/actions/artifacts/12010256023/zip',{headers:{Authorization:'Bearer '+process.env.GH_TOKEN}});
           if(!artifact.ok)throw Error('Private credential artifact unavailable '+artifact.status);
           writeFileSync('/tmp/domain-login.zip',Buffer.from(await artifact.arrayBuffer()),{mode:0o600});
           const handoff=execFileSync('unzip',['-p','/tmp/domain-login.zip','Heavenly-Key-Administrator-Login.txt'],{encoding:'utf8'});unlinkSync('/tmp/domain-login.zip');

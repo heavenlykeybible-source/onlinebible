@@ -8,6 +8,16 @@ const targets = Object.freeze({
 
 export async function route(request, upstreamFetch = fetch) {
   const publicUrl = new URL(request.url);
+  // Deliver only the owner-requested chat assets without changing the production API or bindings.
+  if(['heavenlykey.org','www.heavenlykey.org','studio.heavenlykey.org','global.heavenlykey.org','bible.heavenlykey.org','app.heavenlykey.org'].includes(publicUrl.hostname)&&/^\/(?:js\/)?cms-runtime-20261015\.(js|css)$/.test(publicUrl.pathname)){
+    if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405});
+    const assetUrl='https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/'+publicUrl.pathname.split('/').pop()+publicUrl.search;
+    const asset=await upstreamFetch(new Request(assetUrl,{method:request.method}));
+    const result=new Response(asset.body,asset);
+    result.headers.set('Cache-Control','no-cache, max-age=0, must-revalidate');
+    result.headers.set('X-Content-Type-Options','nosniff');
+    return result;
+  }
   if(publicUrl.hostname==='studio.heavenlykey.org'&&publicUrl.pathname==='/')return Response.redirect(publicUrl.origin+'/pages/admin.html#studio',302);
   const origin = targets[publicUrl.hostname];
   if (!origin) return new Response('Unknown ministry portal', {status: 404});

@@ -45,3 +45,30 @@
 #hkem-public-assistant .hkem-iphone-chat .hkem-chat-form button{background:#008069!important}
 #hkem-public-assistant .hkem-iphone-chat .hkem-chat-header{min-height:72px;box-sizing:border-box}
 @media(max-height:580px){#hkem-public-assistant .hkem-iphone-chat{height:calc(100dvh - 110px)!important;max-height:calc(100dvh - 110px)!important}#hkem-public-assistant .hkem-iphone-chat .hkem-chat-header{min-height:55px}}
+
+/* Owner-requested compact chat and persistent approved portrait. */
+#hkem-public-assistant .hkem-iphone-chat{width:min(340px,calc(100vw - 24px))!important;height:min(520px,calc(100dvh - 185px))!important;max-height:calc(100dvh - 185px)!important}
+#hkem-public-assistant .hkem-chat-header .hkem-ai-avatar{width:36px;height:36px;flex:0 0 36px}
+#hkem-public-assistant .hkem-chat-header>span:not(.hkem-ai-avatar){min-width:0}
+#hkem-public-assistant .hkem-ai-tagline,#hkem-public-assistant .hkem-chat-header small,#hkem-public-assistant .hkem-chat-note,#hkem-public-assistant .hkem-chat-welcome,#hkem-public-assistant .hkem-chat-suggestion{font-size:14px!important}
+@media(max-width:600px){#hkem-public-assistant .hkem-iphone-chat{right:12px!important;bottom:90px!important;width:min(320px,calc(100vw - 24px))!important;height:min(440px,58dvh,calc(100dvh - 130px))!important;max-height:calc(100dvh - 130px)!important;border-radius:28px!important}#hkem-public-assistant .hkem-chat-header{padding:24px 10px 10px!important;gap:7px}#hkem-public-assistant>button{font-size:14px!important}}
+
+#hkem-public-assistant .hkem-ai-label{max-width:190px}#hkem-public-assistant .hkem-ai-label strong{white-space:normal;line-height:1.2}#hkem-public-assistant>button{height:auto;min-height:58px;max-width:270px}#hkem-public-assistant .hkem-chat-header strong{display:block;font-size:14px;line-height:1.2}
+
+@keyframes hkem-help-blink{0%,100%{opacity:1}50%{opacity:.45}}
+#hkem-public-assistant .hkem-ai-tagline{animation:hkem-help-blink 2.6s ease-in-out infinite!important}
+@media(prefers-reduced-motion:reduce){#hkem-public-assistant .hkem-ai-tagline{animation:none!important}}
+
+/* Small app invitation stays inside the footer's normal grid. */
+.hk-clean-footer .hk-footer-columns{align-items:start}
+.hk-clean-footer .hk-footer-app-tile{min-height:155px!important;max-width:220px;padding:10px!important;gap:6px!important;align-self:start}
+.hk-clean-footer .hk-app-phone{width:54px!important;height:76px!important;border-width:3px!important;border-radius:12px!important;gap:3px!important}
+.hk-clean-footer .hk-app-phone-icon{font-size:26px!important}
+.hk-clean-footer .hk-app-phone-name,.hk-clean-footer .hk-app-phone-mini{display:none!important}
+.hk-clean-footer .hk-footer-app-tile>strong,.hk-clean-footer .hk-app-cta{font-size:14px!important}
+.hk-clean-footer .hk-app-orbit{width:100px!important;height:100px!important;margin-left:-50px!important}
+.hk-clean-footer .hk-app-orbit-two{width:130px!important;height:130px!important;margin-left:-65px!important}
+.hk-clean-footer .hk-footer-app-promo{padding:16px!important;margin-bottom:20px!important;gap:14px!important}
+.hk-clean-footer .hk-footer-app-promo h2{font-size:20px!important}
+[data-hkem-radio-page=true] #hk-radio-compact{display:none!important}
+@media(max-width:550px){.hk-clean-footer .hk-footer-app-tile{grid-column:auto!important;max-width:none;min-height:155px!important}#hk-radio-compact{left:12px!important;right:auto!important;bottom:20px!important;max-width:calc(100vw - 24px)!important;padding:9px 12px!important;font-size:14px!important}}

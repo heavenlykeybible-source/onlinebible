@@ -25,13 +25,13 @@ jobs:
           for(const term of ['async function centralOwnerLogin','async function handleLogin']){
             const i=source.indexOf(term);console.log('Deployed code excerpt '+term+':',i>=0?source.slice(i,i+4600):'Function not present under this name');
           }
-          const artifact=await fetch('https://api.github.com/repos/heavenlykeybible-source/onlinebible/actions/artifacts/12004214593/zip',{headers:{Authorization:'Bearer '+process.env.GH_TOKEN,'X-GitHub-Api-Version':'2022-11-28'}});if(!artifact.ok)throw Error('Private credential artifact unavailable '+artifact.status);
+          const artifact=await fetch('https://api.github.com/repos/heavenlykeybible-source/onlinebible/actions/artifacts/12010256023/zip',{headers:{Authorization:'Bearer '+process.env.GH_TOKEN,'X-GitHub-Api-Version':'2022-11-28'}});if(!artifact.ok)throw Error('Private credential artifact unavailable '+artifact.status);
           writeFileSync('/tmp/private-owner-login.zip',Buffer.from(await artifact.arrayBuffer()),{mode:0o600});
           const text=execFileSync('unzip',['-p','/tmp/private-owner-login.zip','Heavenly-Key-Administrator-Login.txt'],{encoding:'utf8'});unlinkSync('/tmp/private-owner-login.zip');
           const password=text.match(/^Password: (.+)$/m)?.[1];if(!password)throw Error('Private handoff missing password');console.log('::add-mask::'+password);
-          for(const origin of ['https://heavenlykey.alldaywow247.workers.dev','https://heavenlykey.org']){
+          for(const origin of ['https://studio.heavenlykey.org','https://heavenlykey.org']){
             const login=await fetch(origin+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify({email:'owner',password}),signal:AbortSignal.timeout(20000)});
-            const result=await login.json();console.log('Studio owner sign-in:',origin,login.status,JSON.stringify(result));
+            const result=await login.json();if(!login.ok)throw Error('Studio login failed '+origin+' HTTP '+login.status);console.log('Studio owner sign-in:',origin,login.status,JSON.stringify(result));
             const cookie=login.headers.get('set-cookie')?.split(';')[0];
             if(login.ok&&cookie){const profile=await fetch(origin+'/api/auth/profile',{headers:{Cookie:cookie}});console.log('Studio authenticated profile:',origin,profile.status)}
           }
