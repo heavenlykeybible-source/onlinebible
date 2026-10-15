@@ -1,0 +1,72 @@
+name: Deploy Account 4 Control Room (manual, guarded)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: account4-control-room
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: account4-control-room
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.ACCOUNT_4_ACCOUNT_ID }}
+      ACCOUNT4_D1_ID: ${{ secrets.ACCOUNT4_CONTROL_ROOM_D1_ID }}
+      ACCOUNT4_R2_BUCKET: ${{ secrets.ACCOUNT4_CONTROL_ROOM_R2_BUCKET }}
+      ACCESS_TEAM_DOMAIN: ${{ secrets.ACCOUNT4_ACCESS_TEAM_DOMAIN }}
+      ACCESS_AUD: ${{ secrets.ACCOUNT4_ACCESS_AUD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate explicit Account 4 configuration
+        run: |
+          for var in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID ACCOUNT4_D1_ID ACCOUNT4_R2_BUCKET ACCESS_TEAM_DOMAIN ACCESS_AUD; do
+            test -n "${!var}" || { echo "::error::Missing $var"; exit 1; }
+          done
+          [[ "$ACCOUNT4_D1_ID" =~ ^[0-9a-f-]{36}$ ]] || exit 1
+          [[ "$ACCOUNT4_R2_BUCKET" =~ ^[a-z0-9][a-z0-9-]{2,62}$ ]] || exit 1
+          [[ "$ACCESS_TEAM_DOMAIN" =~ ^[a-z0-9.-]+\.cloudflareaccess\.com$ ]] || exit 1
+          test "${#ACCESS_AUD}" -ge 20 || exit 1
+      - name: Install and typecheck
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+      - name: Configure account-specific resources (never print tokens)
+        run: |
+          python3 - <<'PY'
+          import os,pathlib
+          p=pathlib.Path('wrangler.toml')
+          s=p.read_text()
+          for key,var in [('REPLACE_WITH_ACCOUNT4_D1_ID','ACCOUNT4_D1_ID'),('REPLACE_WITH_ACCOUNT4_MEDIA_BUCKET','ACCOUNT4_R2_BUCKET'),('REPLACE_WITH_ACCESS_TEAM_DOMAIN','ACCESS_TEAM_DOMAIN'),('REPLACE_WITH_ACCESS_AUD','ACCESS_AUD')]:
+              value=os.environ[var]
+              assert '"' not in value and '\n' not in value
+              s=s.replace(key,value)
+          assert 'REPLACE_' not in s
+          p.write_text(s)
+          PY
+      - name: Confirm Account 4 resources exist (no creation or deletion)
+        run: |
+          python3 - <<'PY'
+          import json,os,urllib.request
+          account=os.environ['CLOUDFLARE_ACCOUNT_ID']
+          base='https://api.cloudflare.com/client/v4/accounts/'+account
+          def get(path):
+              req=urllib.request.Request(base+path,headers={'Authorization':'Bearer '+os.environ['CLOUDFLARE_API_TOKEN']})
+              with urllib.request.urlopen(req,timeout=30) as r: result=json.load(r)
+              assert result.get('success'), 'Cloudflare lookup failed'
+              return result['result']
+          assert get('/d1/database/'+os.environ['ACCOUNT4_D1_ID'])['uuid']==os.environ['ACCOUNT4_D1_ID']
+          assert any(x['name']==os.environ['ACCOUNT4_R2_BUCKET'] for x in get('/r2/buckets')['buckets'])
+          print('Existing Account 4 D1 and R2 confirmed')
+          PY
+      - name: Apply non-destructive CMS migration
+        run: npx wrangler d1 migrations apply heavenlykey-control-room-db --remote
+      - name: Deploy Account 4 control room
+        run: npx wrangler deploy --config wrangler.toml
