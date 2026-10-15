@@ -22,3 +22,17 @@
 #hkem-public-assistant .hkem-ai-tagline{animation:none!important;white-space:nowrap}#hkem-public-assistant .hkem-ai-dots{display:inline-block;vertical-align:bottom;overflow:hidden;width:0;animation:hkem-typing-dots 1.7s steps(3,end) infinite}@keyframes hkem-typing-dots{0%{width:0}75%,100%{width:1.1em}}@media(prefers-reduced-motion:reduce){#hkem-public-assistant .hkem-ai-dots{animation:none;width:1.1em}}
 
 #hkem-public-assistant .hkem-ai-avatar{overflow:hidden;border:2px solid #eac65d;flex-shrink:0}#hkem-public-assistant .hkem-ai-avatar img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}#hkem-public-assistant .hkem-ai-label strong{font-size:14px;color:white}#hkem-public-assistant .hkem-chat-panel{box-sizing:border-box}#hkem-public-assistant .hkem-chat-messages{scroll-behavior:smooth}@media(max-width:600px){#hkem-public-assistant .hkem-chat-panel{position:fixed;right:8px;bottom:165px;width:min(380px,calc(100vw - 16px));max-height:calc(100dvh - 185px)}}
+
+/* Compact launcher, premium iPhone-inspired messaging surface. */
+#hkem-public-assistant .hkem-iphone-chat{position:absolute;right:0;bottom:70px;width:min(390px,calc(100vw - 16px));height:min(640px,calc(100dvh - 125px));max-height:calc(100dvh - 125px);display:flex;flex-direction:column;border:5px solid #22282b!important;border-radius:38px!important;background:#e5ddd5!important;box-shadow:0 22px 65px #0006,0 0 0 2px #d1b56d!important;overflow:hidden!important;margin:0!important}
+#hkem-public-assistant .hkem-iphone-chat[hidden]{display:none!important}
+#hkem-public-assistant .hkem-iphone-chat:before{content:"";height:18px;width:92px;flex:none;align-self:center;background:#22282b;border-radius:0 0 16px 16px;position:absolute;top:0;z-index:3}
+#hkem-public-assistant .hkem-iphone-chat .hkem-chat-header{flex:none;padding:29px 14px 12px!important;background:#075e54!important;color:white!important}
+#hkem-public-assistant .hkem-iphone-chat .hkem-chat-messages{flex:1;min-height:0;height:auto!important;max-height:none!important;background-color:#e9e3d8!important;background-image:radial-gradient(#d4cbbd66 1px,transparent 1px)!important;background-size:21px 21px!important}
+#hkem-public-assistant .hkem-iphone-chat .hkem-chat-form{flex:none;background:#f5f5f3!important}
+#hkem-public-assistant .hkem-iphone-chat .hkem-chat-note{flex:none}
+#hkem-public-assistant .hkem-chat-welcome{align-self:stretch;text-align:center;background:#fff9eb;border:1px solid #e6d4a7;border-radius:14px;padding:12px;color:#254137;font:13px/1.5 system-ui;box-shadow:0 3px 8px #0001}
+#hkem-public-assistant .hkem-chat-welcome p{margin:0 0 10px}
+#hkem-public-assistant .hkem-chat-suggestion{display:block;width:100%;padding:10px;border:1px solid #b9d9c6;border-radius:20px;background:#e2f4e8;color:#075e54;font:600 12px/1.4 system-ui;cursor:pointer}
+#hkem-public-assistant .hkem-chat-suggestion:hover,#hkem-public-assistant .hkem-chat-suggestion:focus-visible{background:#c9e9d4}
+@media(max-width:600px){#hkem-public-assistant .hkem-iphone-chat{position:fixed!important;right:8px!important;bottom:165px!important;width:min(390px,calc(100vw - 16px))!important;height:min(610px,calc(100dvh - 180px))!important;max-height:calc(100dvh - 180px)!important;border-radius:32px!important}}
