@@ -50,13 +50,24 @@ jobs:
                   raise RuntimeError('Cloudflare read '+path+' returned HTTP '+str(e.code)) from None
               assert result.get('success'), 'Cloudflare configuration lookup failed'
               return result['result']
-          organization=get('/access/organizations')
-          domain=organization['auth_domain']
+          # The token can read Worker settings but may not have Access administration permission.
+          # Read the existing Access login redirect with Node's fetch (no login or policy changes).
+          import subprocess
+          probe=subprocess.run(['node','--input-type=module','-e',"""
+          const host='heavenlykey-control-room.emmanuel2026miracle.workers.dev';
+          const r=await fetch('https://'+host+'/',{redirect:'manual',signal:AbortSignal.timeout(30000)});
+          if(![302,303,307].includes(r.status))throw Error('Expected Access redirect, received '+r.status);
+          const u=new URL(r.headers.get('location'));
+          if(u.protocol!=='https:'||!u.hostname.endsWith('.cloudflareaccess.com')||!u.pathname.startsWith('/cdn-cgi/access/login/'+host))throw Error('Unexpected Access redirect');
+          const meta=JSON.parse(Buffer.from(u.searchParams.get('meta').split('.')[1],'base64url').toString());
+          const audience=u.searchParams.get('kid');
+          if(meta.aud!==audience||meta.hostname!==host)throw Error('Access audience/hostname mismatch');
+          console.log(JSON.stringify({domain:u.hostname,audience}));
+          """],check=True,capture_output=True,text=True)
+          resolved=json.loads(probe.stdout)
+          domain=resolved['domain']
+          audience=resolved['audience']
           assert re.fullmatch(r'[a-z0-9-]+\.cloudflareaccess\.com',domain), 'Invalid Access team domain'
-          apps=get('/access/apps?per_page=100')
-          matches=[app for app in apps if app.get('domain')==host]
-          assert len(matches)==1, 'Exactly one Access application must protect the control room hostname'
-          audience=matches[0]['aud']
           assert re.fullmatch(r'[a-f0-9]{64}',audience), 'Invalid application JWT audience'
           for name,actual in [('ACCESS_TEAM_DOMAIN',domain),('ACCESS_AUD',audience)]:
               configured=os.environ.get(name)
