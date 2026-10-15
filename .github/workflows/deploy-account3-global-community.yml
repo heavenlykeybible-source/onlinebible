@@ -1,4 +1,5 @@
 name: Deploy Account 3 Global Community
+# Triggered after production deployment credentials were added.
 
 on:
   workflow_dispatch:
