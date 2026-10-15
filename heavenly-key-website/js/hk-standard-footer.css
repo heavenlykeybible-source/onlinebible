@@ -11,3 +11,22 @@
 .hk-clean-footer .hk-footer-main-layout .hk-footer-designed{text-align:right!important;white-space:nowrap}
 @media(max-width:900px){.hk-clean-footer #hk-footer-credit.hk-footer-main-layout{flex-basis:100%;grid-template-columns:1fr auto}.hk-clean-footer .hk-footer-main-layout .hk-footer-legal{grid-column:1 / -1;grid-row:2;justify-content:flex-start!important}.hk-clean-footer .hk-footer-main-layout .hk-footer-designed{grid-column:2;grid-row:1}}
 @media(max-width:520px){.hk-clean-footer #hk-footer-credit.hk-footer-main-layout{grid-template-columns:1fr;gap:6px}.hk-clean-footer .hk-footer-main-layout .hk-footer-copyright,.hk-clean-footer .hk-footer-main-layout .hk-footer-designed{text-align:left!important}.hk-clean-footer .hk-footer-main-layout .hk-footer-designed{grid-column:1;grid-row:3}.hk-clean-footer .hk-footer-main-layout .hk-footer-legal{grid-column:1;grid-row:2;white-space:normal}}
+
+/* Full ministry footer above the compact legal / attribution strip. */
+.hk-clean-footer{display:block!important;padding:0!important;background:#073b2c!important;color:#f7f9f5!important;font-size:14px!important}
+.hk-clean-footer .hk-footer-upper{padding:38px max(20px,calc((100vw - 1200px)/2)) 26px!important}
+.hk-clean-footer .hk-footer-app-promo{display:flex;justify-content:space-between;align-items:center;gap:28px;padding:28px 30px;margin-bottom:34px;background:linear-gradient(115deg,#105d42,#174d38 65%,#713342);border:1px solid #e6c16c;border-radius:18px}
+.hk-clean-footer .hk-footer-app-promo strong{font-size:14px!important;color:#ffdc78!important;letter-spacing:.07em}
+.hk-clean-footer .hk-footer-app-promo h2{font-size:clamp(22px,2.5vw,30px)!important;color:white!important;margin:8px 0!important}
+.hk-clean-footer .hk-footer-app-promo p{font-size:15px!important;max-width:670px;margin:0!important;line-height:1.65}
+.hk-clean-footer .hk-footer-app-promo>a{display:inline-flex;align-items:center;justify-content:center;text-align:center;min-height:48px;flex-shrink:0;padding:12px 20px;border-radius:10px;background:#f6d76d!important;color:#153b2e!important;font-size:15px!important;font-weight:750;text-decoration:none}
+.hk-clean-footer .hk-footer-columns{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:28px}
+.hk-clean-footer .hk-footer-columns h3{font-size:17px!important;color:#ffe59a!important;margin:0 0 12px!important}
+.hk-clean-footer .hk-footer-columns p{font-size:14px!important;line-height:1.7;margin:0!important;color:#f1f6ee!important}
+.hk-clean-footer .hk-footer-columns a{display:block;color:#f1f6ee!important;font-size:14px!important;line-height:1.6;text-decoration:none;padding:5px 0}
+.hk-clean-footer .hk-footer-columns a:hover{text-decoration:underline;color:#ffe59a!important}
+.hk-clean-footer .hk-footer-lower{display:flex;align-items:center;justify-content:space-between;gap:22px;padding:20px max(20px,calc((100vw - 1200px)/2))!important;background:#052c22!important;border-top:1px solid #37725a}
+.hk-clean-footer .hk-footer-lower .hk-footer-ministry strong,.hk-clean-footer .hk-footer-lower .hk-footer-ministry p,.hk-clean-footer .hk-footer-lower #hk-footer-credit p,.hk-clean-footer .hk-footer-lower #hk-footer-credit a{font-size:14px!important}
+.hk-clean-footer .hk-footer-lower .hk-footer-ministry strong,.hk-clean-footer .hk-footer-lower #hk-footer-credit a{color:#ffe59a!important}
+@media(max-width:900px){.hk-clean-footer .hk-footer-columns{grid-template-columns:repeat(2,minmax(0,1fr))}.hk-clean-footer .hk-footer-app-promo{flex-wrap:wrap}.hk-clean-footer .hk-footer-lower{flex-wrap:wrap}.hk-clean-footer .hk-footer-lower #hk-footer-credit{flex-basis:100%}}
+@media(max-width:550px){.hk-clean-footer .hk-footer-upper{padding:25px 17px!important}.hk-clean-footer .hk-footer-columns{grid-template-columns:1fr 1fr;gap:22px 16px}.hk-clean-footer .hk-footer-app-promo{padding:22px 18px}.hk-clean-footer .hk-footer-app-promo>a{width:100%}.hk-clean-footer .hk-footer-lower{padding:20px 17px!important}.hk-clean-footer .hk-footer-columns h3{font-size:15px!important}}
