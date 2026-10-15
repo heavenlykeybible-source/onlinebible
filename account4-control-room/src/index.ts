@@ -26,7 +26,7 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
  try{
  if(u.pathname==="/api/me")return json({actor,role:"administrator"});
  if(u.pathname==="/api/deploy/sites"&&request.method==="GET")return json({sites:SITES,executionEnabled:false});
- if(u.pathname==="/api/deploy/plan"&&request.method==="POST"){const body=await request.json();try{return json({plan:planDeployment(body)})}catch(e){return fail(e instanceof Error?e.message:"Invalid request",400)}}
+ if(u.pathname==="/api/deploy/plan"&&request.method==="POST"){if(Number(request.headers.get("content-length")||0)>4096)return fail("Request too large",413);const raw=await request.text();if(raw.length>4096)return fail("Request too large",413);try{return json({plan:planDeployment(JSON.parse(raw))})}catch(e){return fail(e instanceof Error?e.message:"Invalid request",400)}}
  if(u.pathname==="/api/entry"&&request.method==="GET"){const {site,kind,key}=keyOf(u);const entry=await env.DB.prepare("SELECT content,version,updated_at FROM cms_entries WHERE site=? AND kind=? AND entry_key=?").bind(site,kind,key).first();return json({entry:entry||null})}
  if(u.pathname==="/api/revisions"&&request.method==="GET"){const {site,kind,key}=keyOf(u);return json({items:(await env.DB.prepare("SELECT id,version,editor,created_at FROM cms_revisions WHERE site=? AND kind=? AND entry_key=? ORDER BY id DESC LIMIT 30").bind(site,kind,key).all()).results})}
  if(u.pathname==="/api/save"&&request.method==="POST"){
