@@ -31,7 +31,7 @@ jobs:
           if(r.status!==200||d.service!=='global-community'||d.ok!==true)throw Error('Community upstream is not healthy');
           console.log('Existing community upstream is healthy');
           JS
-      - name: Deploy routing-only Worker and bind the exact Global zone route
+      - name: Deploy routing-only Worker and bind the exact Global and Bible zone routes
         run: |
           node --input-type=module <<'JS'
           import {readFileSync} from 'node:fs';
@@ -49,10 +49,12 @@ jobs:
           await api('/accounts/'+account+'/workers/scripts/heavenlykey-portals',{method:'PUT',body:form});
           const path='/zones/23f3be9052bf609e8ccd85ac1b375019/workers/routes';
           const routes=await api(path);
-          const existing=routes.find(r=>r.pattern==='global.heavenlykey.org/*');
-          if(existing&&existing.script!=='heavenlykey-portals')throw Error('Existing Global route belongs to another Worker; no changes made');
-          if(!existing)await api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pattern:'global.heavenlykey.org/*',script:'heavenlykey-portals'})});
-          console.log('Fixed-origin gateway uploaded and exact Global route confirmed; other routes preserved.');
+          for(const pattern of ['global.heavenlykey.org/*','bible.heavenlykey.org/*']){
+            const existing=routes.find(r=>r.pattern===pattern);
+            if(existing&&existing.script!=='heavenlykey-portals')throw Error('Existing '+pattern+' belongs to another Worker; no changes made');
+            if(!existing)await api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pattern,script:'heavenlykey-portals'})});
+          }
+          console.log('Fixed-origin gateway uploaded and exact Global and Bible routes confirmed; other routes preserved.');
           JS
       - name: Verify actual Global custom domain and rejected cross-site writes
         run: |
@@ -67,5 +69,7 @@ jobs:
           if(live.status!==200||await hash(live)!==await hash(upstream))throw Error('Custom domain does not serve the existing approved frontend');
           const denied=await fetch(base+'/api/posts',{method:'POST',headers:{Origin:'https://unrelated.example','Content-Type':'application/json'},body:'{}'});
           if(denied.status!==403)throw Error('Cross-site write protection failed');
-          console.log('Verified: Global custom domain HTTP 200, existing frontend matches upstream, health passes, cross-site writes rejected.');
+          const bible=await fetch('https://bible.heavenlykey.org/health');
+          if(bible.status!==200||(await bible.json()).ok!==true)throw Error('Bible custom-domain health failed');
+          console.log('Verified: Bible health passes; Global custom domain HTTP 200, existing frontend matches upstream, health passes, cross-site writes rejected.');
           JS
