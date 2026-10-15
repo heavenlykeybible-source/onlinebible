@@ -12,3 +12,11 @@ textarea{width:100%;font:inherit;padding:12px;border:1px solid #ccd3e6;border-ra
 
 /* Independent Bible App: international launch navigation */
 .bible-top-links{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px}.bible-top-links a{font-size:clamp(12px,1.2vw,15px)}.hero nav a[href="./install/"]{background:linear-gradient(120deg,#ffe6a0,#dfaa40)!important;color:#211706!important;font-weight:900!important;border-radius:10px!important}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #e9b849;outline-offset:3px}@media(max-width:600px){.bible-top-links{justify-content:center;gap:8px}.bible-top-links a{font-size:12px}}
+
+/* iPhone, Android and tablet Bible reader refinements */
+html,body{max-width:100%;overflow-x:clip;-webkit-text-size-adjust:100%}
+img,video,iframe{max-width:100%;height:auto}
+.bible-top-links a,.source-credit{font-size:14px!important}
+input,select,textarea{font-size:16px!important;max-width:100%}
+pre{max-width:100%;overflow-x:auto}
+@media(max-width:600px){.bible-top-links{flex-wrap:wrap;justify-content:center}.bible-top-links a{font-size:14px!important}#scripture-image{float:none;display:block;margin:12px auto;max-width:100%}}
