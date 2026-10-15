@@ -1,0 +1,33 @@
+name: Inspect Studio and Control configuration only
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/inspect-admin-control.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      TOKEN1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TOKEN4: ${{ secrets.ACCOUNT_4_TOKEN }}
+      HAS_CONTROL_SEED: ${{ secrets.HKEM_CONTROL_TOKEN != '' }}
+      HAS_GITHUB_CONTROL: ${{ secrets.GITHUB_CONTROL_TOKEN != '' }}
+    steps:
+      - name: Read existing resources and published release metadata
+        run: |
+          node --input-type=module <<'JS'
+          const a1='a160ba9fc74911bd4b3005eac86eefcb',a4='404ebf05a781fcccbbed44aeb02cb72b';
+          async function api(account,token,path,body){const r=await fetch('https://api.cloudflare.com/client/v4/accounts/'+account+path,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+token.trim().replace(/^Bearer /,''),'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const j=await r.json();if(!r.ok||!j.success)throw Error(path+' HTTP '+r.status);return j.result}
+          const dbs=await api(a4,process.env.TOKEN4,'/d1/database');console.log('Account4 databases:',JSON.stringify(dbs.map(d=>({id:d.uuid||d.id,name:d.name}))));
+          for(const db of dbs.filter(d=>/heavenlykey.*(?:control|recovery)/.test(d.name))){
+            const rows=await api(a4,process.env.TOKEN4,'/d1/database/'+(db.uuid||db.id)+'/query',{sql:"SELECT name FROM sqlite_master WHERE type='table'"});console.log('Control tables:',db.name,JSON.stringify(rows[0]?.results));
+            for(const table of ['account4_packages','account4_release_queue'])if(rows[0]?.results?.some(x=>x.name===table)){const n=await api(a4,process.env.TOKEN4,'/d1/database/'+(db.uuid||db.id)+'/query',{sql:'SELECT count(*) AS n FROM '+table});console.log('Saved arrivals:',db.name,table,n[0]?.results[0]?.n)}
+          }
+          for(const [account,token,worker] of [[a1,process.env.TOKEN1,'heavenlykey'],[a4,process.env.TOKEN4,'heavenlykey-owner-dashboard'],[a4,process.env.TOKEN4,'heavenlykey-control-room']]){
+            const s=await api(account,token,'/workers/scripts/'+worker+'/settings');console.log('Bindings:',worker,JSON.stringify(s.bindings.map(b=>({name:b.name,type:b.type,...(b.type==='kv_namespace'?{namespace_id:b.namespace_id}:{}),...(b.type==='d1'?{id:b.id}:{})}))));
+          }
+          const deployed=await api(a1,process.env.TOKEN1,'/workers/scripts/heavenlykey/deployments');console.log('Current Account1 deployment:',JSON.stringify(deployed));
+          console.log('Existing approval seed configured:',process.env.HAS_CONTROL_SEED);console.log('Existing GitHub control secret configured:',process.env.HAS_GITHUB_CONTROL);
+          JS
