@@ -28,8 +28,8 @@ jobs:
           python3 - <<'PY'
           import json,os,hmac,hashlib,secrets,urllib.request,urllib.error,pathlib,time
           seed=os.environ.get('LOGIN_SEED','')
-          assert len(seed)>=20,'Existing HKEM_CONTROL_TOKEN is required; no replacement security token will be generated.'
-          password='HK-'+hmac.new(seed.encode(),b'owner-requested-admin-2026-10-15-studio-control',hashlib.sha256).hexdigest()[:30]
+          # Generate only the owner-requested new admin password; retain all platform security secrets.
+          password='HK-'+secrets.token_hex(16)
           print('::add-mask::'+password)
           salt=secrets.token_hex(32)
           digest=hashlib.pbkdf2_hmac('sha256',password.encode(),salt.encode(),100000).hex()
