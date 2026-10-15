@@ -41,7 +41,7 @@ export async function publicRoute(request,env){
   if(!message||message.length>2000)return reply({error:'Enter a message of up to 2,000 characters'},400);
   if(!env.GEMINI_API_KEY)return reply({error:'The assistant is awaiting secure Gemini API configuration.'},503,origin||'*');
   const apiKey=env.GEMINI_API_KEY.trim();
-  if(!/^[A-Za-z0-9_-]{30,100}$/.test(apiKey))return reply({error:'The Gemini API key needs to be corrected in the secure account settings.',code:'gemini_key_invalid_format'},503,origin||'*');
+  if(!/^[A-Za-z0-9_-]+$/.test(apiKey))return reply({error:'The Gemini API key needs to be corrected in the secure account settings.',code:'gemini_key_invalid_format'},503,origin||'*');
   const now=Math.floor(Date.now()/1000),ip=request.headers.get('CF-Connecting-IP')||'unknown';
   const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(ip));
   const hash=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,'0')).join('');
