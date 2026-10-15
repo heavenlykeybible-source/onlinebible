@@ -44,11 +44,14 @@ jobs:
           import os,pathlib
           p=pathlib.Path('wrangler.toml')
           s=p.read_text()
-          for key,var in [('REPLACE_WITH_ACCOUNT4_D1_ID','ACCOUNT4_D1_ID'),('REPLACE_WITH_ACCOUNT4_MEDIA_BUCKET','ACCOUNT4_R2_BUCKET'),('REPLACE_WITH_ACCESS_TEAM_DOMAIN','ACCESS_TEAM_DOMAIN'),('REPLACE_WITH_ACCESS_AUD','ACCESS_AUD')]:
+          for key,var in [('REPLACE_WITH_ACCESS_TEAM_DOMAIN','ACCESS_TEAM_DOMAIN'),('REPLACE_WITH_ACCESS_AUD','ACCESS_AUD')]:
               value=os.environ[var]
               assert '"' not in value and '\n' not in value
               s=s.replace(key,value)
           assert 'REPLACE_' not in s
+          assert os.environ['CLOUDFLARE_ACCOUNT_ID']=='404ebf05a781fcccbbed44aeb02cb72b', 'Wrong Cloudflare account: abort'
+          assert os.environ['ACCOUNT4_D1_ID']=='25536a81-63ed-41e3-85f1-4f17bb977628', 'Wrong D1 database: abort'
+          assert os.environ['ACCOUNT4_R2_BUCKET']=='heavenlykey-control-room-media', 'Wrong R2 bucket: abort'
           p.write_text(s)
           PY
       - name: Confirm Account 4 resources exist (no creation or deletion)
