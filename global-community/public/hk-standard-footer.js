@@ -62,3 +62,6 @@
     install();
   }
 })();
+
+
+;(()=>{const current=document.currentScript;if(!current||document.querySelector('[data-hkem-runtime]'))return;const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('cms-runtime-20261015.css',current.src);document.head.append(style);const script=document.createElement('script');script.src=new URL('cms-runtime-20261015.js',current.src);script.defer=true;script.dataset.hkemRuntime='1';document.head.append(script)})();

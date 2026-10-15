@@ -1,0 +1,13 @@
+name = "heavenlykey-cms-public"
+main = "worker.mjs"
+compatibility_date = "2026-10-01"
+workers_dev = true
+[[d1_databases]]
+binding = "DB"
+database_name = "heavenlykey-control-room-db"
+database_id = "25536a81-63ed-41e3-85f1-4f17bb977628"
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "heavenlykey-control-room-media"
+[ai]
+binding = "AI"
