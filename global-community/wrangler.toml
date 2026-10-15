@@ -12,17 +12,15 @@ binding = "AI"
 directory = "./public"
 run_worker_first = ["/api", "/api/*"]
 
-# Account 3 resource IDs must be provided from the existing Cloudflare account.
-# The deployment release preflight blocks unresolved placeholders to prevent
-# accidentally binding another account's D1 or KV resources.
+# Account 3 production resource IDs verified against aoemeta247@gmail.com Cloudflare dashboard.
 [[d1_databases]]
 binding = "DB"
 database_name = "heavenly-key-global-community-db"
-database_id = "REPLACE_ACCOUNT3_D1_ID"
+database_id = "94d70dc2-91fe-4c5d-afc2-ca9ccff04f28"
 
 [[kv_namespaces]]
 binding = "SESSIONS"
-id = "REPLACE_ACCOUNT3_SESSIONS_KV_ID"
+id = "daf1094e23c6494fb89a6e7bd232b52b"
 
 [[r2_buckets]]
 binding = "MEDIA"
