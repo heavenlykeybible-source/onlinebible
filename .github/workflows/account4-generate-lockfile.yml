@@ -21,7 +21,10 @@ jobs:
           node-version: '22'
       - name: Generate reproducible dependency lockfile
         working-directory: account4-control-room
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify npm ci with regenerated lockfile
+        working-directory: account4-control-room
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Commit lockfile if changed
         run: |
           git add account4-control-room/package-lock.json
