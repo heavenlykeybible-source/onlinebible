@@ -56,6 +56,20 @@ jobs:
           }
           console.log('Fixed-origin gateway uploaded and exact Global and Bible routes confirmed; other routes preserved.');
           JS
+      - name: Attach only Control and Studio custom domains with automatic TLS
+        run: |
+          node --input-type=module <<'JS'
+          const account=process.env.CLOUDFLARE_ACCOUNT_ID,token=process.env.CLOUDFLARE_API_TOKEN,zone='23f3be9052bf609e8ccd85ac1b375019';
+          async function api(path,init={}){const r=await fetch('https://api.cloudflare.com/client/v4'+path,{...init,headers:{Authorization:'Bearer '+token,...init.headers}});const j=await r.json();if(!r.ok||!j.success)throw Error('Cloudflare '+path+' HTTP '+r.status+': '+JSON.stringify(j.errors));return j.result}
+          const z=await api('/zones/'+zone);if(z.name!=='heavenlykey.org'||z.account.id!==account)throw Error('Zone/account mismatch: no domains attached');
+          const domains=await api('/accounts/'+account+'/workers/domains');
+          for(const hostname of ['control.heavenlykey.org','studio.heavenlykey.org']){
+            const old=domains.find(x=>x.hostname===hostname);
+            if(old&&old.service!=='heavenlykey-portals')throw Error(hostname+' already belongs to another Worker; inspect before replacement');
+            if(!old)await api('/accounts/'+account+'/workers/domains',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({hostname,service:'heavenlykey-portals',environment:'production',zone_id:zone})});
+            console.log('Custom domain attached:',hostname);
+          }
+          JS
       - name: Verify actual Global custom domain and rejected cross-site writes
         run: |
           node --input-type=module <<'JS'

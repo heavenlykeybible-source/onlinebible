@@ -1,4 +1,6 @@
 const targets = Object.freeze({
+  'control.heavenlykey.org': 'https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev',
+  'studio.heavenlykey.org': 'https://heavenlykey.alldaywow247.workers.dev',
   'app.heavenlykey.org': 'https://heavenly-key-app-recovery.alldaywow247.workers.dev',
   'global.heavenlykey.org': 'https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev',
   'bible.heavenlykey.org': 'https://onlinebible.heavenlykeybible.workers.dev'
@@ -6,6 +8,7 @@ const targets = Object.freeze({
 
 export async function route(request, upstreamFetch = fetch) {
   const publicUrl = new URL(request.url);
+  if(publicUrl.hostname==='studio.heavenlykey.org'&&publicUrl.pathname==='/')return Response.redirect(publicUrl.origin+'/pages/admin.html#studio',302);
   const origin = targets[publicUrl.hostname];
   if (!origin) return new Response('Unknown ministry portal', {status: 404});
   const headers = new Headers(request.headers);
