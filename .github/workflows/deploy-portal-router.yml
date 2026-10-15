@@ -6,6 +6,7 @@ on:
     paths: ['portal-router/**', '.github/workflows/deploy-portal-router.yml']
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: heavenlykey-portal-routing
   cancel-in-progress: false
@@ -63,11 +64,23 @@ jobs:
           async function api(path,init={}){const r=await fetch('https://api.cloudflare.com/client/v4'+path,{...init,headers:{Authorization:'Bearer '+token,...init.headers}});const j=await r.json();if(!r.ok||!j.success)throw Error('Cloudflare '+path+' HTTP '+r.status+': '+JSON.stringify(j.errors));return j.result}
           const z=await api('/zones/'+zone);if(z.name!=='heavenlykey.org'||z.account.id!==account)throw Error('Zone/account mismatch: no domains attached');
           const domains=await api('/accounts/'+account+'/workers/domains');
+          const routePath='/zones/'+zone+'/workers/routes',routes=await api(routePath);
           for(const hostname of ['control.heavenlykey.org','studio.heavenlykey.org']){
             const old=domains.find(x=>x.hostname===hostname);
-            if(old&&old.service!=='heavenlykey-portals')throw Error(hostname+' already belongs to another Worker; inspect before replacement');
-            if(!old)await api('/accounts/'+account+'/workers/domains',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({hostname,service:'heavenlykey-portals',environment:'production',zone_id:zone})});
-            console.log('Custom domain attached:',hostname);
+            if(old&&old.service!=='heavenlykey-portals')throw Error(hostname+' already belongs to another Worker');
+            if(old){console.log('Existing custom domain confirmed:',hostname);continue}
+            const records=await api('/zones/'+zone+'/dns_records?name='+encodeURIComponent(hostname));
+            if(records.length){
+              if(records.some(x=>!['A','AAAA','CNAME'].includes(x.type)))throw Error(hostname+' has an unsupported DNS configuration; preserved');
+              for(const record of records){if(!record.proxied)await api('/zones/'+zone+'/dns_records/'+record.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({proxied:true})});}
+              const pattern=hostname+'/*',existing=routes.find(x=>x.pattern===pattern);
+              if(existing&&existing.script!=='heavenlykey-portals')throw Error(hostname+' already has another exact Worker route; preserved');
+              if(!existing)await api(routePath,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pattern,script:'heavenlykey-portals'})});
+              console.log('Hostname routed with existing DNS records preserved:',hostname);
+            }else{
+              await api('/accounts/'+account+'/workers/domains',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({hostname,service:'heavenlykey-portals',environment:'production',zone_id:zone})});
+              console.log('Custom domain attached:',hostname);
+            }
           }
           JS
       - name: Verify actual Global custom domain and rejected cross-site writes
@@ -86,4 +99,31 @@ jobs:
           const bible=await fetch('https://bible.heavenlykey.org/health');
           if(bible.status!==200||(await bible.json()).ok!==true)throw Error('Bible custom-domain health failed');
           console.log('Verified: Bible health passes; Global custom domain HTTP 200, existing frontend matches upstream, health passes, cross-site writes rejected.');
+          JS
+      - name: Verify Control and Studio domain login using the existing private credential
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'JS'
+          import {execFileSync} from 'node:child_process';
+          import {writeFileSync,unlinkSync} from 'node:fs';
+          const artifact=await fetch('https://api.github.com/repos/heavenlykeybible-source/onlinebible/actions/artifacts/12004214593/zip',{headers:{Authorization:'Bearer '+process.env.GH_TOKEN}});
+          if(!artifact.ok)throw Error('Private credential artifact unavailable '+artifact.status);
+          writeFileSync('/tmp/domain-login.zip',Buffer.from(await artifact.arrayBuffer()),{mode:0o600});
+          const handoff=execFileSync('unzip',['-p','/tmp/domain-login.zip','Heavenly-Key-Administrator-Login.txt'],{encoding:'utf8'});unlinkSync('/tmp/domain-login.zip');
+          const password=handoff.match(/^Password: (.+)$/m)?.[1];if(!password)throw Error('Missing private credential');console.log('::add-mask::'+password);
+          for(const [origin,path,body,profilePath] of [
+            ['https://control.heavenlykey.org','/api/owner/login',{username:'owner',password},'/api/me'],
+            ['https://studio.heavenlykey.org','/api/auth/login',{email:'owner',password},'/api/auth/profile']
+          ]){
+            let page;for(let i=0;i<8;i++){try{page=await fetch(origin+'/',{signal:AbortSignal.timeout(15000)});if(page.ok)break}catch{}await new Promise(r=>setTimeout(r,4000))}
+            if(!page?.ok)throw Error('HTTPS page not ready: '+origin);console.log('Domain page verified:',origin,page.status);
+            const denied=await fetch(origin+profilePath);if(denied.status!==401)throw Error('Unauthenticated admin API was not denied');
+            const login=await fetch(origin+path,{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify(body)});
+            if(!login.ok)throw Error('Domain login failed '+origin+' HTTP '+login.status);
+            const cookie=login.headers.get('set-cookie')?.split(';')[0];if(!cookie)throw Error('Missing authenticated domain cookie');
+            const profile=await fetch(origin+profilePath,{headers:{Cookie:cookie}});if(!profile.ok)throw Error('Domain profile failed '+origin+' HTTP '+profile.status);
+            console.log('Domain login and authenticated session verified:',origin);
+            const cross=await fetch(origin+path,{method:'POST',headers:{Origin:'https://unrelated.example','Content-Type':'application/json'},body:'{}'});if(cross.status!==403)throw Error('Cross-site login protection failed');
+          }
           JS
