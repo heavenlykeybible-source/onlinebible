@@ -35,12 +35,9 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: package-lock.json
-      # Community checks use the shared, locked TypeScript and Workers types.
-      # There is no global-community/package-lock.json in this repository.
-      - name: Install locked shared check dependencies
+          cache-dependency-path: global-community/package-lock.json
+      - name: Install locked Account 3 check and local Wrangler dependencies
         run: npm ci
-        working-directory: .
       - run: npm run check
       - run: npm run frontend
       - run: npm run test:design
