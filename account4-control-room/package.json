@@ -4,7 +4,8 @@
   "scripts": {
     "check": "tsc --noEmit",
     "deploy": "wrangler deploy",
-    "migrate": "wrangler d1 migrations apply heavenlykey-control-room-db --remote"
+    "migrate": "wrangler d1 migrations apply heavenlykey-control-room-db --remote",
+    "build": "npm run check"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
