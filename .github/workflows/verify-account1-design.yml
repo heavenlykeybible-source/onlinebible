@@ -1,0 +1,37 @@
+name: Verify Account 1 design and welcome chat
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'heavenly-key-website/index.html'
+      - 'heavenly-key-website/css/home-renewal.css'
+      - 'heavenly-key-website/js/home-renewal.js'
+      - 'heavenly-key-website/js/cms-runtime-20261015.*'
+      - 'scripts/test-account1-chat-ui.cjs'
+      - '.github/workflows/verify-account1-design.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test tools outside the project
+        run: |
+          npm install --prefix /tmp/hkem-ui --no-save --no-audit --no-fund playwright
+          /tmp/hkem-ui/node_modules/.bin/playwright install --with-deps chromium
+      - name: Verify original welcome prompt and responsive phone chat
+        env:
+          NODE_PATH: /tmp/hkem-ui/node_modules
+        run: node scripts/test-account1-chat-ui.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Account1-Desktop-Mobile-Chat
+          path: native-chat-*.png
+          if-no-files-found: ignore
+          retention-days: 7

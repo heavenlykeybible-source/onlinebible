@@ -2,12 +2,12 @@
 (()=>{'use strict';
  if(window.__hkemCentralCms)return;window.__hkemCentralCms=true;
  const PUBLIC='https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev';
- const CONTROL_DEFAULT='https://heavenlykey-control-room.emmanuel2026miracle.workers.dev';
- const CONTROLS=new Set([CONTROL_DEFAULT,'https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev']);
+ const CONTROL_DEFAULT='https://control.heavenlykey.org';
+ const CONTROLS=new Set([CONTROL_DEFAULT,'https://heavenlykey-control-room.emmanuel2026miracle.workers.dev','https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev']);
  const requestedControl=new URL(location.href).searchParams.get('hkem-control');
  const CONTROL=CONTROLS.has(requestedControl)?requestedControl:CONTROL_DEFAULT;
  const host=location.hostname,path=location.pathname;
- const site=/global|heavenly-key-global-community/.test(host)?'account3':/onlinebible|^bible\./.test(host)||/^\/bible(?:\/|$)/.test(path)?'account6':/heavenly-key-app|^app\./.test(host)?'account5':/control-room|owner-dashboard/.test(host)?'account4':'account1';
+ const site=/global|heavenly-key-global-community/.test(host)?'account3':/onlinebible|^bible\./.test(host)||/^\/bible(?:\/|$)/.test(path)?'account6':/heavenly-key-app|^app\./.test(host)?'account5':/control-room|owner-dashboard|^control\./.test(host)?'account4':'account1';
  const page=path.replace(/^\/+|\/+$/g,'').replace(/\.html$/i,'').replace(/\/index$/,'')||'home';
  const key=page==='index'?'home':page;
  const params=new URL(location.href).searchParams,nonce=params.get('hkem-session');
