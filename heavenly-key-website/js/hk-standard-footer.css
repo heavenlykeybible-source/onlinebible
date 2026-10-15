@@ -48,3 +48,23 @@
 @keyframes hkAppOrbit{to{transform:rotate(360deg)}}
 @media(max-width:550px){.hk-clean-footer .hk-footer-app-tile{min-height:220px;max-width:none;grid-column:1 / -1}.hk-clean-footer .hk-footer-columns{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.hk-clean-footer .hk-app-phone,.hk-clean-footer .hk-app-orbit{animation:none}.hk-clean-footer .hk-footer-app-tile{transition:none}}
+
+/* Approved readability standard: 14px minimum for normal visible copy, larger headings.
+   Shared across main ministry pages without changing page structure or approved graphics. */
+html{font-size:16px;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font-size:16px;line-height:1.65}
+main p,main li,main td,main th,main blockquote,main label,
+section p,section li,section td,section th,section label,
+article p,article li,article label,
+footer p,footer li,footer a,footer span,
+header nav a,header .nav a,
+.hk-clean-footer .hk-footer-columns a,
+.hk-clean-footer .hk-footer-columns p{line-height:1.6}
+small,.small,.caption,.eyebrow,.overline,.meta,.date,.subtitle,.tagline,
+figcaption,summary,form label,input,select,textarea,button,
+footer small,header small{font-size:max(14px,1em)}
+h1,h2,h3,h4,h5,h6{line-height:1.25;overflow-wrap:break-word}
+h1{font-weight:800}h2,h3{font-weight:750}strong,b{font-weight:750}
+a,button,input,textarea,select{overflow-wrap:break-word}
+p,li{overflow-wrap:break-word}
+@media(max-width:600px){body{line-height:1.65}main,article,section{max-width:100%}h1{line-height:1.18}h2,h3{line-height:1.28}}
