@@ -44,17 +44,13 @@ jobs:
               return result.get('result')
           def secret(account,token,worker,name,value):
               api(account,token,'/workers/scripts/'+worker+'/secrets',{'name':name,'text':value,'type':'secret_text'},'PUT')
-          def login(url,data,profile=None):
-              origin=url.split('/api/')[0]
-              req=urllib.request.Request(url,data=json.dumps(data).encode(),headers={'Content-Type':'application/json','Origin':origin})
-              with urllib.request.urlopen(req,timeout=40) as response:
-                  assert response.status==200
-                  cookie=response.headers.get('Set-Cookie','').split(';')[0]
-                  assert cookie,'No authenticated session returned'
-              if profile:
-                  with urllib.request.urlopen(urllib.request.Request(origin+profile,headers={'Cookie':cookie}),timeout=40) as response:
-                      assert response.status==200,'Authenticated profile failed'
-              return True
+          def public_fetch(url,data=None,profile=None):
+              import subprocess
+              script="""const fs=require('fs');(async()=>{const input=JSON.parse(fs.readFileSync(0,'utf8'));const origin=new URL(input.url).origin;const r=await fetch(input.url,input.data?{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify(input.data)}:{});if(!r.ok)throw Error('Public endpoint HTTP '+r.status);const body=await r.json();if(input.data){const cookie=r.headers.get('set-cookie')?.split(';')[0];if(!cookie)throw Error('No authenticated session');if(input.profile){const p=await fetch(origin+input.profile,{headers:{Cookie:cookie}});if(!p.ok)throw Error('Authenticated profile HTTP '+p.status)}}console.log(JSON.stringify(body))})().catch(e=>{console.error(e.message);process.exit(1)})"""
+              result=subprocess.run(['node','-e',script],input=json.dumps({'url':url,'data':data,'profile':profile}),text=True,capture_output=True)
+              if result.returncode: raise RuntimeError(result.stderr.strip()[:200])
+              return json.loads(result.stdout)
+          def login(url,data,profile=None): return public_fetch(url,data,profile)
           a1='a160ba9fc74911bd4b3005eac86eefcb';a4='404ebf05a781fcccbbed44aeb02cb72b'
           t1=os.environ['ACCOUNT1_TOKEN'];t4=os.environ['ACCOUNT4_TOKEN']
           try:
@@ -86,7 +82,7 @@ jobs:
           try:
               if os.environ.get('GEMINI_KEY'):
                   secret(a4,t4,'heavenlykey-cms-public','GEMINI_API_KEY',os.environ['GEMINI_KEY'])
-              with urllib.request.urlopen('https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev/health',timeout=30) as response: health=json.load(response)
+              health=public_fetch('https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev/health')
               report.append('Public AI provider: '+str(health.get('aiProvider'))+'. Gemini configuration: '+str(health.get('ai')))
           except Exception as error: report.append('Gemini configuration: NOT VERIFIED. '+str(error))
           text='HEAVENLY KEY PRIVATE ADMINISTRATOR LOGIN\n\nPassword: '+password+'\n\n'+'\n'.join(report)+'\n\nExisting member password pepper, encryption keys, Cloudflare Access policy, database schema and content were not modified.\n'
