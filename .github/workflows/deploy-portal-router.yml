@@ -1,0 +1,50 @@
+name: Repair Heavenly Key Portal Routing
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['portal-router/**', '.github/workflows/deploy-portal-router.yml']
+permissions:
+  contents: read
+concurrency:
+  group: heavenlykey-portal-routing
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: a160ba9fc74911bd4b3005eac86eefcb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify fixed-origin routing and existing session protections
+        run: node --test portal-router/worker.test.mjs
+      - name: Check existing upstream before routing
+        run: |
+          node --input-type=module <<'JS'
+          const r=await fetch('https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev/api/health');
+          const d=await r.json();
+          if(r.status!==200||d.service!=='global-community'||d.ok!==true)throw Error('Community upstream is not healthy');
+          console.log('Existing community upstream is healthy');
+          JS
+      - name: Deploy routing-only Worker in Account 1
+        run: npx --yes wrangler@4.145.0 deploy --config portal-router/wrangler.toml
+      - name: Verify actual Global custom domain and rejected cross-site writes
+        run: |
+          node --input-type=module <<'JS'
+          import {createHash} from 'node:crypto';
+          const base='https://global.heavenlykey.org';
+          const health=await fetch(base+'/api/health');
+          const d=await health.json();
+          if(health.status!==200||d.ok!==true||d.service!=='global-community')throw Error('Custom-domain health failed: '+health.status);
+          const live=await fetch(base+'/'),upstream=await fetch('https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev/');
+          const hash=async r=>createHash('sha256').update(await r.text()).digest('hex');
+          if(live.status!==200||await hash(live)!==await hash(upstream))throw Error('Custom domain does not serve the existing approved frontend');
+          const denied=await fetch(base+'/api/posts',{method:'POST',headers:{Origin:'https://unrelated.example','Content-Type':'application/json'},body:'{}'});
+          if(denied.status!==403)throw Error('Cross-site write protection failed');
+          console.log('Verified: Global custom domain HTTP 200, existing frontend matches upstream, health passes, cross-site writes rejected.');
+          JS
