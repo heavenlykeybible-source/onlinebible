@@ -1,0 +1,40 @@
+name: Generate Account 3 npm lockfile
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/account3-generate-lockfile.yml'
+      - 'global-community/package-lock.json'
+      - 'global-community/wrangler.toml'
+      - 'global-community/package.json'
+permissions:
+  contents: write
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Use npm 10
+        run: npm install --global npm@10
+      - name: Generate reproducible dependency lockfile
+        working-directory: global-community
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Verify npm ci with regenerated lockfile
+        working-directory: global-community
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify TypeScript
+        working-directory: global-community
+        run: npm run buildcheck
+      - name: Commit lockfile if changed
+        run: |
+          git add global-community/package-lock.json
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'fix(account3): add npm lockfile for Cloudflare builds'
+            git push
+          fi
