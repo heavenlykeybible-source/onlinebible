@@ -1,5 +1,6 @@
 const targets = Object.freeze({
-  'global.heavenlykey.org': 'https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev'
+  'global.heavenlykey.org': 'https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev',
+  'bible.heavenlykey.org': 'https://onlinebible.heavenlykeybible.workers.dev'
 });
 
 export async function route(request, upstreamFetch = fetch) {
