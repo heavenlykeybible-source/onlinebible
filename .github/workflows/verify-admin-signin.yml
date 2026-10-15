@@ -1,0 +1,64 @@
+name: Verify Studio and Control mobile sign-in only
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/verify-admin-signin.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Heavenly-Key-Administrator-Login
+          run-id: 38813937899
+          github-token: ${{ github.token }}
+          path: /tmp/hkem-private-login
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install mobile WebKit test tools outside the project
+        run: |
+          npm install --prefix /tmp/hkem-login --no-save --no-audit --no-fund playwright
+          /tmp/hkem-login/node_modules/.bin/playwright install --with-deps webkit
+      - name: Sign in through the real Studio and Control forms
+        env:
+          NODE_PATH: /tmp/hkem-login/node_modules
+        run: |
+          node <<'JS'
+          const {webkit,devices}=require('playwright');
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          (async()=>{
+            const handoff=fs.readFileSync('/tmp/hkem-private-login/Heavenly-Key-Administrator-Login.txt','utf8');
+            const password=handoff.match(/^Password: (.+)$/m)?.[1];if(!password)throw Error('Existing credential unavailable');console.log('::add-mask::'+password);
+            const browser=await webkit.launch({headless:true});
+            for(const portal of [
+              {name:'Studio',url:'https://studio.heavenlykey.org/',form:'form[data-auth-form="login"]',username:'input[name="email"]',password:'input[name="password"]',api:'/api/auth/login',profile:'/api/auth/profile'},
+              {name:'Control',url:'https://control.heavenlykey.org/login.html',form:'#owner-login',username:'#username',password:'#password',api:'/api/owner/login',profile:'/api/me'}
+            ]){
+              const context=await browser.newContext({...devices['iPhone 13']});
+              const page=await context.newPage();
+              await page.goto(portal.url,{waitUntil:'domcontentloaded'});
+              const form=page.locator(portal.form);await form.waitFor({state:'visible',timeout:30000});
+              await form.locator(portal.username).fill('owner');
+              await form.locator(portal.password).fill(password);
+              assert.equal(await form.locator(portal.password).inputValue(),password);
+              const [login]=await Promise.all([
+                page.waitForResponse(r=>new URL(r.url()).pathname===portal.api&&r.request().method()==='POST',{timeout:30000}),
+                form.locator('button[type="submit"]').click()
+              ]);
+              if(login.status()!==200){const body=await login.json().catch(()=>({}));throw Error(portal.name+' mobile form sign-in HTTP '+login.status()+': '+JSON.stringify(body))}
+              const profile=await context.request.get(new URL(portal.profile,portal.url).href);
+              assert.equal(profile.status(),200,portal.name+' authenticated mobile session');
+              if(portal.name==='Studio')await page.locator('#admin-workspace').waitFor({state:'visible',timeout:20000});
+              console.log(portal.name+': actual iPhone WebKit form login HTTP 200, browser cookie and authenticated profile HTTP 200');
+              await context.close();
+            }
+            await browser.close();
+            fs.rmSync('/tmp/hkem-private-login',{recursive:true,force:true});
+          })().catch(e=>{console.error(e.message);process.exit(1)});
+          JS
