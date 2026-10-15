@@ -1,0 +1,29 @@
+name: Generate Account 4 npm lockfile
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/account4-generate-lockfile.yml'
+permissions:
+  contents: write
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate reproducible dependency lockfile
+        working-directory: account4-control-room
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Commit lockfile if changed
+        run: |
+          git add account4-control-room/package-lock.json
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'fix(account4): add npm lockfile for Cloudflare builds'
+            git push
+          fi
