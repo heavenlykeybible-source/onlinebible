@@ -8,6 +8,7 @@ on:
     paths:
       - 'global-community/**'
       - '.github/workflows/deploy-account3-global-community.yml'
+      - 'scripts/test-account4-ai-preview.mjs'
 
 permissions:
   contents: read
@@ -33,10 +34,13 @@ jobs:
           test -n "$CF_ACCOUNT" || { echo "::error::Missing CF_ACCOUNT3_ACCOUNT_ID"; exit 1; }
           test "$CF_ACCOUNT" = "cd095c096c2d5a42501e7d77cecbb34c" || { echo "::error::Cloudflare account mismatch"; exit 1; }
           ! grep -Eq 'REPLACE_ACCOUNT3_' wrangler.toml || { echo "::error::Unresolved resource placeholders"; exit 1; }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Validate application
-        run: npm run buildcheck
+        run: npm run buildcheck && npm run preflight -- --release
       - name: Deploy verified Account 3 Worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_ACCOUNT3_API_TOKEN }}
