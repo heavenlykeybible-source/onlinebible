@@ -31,8 +31,29 @@ jobs:
           if(r.status!==200||d.service!=='global-community'||d.ok!==true)throw Error('Community upstream is not healthy');
           console.log('Existing community upstream is healthy');
           JS
-      - name: Deploy routing-only Worker in Account 1
-        run: npx --yes wrangler@4.145.0 deploy --config portal-router/wrangler.toml
+      - name: Deploy routing-only Worker and bind the exact Global zone route
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          const token=process.env.CLOUDFLARE_API_TOKEN,account=process.env.CLOUDFLARE_ACCOUNT_ID;
+          if(account!=='a160ba9fc74911bd4b3005eac86eefcb'||!token)throw Error('Account 1 configuration missing');
+          async function api(path,init={}){
+            const r=await fetch('https://api.cloudflare.com/client/v4'+path,{...init,headers:{Authorization:'Bearer '+token,...init.headers}});
+            const j=await r.json();
+            if(!r.ok||!j.success)throw Error('Cloudflare '+path+' HTTP '+r.status+': '+JSON.stringify(j.errors));
+            return j.result;
+          }
+          const form=new FormData();
+          form.set('metadata',new Blob([JSON.stringify({main_module:'worker.mjs',compatibility_date:'2026-10-01'})],{type:'application/json'}));
+          form.set('worker.mjs',new Blob([readFileSync('portal-router/worker.mjs')],{type:'application/javascript+module'}),'worker.mjs');
+          await api('/accounts/'+account+'/workers/scripts/heavenlykey-portals',{method:'PUT',body:form});
+          const path='/zones/23f3be9052bf609e8ccd85ac1b375019/workers/routes';
+          const routes=await api(path);
+          const existing=routes.find(r=>r.pattern==='global.heavenlykey.org/*');
+          if(existing&&existing.script!=='heavenlykey-portals')throw Error('Existing Global route belongs to another Worker; no changes made');
+          if(!existing)await api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pattern:'global.heavenlykey.org/*',script:'heavenlykey-portals'})});
+          console.log('Fixed-origin gateway uploaded and exact Global route confirmed; other routes preserved.');
+          JS
       - name: Verify actual Global custom domain and rejected cross-site writes
         run: |
           node --input-type=module <<'JS'
