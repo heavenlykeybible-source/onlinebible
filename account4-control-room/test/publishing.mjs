@@ -33,11 +33,27 @@ test('owner password is hashed, wrong passwords fail, session token is hashed, p
  assert.notEqual(db.raw.prepare('SELECT session_hash FROM cms_owner_sessions').get().session_hash,result.cookie.split(';')[0].split('=')[1]);
  await setOwnerPassword(db,'another-strong-owner-password','owner@example.com');assert.equal(await ownerSession(signed,db),null);
 });
-test('public AI returns actual inference and enforces origin and request limits',async()=>{
- const db=database();let calls=0;const env={DB:db,AI:{async run(){calls++;return {response:'Study John 3:16 in the Bible portal.'}}}};
- const req=(origin='https://heavenlykey.org')=>new Request('https://public.test/v1/assistant',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json','CF-Connecting-IP':'127.0.0.2'},body:JSON.stringify({message:'Help me study John 3:16'})});
- assert.equal((await publicRoute(req('https://other.test'),env)).status,403);
- for(let i=0;i<30;i++)assert.equal((await publicRoute(req(),env)).status,200);
- assert.equal((await publicRoute(req(),env)).status,429);assert.equal(calls,30);
- assert.equal((await publicRoute(new Request('https://public.test/api/publish',{method:'POST'}),env)).status,404);
+test('public Gemini AI returns actual inference and enforces origin and request limits',async()=>{
+ const db=database();let calls=0;const env={DB:db,GEMINI_API_KEY:'test-key-not-a-real-secret'};
+ const originalFetch=globalThis.fetch;
+ globalThis.fetch=async(url,options)=>{
+  assert.match(String(url),/generativelanguage\\.googleapis\\.com/);
+  assert.equal(options.headers['x-goog-api-key'],env.GEMINI_API_KEY);
+  const payload=JSON.parse(options.body);
+  assert.match(payload.systemInstruction.parts[0].text,/Heavenly Key Evangelistic Movement/);
+  calls++;
+  return Response.json({candidates:[{content:{parts:[{text:'Study John 3:16 in the Bible portal.'}]}}]});
+ };
+ try{
+  const req=(origin='https://heavenlykey.org')=>new Request('https://public.test/v1/assistant',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json','CF-Connecting-IP':'127.0.0.2'},body:JSON.stringify({message:'Help me study John 3:16'})});
+  assert.equal((await publicRoute(req('https://other.test'),env)).status,403);
+  for(let i=0;i<30;i++){
+   const response=await publicRoute(req(),env);
+   assert.equal(response.status,200);
+   assert.match((await response.json()).response,/John 3:16/);
+  }
+  assert.equal((await publicRoute(req(),env)).status,429);
+  assert.equal(calls,30);
+  assert.equal((await publicRoute(new Request('https://public.test/api/publish',{method:'POST'}),env)).status,404);
+ }finally{globalThis.fetch=originalFetch}
 });
