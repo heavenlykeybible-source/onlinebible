@@ -23,3 +23,10 @@
 .world-strip .flags img{display:block;flex:none;width:690px!important;height:20px!important;max-height:20px!important;min-height:0!important;max-width:none!important;object-fit:contain;object-position:center}
 .world-strip .flag-window,.world-strip .flag-track{min-height:0}
 @media(max-width:600px){.world-strip .flags img{height:16px!important;max-height:16px!important}}
+
+/* Fixed compact country-flag strip across browser sizes and zoom levels. */
+.world-strip .flag-window{min-width:0;overflow:hidden;max-height:24px}
+.world-strip .flag-track{align-items:center;flex-wrap:nowrap}
+.world-strip .flags{flex:0 0 auto;align-items:center;line-height:1}
+.world-strip .flags img{display:block!important;width:493px!important;min-width:493px!important;max-width:none!important;height:20px!important;max-height:20px!important;object-fit:fill!important;flex:none!important}
+@media(max-width:600px){.world-strip .flag-window{max-height:20px}.world-strip .flags img{width:444px!important;min-width:444px!important;height:18px!important;max-height:18px!important}}
