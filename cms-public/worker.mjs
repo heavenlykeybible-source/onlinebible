@@ -15,7 +15,7 @@ export async function publicRoute(request,env){
  const u=new URL(request.url),origin=request.headers.get('Origin');
  if(request.method==='OPTIONS')return origins.has(origin)?reply({},200,origin):reply({error:'Origin not permitted'},403);
  if(u.pathname==='/health'&&request.method==='GET'){
-  try{await env.DB.prepare('SELECT 1 FROM cms_publications LIMIT 1').first();return reply({ok:true,service:'heavenly-key-public-cms',publishing:'ready',ai:env.AI?'connected':'unavailable'})}catch{return reply({ok:false,error:'CMS publication tables are not ready'},503)}
+  try{await env.DB.prepare('SELECT 1 FROM cms_publications LIMIT 1').first();return reply({ok:true,service:'heavenly-key-public-cms',publishing:'ready',ai:env.GEMINI_API_KEY?'configured':'unavailable',aiProvider:'gemini'})}catch{return reply({ok:false,error:'CMS publication tables are not ready'},503)}
  }
  if(u.pathname==='/v1/content'&&['GET','HEAD'].includes(request.method)){
   const site=u.searchParams.get('site'),page=u.searchParams.get('page')||'home';
@@ -39,7 +39,7 @@ export async function publicRoute(request,env){
   let body;try{const raw=await request.text();if(raw.length>10000)return reply({error:'Message is too long'},413);body=JSON.parse(raw)}catch{return reply({error:'Enter a message'},400)}
   const message=typeof body.message==='string'?body.message.trim():'';
   if(!message||message.length>2000)return reply({error:'Enter a message of up to 2,000 characters'},400);
-  if(!env.GEMINI_API_KEY)return reply({error:'The assistant is awaiting secure Gemini API configuration.'},503);
+  if(!env.GEMINI_API_KEY)return reply({error:'The assistant is awaiting secure Gemini API configuration.'},503,origin||'*');
   const now=Math.floor(Date.now()/1000),ip=request.headers.get('CF-Connecting-IP')||'unknown';
   const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(ip));
   const hash=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -61,7 +61,7 @@ export async function publicRoute(request,env){
    const response=(result?.candidates?.[0]?.content?.parts||[]).map(part=>part.text||'').join('').trim();
    if(!response)throw Error('Empty model response');
    return reply({ok:true,assistant:'Heavenly Key AI',response:response.slice(0,6000)},200,origin||'*');
-  }catch(error){console.error('Public assistant inference failed',String(error?.message||error).slice(0,200));return reply({error:'The assistant could not respond right now. Please try again shortly.'},503)}
+  }catch(error){console.error('Public assistant inference failed',String(error?.message||error).slice(0,200));return reply({error:'The assistant could not respond right now. Please try again shortly.'},503,origin||'*')}
  }
  return reply({error:'Public resource not found'},404);
 }
