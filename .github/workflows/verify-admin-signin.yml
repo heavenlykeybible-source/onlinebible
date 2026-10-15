@@ -54,7 +54,7 @@ jobs:
               if(login.status()!==200){const body=await login.json().catch(()=>({}));throw Error(portal.name+' mobile form sign-in HTTP '+login.status()+': '+JSON.stringify(body))}
               const profile=await context.request.get(new URL(portal.profile,portal.url).href);
               assert.equal(profile.status(),200,portal.name+' authenticated mobile session');
-              if(portal.name==='Studio')await page.locator('#admin-workspace').waitFor({state:'visible',timeout:20000});
+              if(portal.name==='Studio')await page.locator('#admin-dashboard').waitFor({state:'visible',timeout:20000});
               console.log(portal.name+': actual iPhone WebKit form login HTTP 200, browser cookie and authenticated profile HTTP 200');
               await context.close();
             }
