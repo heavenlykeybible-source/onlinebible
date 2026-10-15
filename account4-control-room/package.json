@@ -1,0 +1,14 @@
+{
+  "name": "heavenlykey-account4-control-room",
+  "private": true,
+  "scripts": {
+    "check": "tsc --noEmit",
+    "deploy": "wrangler deploy",
+    "migrate": "wrangler d1 migrations apply heavenlykey-control-room-db --remote"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "wrangler": "^4.45.0",
+    "@cloudflare/workers-types": "^4.20261001.0"
+  }
+}
