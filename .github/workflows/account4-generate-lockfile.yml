@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/account4-generate-lockfile.yml'
       - 'account4-control-room/package-lock.json'
+      - 'account4-control-room/wrangler.toml'
       - 'account4-control-room/package.json'
 permissions:
   contents: write
