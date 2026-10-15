@@ -24,5 +24,6 @@ test('AI remains authenticated, limited and subordinate to member draft approval
  assert.ok(backend.includes('requiresReview:true'),'Generated content never automatically published');
  assert.ok(!backend.includes('env.DB.prepare'),'AI has no database write authority');
  assert.ok(frontend.includes('apply:result=>'),'Inserting a suggestion requires member interaction');
- assert.ok(frontend.includes("'/api/community-ai'"),'Search and posting tools share the same route');
+ assert.ok(frontend.includes("https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev/v1/assistant"),'Search and writing share the public bounded AI service');
+ const publicService=get('cms-public/worker.mjs');assert.ok(publicService.includes('client:')&&publicService.includes("30,"),'Public AI rate limits remain');assert.ok(publicService.includes('global:')&&publicService.includes('200,'),'Global inference budget remains');
 });

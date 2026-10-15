@@ -51,7 +51,7 @@
   const changed=new Map();
   const snapshot=()=>[...changed.values()];
   button('Save draft',()=>send('hkem-save',{content:{schema:1,fields:snapshot()}}));
-  button('Publish',()=>{if(confirm('Publish this page to the public website?'))send('hkem-publish',{content:{schema:1,fields:snapshot()}})});
+  button('Publish',()=>send('hkem-publish',{content:{schema:1,fields:snapshot()}}));
   button('Control Room',()=>window.opener.focus());
   button('Exit',()=>{const url=new URL(location.href);url.searchParams.delete('hkem-cms');url.searchParams.delete('hkem-session');location.href=url});
   document.body.append(bar);
