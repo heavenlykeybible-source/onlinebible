@@ -18,6 +18,7 @@ jobs:
       TOKEN_5: ${{ secrets.ACCOUNT_5_TOKEN || secrets.CF_ACCOUNT5_API_TOKEN }}
       TOKEN_6: ${{ secrets.ACCOUNT_6_TOKEN || secrets.CF_ACCOUNT6_API_TOKEN }}
     steps:
+      - uses: actions/checkout@v4
       - name: Read existing Workers, resource bindings, domains and public responses
         run: |
           node --input-type=module <<'JS'
@@ -58,4 +59,35 @@ jobs:
           }
           await Promise.all([1,2,3,4,5,6].map(n=>audit(n).catch(e=>console.log(JSON.stringify({account:n,error:e.message})))));
           await Promise.all(['https://heavenlykey.org','https://global.heavenlykey.org','https://bible.heavenlykey.org'].map(publicProbe));
+          JS
+
+      - name: Verify CMS configuration, community totals and failed build logs (read-only)
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          import {createHash} from 'node:crypto';
+          async function cf(n,account,path,sql){
+            const token=process.env['TOKEN_'+n];
+            const r=await fetch('https://api.cloudflare.com/client/v4/accounts/'+account+path,{method:sql?'POST':'GET',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},...(sql?{body:JSON.stringify({sql})}:{})});
+            const j=await r.json();if(!r.ok||!j.success){console.log(JSON.stringify({check:path,http:r.status,errors:j.errors}));return null}return j.result
+          }
+          const a4='404ebf05a781fcccbbed44aeb02cb72b',a3='cd095c096c2d5a42501e7d77cecbb34c';
+          const settings=await cf(4,a4,'/workers/scripts/heavenlykey-control-room/settings');
+          const vars=Object.fromEntries((settings?.bindings||[]).filter(b=>['ACCESS_AUD','ACCESS_TEAM_DOMAIN'].includes(b.name)).map(b=>[b.name,b.text]));
+          console.log(JSON.stringify({check:'cms-auth-config',issuerReady:vars.ACCESS_TEAM_DOMAIN==='raspy-darkness-1dc8.cloudflareaccess.com',audienceReady:vars.ACCESS_AUD==='3bf4d8f65406e5890c8f27e0ada19f44ff09033b7624728925519a6e797a8b87'}));
+          console.log(JSON.stringify({check:'cms-schema',result:await cf(4,a4,'/d1/database/25536a81-63ed-41e3-85f1-4f17bb977628/query',"SELECT name FROM sqlite_master WHERE type='table' AND name IN ('cms_entries','cms_revisions','cms_audit') ORDER BY name")}));
+          console.log(JSON.stringify({check:'community-editorial-totals',result:await cf(3,a3,'/d1/database/94d70dc2-91fe-4c5d-afc2-ca9ccff04f28/query',"SELECT profile_id,status,COUNT(*) AS total FROM ministry_editorial_posts GROUP BY profile_id,status")}));
+          const logs=await cf(3,a3,'/builds/builds/bcc901d8-7c7c-44aa-92ab-1158cb08e36f/logs');
+          console.log(JSON.stringify({check:'account3-failed-build',logs:logs?.lines?.filter(l=>/error|failed|wrangler|npm|root|directory/i.test(String(l))).slice(-40)}));
+          for(const [url,path] of [
+            ['https://heavenlykey.org/','heavenly-key-website/index.html'],
+            ['https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev/','global-community/public/index.html'],
+            ['https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev/app.js','global-community/public/app.js']
+          ]){
+            try{const r=await fetch(url);const body=await r.text(),source=readFileSync(path,'utf8');const hash=s=>createHash('sha256').update(s).digest('hex');console.log(JSON.stringify({check:'live-source-match',url,path,http:r.status,match:hash(body)===hash(source),liveHash:hash(body),sourceHash:hash(source)}))}catch(e){console.log(JSON.stringify({url,error:e.message}))}
+          }
+          for(const path of ['/api/health','/api/ministry/feed','/api/ministry/profiles']){
+            const url='https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev'+path;
+            try{const r=await fetch(url);console.log(JSON.stringify({check:'community-public-api',path,http:r.status,bodyStart:(await r.text()).slice(0,400)}))}catch(e){console.log(JSON.stringify({path,error:e.message}))}
+          }
           JS
