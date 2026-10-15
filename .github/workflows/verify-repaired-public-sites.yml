@@ -1,0 +1,41 @@
+name: Verify Repaired Heavenly Key Public Services
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/verify-repaired-public-sites.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify live Worker content, scripture and health
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          import {createHash} from 'node:crypto';
+          const sha=s=>createHash('sha256').update(s).digest('hex');
+          for(const [url,file] of [
+            ['https://heavenlykey.org/','heavenly-key-website/index.html'],
+            ['https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev/','global-community/public/index.html'],
+            ['https://onlinebible.heavenlykeybible.workers.dev/','heavenly-key-website/bible/index.html']
+          ]){
+            const r=await fetch(url,{signal:AbortSignal.timeout(30000)});
+            const body=await r.text(),match=sha(body)===sha(readFileSync(file,'utf8'));
+            console.log(JSON.stringify({url,http:r.status,sourceMatch:match,title:body.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]}));
+            if(r.status!==200||!match)throw Error('Live source does not match '+file);
+          }
+          const bible='https://onlinebible.heavenlykeybible.workers.dev';
+          for(const path of ['/health','/api/bible/Genesis/1']){
+            const r=await fetch(bible+path),d=await r.json();
+            console.log(JSON.stringify({url:bible+path,http:r.status,data:path==='/health'?d:{translation:d.translation,book:d.book,chapter:d.chapter,verseCount:d.verses?.length,firstVerse:d.verses?.[0]?.text}}));
+            if(r.status!==200)throw Error('Bible health/scripture request failed');
+            if(path==='/health'&&d.ok!==true)throw Error('Bible health did not report ready');
+            if(path!=='/health'&&(d.translation!=='KJV'||d.verses?.length!==31||!d.verses[0].text.includes('In the beginning')))throw Error('Bundled KJV scripture validation failed');
+          }
+          for(const url of ['https://global.heavenlykey.org/api/health','https://bible.heavenlykey.org/health','https://heavenlykey-control-room.emmanuel2026miracle.workers.dev/']){
+            const r=await fetch(url,{redirect:'manual'});console.log(JSON.stringify({customDomainCheck:url,http:r.status}));
+          }
+          JS
