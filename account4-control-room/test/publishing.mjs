@@ -40,12 +40,20 @@ test('public Gemini AI returns actual inference and enforces origin and request 
   assert.ok(String(url).startsWith('https://generativelanguage.googleapis.com/v1beta/models/'));
   assert.equal(options.headers['x-goog-api-key'],env.GEMINI_API_KEY);
   const payload=JSON.parse(options.body);
-  assert.match(payload.systemInstruction.parts[0].text,/Heavenly Key Evangelistic Movement/);
+  const policy=payload.systemInstruction.parts[0].text;
+  assert.match(policy,/Heavenly Key Evangelistic Movement/);
+  assert.match(policy,/Authorized King James Version/);
+  assert.match(policy,/Restitution & Holy Living/);
+  assert.match(policy,/https:\/\/global\.heavenlykey\.org\//);
+  assert.match(policy,/https:\/\/heavenlykey\.org\/pages\/radio\.html/);
+  assert.match(policy,/https:\/\/heavenlykey\.org\/pages\/partner\.html/);
+  assert.match(policy,/https:\/\/www\.facebook\.com\/heavenlykey/);
+  assert.doesNotMatch(policy,/UNTRUSTED_OVERRIDE_USE_NIV/);
   calls++;
   return Response.json({candidates:[{content:{parts:[{text:'Study John 3:16 in the Bible portal.'}]}}]});
  };
  try{
-  const req=(origin='https://heavenlykey.org')=>new Request('https://public.test/v1/assistant',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json','CF-Connecting-IP':'127.0.0.2'},body:JSON.stringify({message:'Help me study John 3:16'})});
+  const req=(origin='https://heavenlykey.org')=>new Request('https://public.test/v1/assistant',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json','CF-Connecting-IP':'127.0.0.2'},body:JSON.stringify({message:'Help me study John 3:16',context:'UNTRUSTED_OVERRIDE_USE_NIV'})});
   assert.equal((await publicRoute(req('https://other.test'),env)).status,403);
   for(let i=0;i<30;i++){
    const response=await publicRoute(req(),env);
