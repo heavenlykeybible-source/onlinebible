@@ -1,4 +1,4 @@
-name: Diagnose deployed Studio owner login and Gemini
+name: Verify Account 4 public Gemini response
 on:
   push:
     branches: [main]
@@ -9,18 +9,14 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    env:
-      TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
-      - name: Inspect deployed owner-login support and current public AI
+      - name: Verify Account 4 public endpoints without touching another account
         run: |
           node --input-type=module <<'JS'
-          const base='https://api.cloudflare.com/client/v4/accounts/a160ba9fc74911bd4b3005eac86eefcb/workers/scripts/heavenlykey';
-          const headers={Authorization:'Bearer '+process.env.TOKEN};
-          const r=await fetch(base,{headers});if(!r.ok)throw Error('Cannot inspect deployed Worker '+r.status);const source=await r.text();
-          console.log('Deployed Studio has owner login path:',source.includes('OWNER_DASHBOARD_PASSWORD_HASH'));
-          const s=await fetch(base+'/secrets',{headers});const secretData=await s.json();if(!secretData.success)throw Error('Cannot inspect secret metadata');const names=secretData.result.map(x=>x.name);
-          for(const key of ['OWNER_DASHBOARD_PASSWORD_HASH','OWNER_DASHBOARD_PASSWORD_SALT','PASSWORD_PEPPER','ENCRYPTION_KEY','SESSION_SECRET'])console.log('Existing secret '+key+':',names.includes(key));
           const root='https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev';
+          const health=await fetch(root+'/health',{signal:AbortSignal.timeout(20000)});console.log('Account 4 public health:',health.status,await health.text());
           const ai=await fetch(root+'/v1/assistant',{method:'POST',headers:{Origin:'https://heavenlykey.org','Content-Type':'application/json'},body:JSON.stringify({message:'Reply with a brief greeting.'}),signal:AbortSignal.timeout(30000)});console.log('Actual Gemini response:',ai.status,(await ai.text()).slice(0,1000));
+          const owner=await fetch('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/');console.log('Account 4 dashboard:',owner.status);
+          const denied=await fetch('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/api/me');console.log('Account 4 unauthenticated admin API:',denied.status);
+          if(owner.status!==200||denied.status!==401)throw Error('Account 4 dashboard protection verification failed');
           JS
