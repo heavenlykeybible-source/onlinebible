@@ -26,3 +26,20 @@ jobs:
         with:
           name: verified-live-page-screenshots
           path: /tmp/heavenly-key-screenshots/
+  owner-readiness:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify central owner login isolation
+        run: node --experimental-strip-types --test scripts/test-central-owner-login.mjs
+      - name: Read existing owner counts and direct media programme without changing data
+        run: |
+          node --input-type=module <<'JS'
+          const r=await fetch('https://api.cloudflare.com/client/v4/accounts/a160ba9fc74911bd4b3005eac86eefcb/d1/database/8665ff03-6a2c-4852-90ab-6c74375a8c87/query',{method:'POST',headers:{Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({sql:"SELECT count(*) AS active_owners FROM users u JOIN roles r ON r.role_id=u.role_id WHERE r.role_name='Super Administrator' AND u.status='active'"})});const data=await r.json();if(!r.ok||!data.success)throw Error('Owner readiness query failed');console.log('Existing active main-site owner count:',JSON.stringify(data.result[0].results));
+          const media=await fetch('https://heavenlykey-media.faithofourfatherstv.workers.dev/api/broadcast/programme?channel=radio',{headers:{'X-Heavenly-Key-Internal':'media-engine-public-v1'}});console.log('Direct radio engine programme:',media.status,await media.text());
+          JS

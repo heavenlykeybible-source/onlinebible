@@ -9,6 +9,7 @@ try{
  for(const [label,url,file] of [
  ['main','https://heavenlykey.org/','heavenly-key-website/index.html'],
  ['app-page','https://heavenlykey.org/pages/app','heavenly-key-website/pages/app.html'],
+ ['combined-app','https://app.heavenlykey.org/','heavenly-key-app/public/index.html'],
  ['community','https://global.heavenlykey.org/','global-community/public/index.html'],
  ['bible','https://bible.heavenlykey.org/','heavenly-key-website/bible/index.html']
  ]){
@@ -20,8 +21,8 @@ try{
    const context=await browser.newContext({viewport:{width:1280,height:900}}),page=await context.newPage();const violations=[];page.on('console',msg=>{if(msg.type()==='error')violations.push(msg.text())});
    await page.goto(url,{waitUntil:'domcontentloaded'});await page.locator(label==='community'?'.hk-ai-small-icon':'#hkem-public-assistant').first().waitFor({timeout:25000});
    await page.waitForFunction(()=>window.__hkemCentralCms===true,{},{timeout:25000});
-   if(label==='community'){await page.locator('.hk-official-posts article').first().waitFor({timeout:15000});if(await page.locator('#hkem-public-assistant').count())throw Error('Community AI must not float');if(!await page.locator('#hk-community-ai').evaluate(e=>!e.open))throw Error('Community AI should be closed initially');console.log('Community publications render; AI is a small navigation/search icon with chat closed');}
-   if(label==='app-page'){if(await page.locator('#download-options .downloadcard').count()!==5)throw Error('App installation cards did not render');console.log('All five device installation cards render');}
+   if(label==='community'){await page.locator('.hk-official-posts article').first().waitFor({timeout:15000});if(await page.locator('#hkem-public-assistant').count())throw Error('Community AI must not float');if(!await page.locator('#hk-community-ai').evaluate(e=>!e.open))throw Error('Community AI should be closed initially');const composer=page.locator('.composer-card').first();await composer.waitFor();const green=await composer.evaluate(e=>getComputedStyle(e).backgroundColor);if(green!=='rgb(237, 248, 240)')throw Error('Updated green composer not present: '+green);if(await page.locator('.community-welcome:visible,.reference-banner:visible,.hk-family-promo:visible').count())throw Error('Community promotions still visible');console.log('Community publications, green composer and clean search/sidebar AI verified');}
+   if(label==='app-page'){if(await page.locator('#download-options .downloadcard').count()!==5)throw Error('App installation cards did not render');if(!/All-in-One App/i.test(await page.locator('h1').innerText()))throw Error('Flagship app heading missing');if(await page.locator('.family-grid>.family-card').count()!==6)throw Error('Individual resource row incomplete');console.log('Centred flagship, all five device cards and six smaller resource cards render');}
    if(label==='main'){const tiny=await page.locator('#hkem-public-assistant>button').boundingBox();if(tiny.width>46||tiny.height>46)throw Error('Main AI icon is too large');if(await page.locator('#hk-floating-radio').count()){if(!await page.locator('#hk-floating-radio').evaluate(e=>e.classList.contains('hkr-mini')))throw Error('Radio should start as tiny icon');if(!await page.locator('#hkr-audio').evaluate(e=>e.paused))throw Error('Radio must not autoplay');}
     await page.locator('#hkem-public-assistant>button').click();await page.locator('#hkem-public-assistant textarea').fill('Where can I read the Heavenly Key Bible?');await page.locator('#hkem-public-assistant form button').click();
     await page.waitForFunction(()=>{const s=document.querySelector('#hkem-public-assistant [role=status]')?.textContent;return s&&s!=='Thinking…'},{},{timeout:60000});
@@ -29,7 +30,7 @@ try{
    }
    await page.screenshot({path:'/tmp/heavenly-key-screenshots/'+label+'-desktop.png',fullPage:false});
    await page.setViewportSize({width:390,height:844});await page.waitForTimeout(500);
-   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+3);console.log(JSON.stringify({label,mobileHorizontalOverflow:overflow,browserErrors:violations.slice(0,10)}));if(overflow)failures.push(label+': mobile horizontal overflow');
+   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+3);console.log(JSON.stringify({label,mobileHorizontalOverflow:overflow,browserErrors:violations.slice(0,10)}));if(overflow)failures.push(label+': mobile horizontal overflow');const footer=page.locator('footer').last();if(!await footer.innerText().then(t=>t.includes('TALKMONEY Ecosystem')))throw Error(label+': updated designer credit missing');if(await page.locator('footer .hkem-app-feature,footer .hkem-app-preview').count())throw Error(label+': footer app adverts still present');
    await page.screenshot({path:'/tmp/heavenly-key-screenshots/'+label+'-mobile.png',fullPage:false});
    if(violations.some(v=>/Refused to connect.*heavenlykey-cms-public|Refused to load.*cms-runtime/.test(v)))throw Error(label+': CMS blocked by CSP');
    await context.close();

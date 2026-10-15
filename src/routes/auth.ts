@@ -6,6 +6,7 @@
 import { registerUser, loginUser, getProfile, createSession, revokeSession, changePassword, type Env } from "../services/auth-service";
 import { checkRateLimit, rateLimitKey } from "../middleware/rate-limit";
 import { requireAuth, buildSessionCookie, buildLogoutCookie, getSessionCookie } from "../middleware/session";
+import { centralOwnerLogin } from "../services/central-owner-login";
 import { RATE_LIMITS } from "../config/security-config";
 
 /**
@@ -74,7 +75,8 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
     return jsonResponse({ error: { code: "rate_limited", message: "Too many attempts. Please try again later." } }, 429);
   }
 
-  const result = await loginUser(env, body.email, body.password);
+  const centralOwner=body.email==='owner'?await centralOwnerLogin(env,body.password):null;
+  const result = body.email==='owner' ? centralOwner?{success:true,userId:centralOwner,error:undefined}:{success:false,userId:undefined,error:'Owner sign-in failed. Check your normal dashboard password.'} : await loginUser(env, body.email, body.password);
 
   if (!result.success) {
     return jsonResponse({ error: { code: "login_failed", message: result.error } }, 401);
