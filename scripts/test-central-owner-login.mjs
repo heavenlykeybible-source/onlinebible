@@ -1,11 +1,9 @@
-import test from 'node:test';import assert from 'node:assert/strict';
+import test from 'node:test';import assert from 'node:assert/strict';import{pbkdf2Sync}from'node:crypto';
 import {centralOwnerLogin} from '../src/services/central-owner-login.ts';
-const environment=count=>({DB:{prepare:()=>({all:async()=>({results:Array.from({length:count},(_,i)=>({user_id:i+7}))})})}});
-test('owner sign-in requires one existing active owner, verified central password and authenticated owner session',async()=>{
- let calls=0;const good=async(url,options)=>{calls++;assert.ok(url.startsWith('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/'));if(url.endsWith('/login')){assert.equal(options.headers.Origin,'https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev');return Response.json({ok:true},{headers:{'set-cookie':'__Host-hkem-owner='+'a'.repeat(64)+'; Secure; HttpOnly'}})}if(url.endsWith('/me'))return Response.json({actor:'project-owner',role:'administrator'});return Response.json({ok:true})};
- assert.equal(await centralOwnerLogin(environment(0),'strong-example-password',good),null);assert.equal(await centralOwnerLogin(environment(2),'strong-example-password',good),null);assert.equal(calls,0);
- assert.equal(await centralOwnerLogin(environment(1),'strong-example-password',good),7);assert.equal(calls,3);
- assert.equal(await centralOwnerLogin(environment(1),'strong-example-password',async()=>Response.json({error:'Bad password'},{status:401})),null);
- assert.equal(await centralOwnerLogin(environment(1),'strong-example-password',async()=>Response.json({ok:true})),null);
- assert.equal(await centralOwnerLogin(environment(1),'strong-example-password',async()=>{throw Error('Offline')}),null);
+const password='strong-example-password-for-test',salt='test-salt',hash=pbkdf2Sync(password,salt,100000,32,'sha256').toString('hex');
+const environment=count=>({OWNER_DASHBOARD_PASSWORD_HASH:hash,OWNER_DASHBOARD_PASSWORD_SALT:salt,DB:{prepare:()=>({all:async()=>({results:Array.from({length:count},(_,i)=>({user_id:i+7}))})})}});
+test('owner alias verifies local credential and unique existing owner without modifying members',async()=>{
+ assert.equal(await centralOwnerLogin(environment(0),password),null);assert.equal(await centralOwnerLogin(environment(2),password),null);
+ assert.equal(await centralOwnerLogin(environment(1),password),7);assert.equal(await centralOwnerLogin(environment(1),'wrong-password-value'),null);
+ assert.equal(await centralOwnerLogin({...environment(1),OWNER_DASHBOARD_PASSWORD_HASH:undefined},password),null);
 });

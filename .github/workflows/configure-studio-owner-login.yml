@@ -1,0 +1,47 @@
+name: Configure owner-requested normal Studio login
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/configure-studio-owner-login.yml']
+permissions:
+  contents: read
+concurrency:
+  group: studio-owner-credential-setup
+  cancel-in-progress: false
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: a160ba9fc74911bd4b3005eac86eefcb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify existing owner and install salted password digests only
+        run: |
+          python3 - <<'PY'
+          import json,os,re,pathlib,subprocess,urllib.request
+          account='a160ba9fc74911bd4b3005eac86eefcb'
+          assert os.environ['CLOUDFLARE_ACCOUNT_ID']==account
+          base='https://api.cloudflare.com/client/v4/accounts/'+account
+          def api(path,data=None):
+              request=urllib.request.Request(base+path,data=json.dumps(data).encode() if data else None,headers={'Authorization':'Bearer '+os.environ['CLOUDFLARE_API_TOKEN'],'Content-Type':'application/json'})
+              with urllib.request.urlopen(request,timeout=30) as response: result=json.load(response)
+              assert result.get('success'),'Cloudflare request failed'
+              return result['result']
+          result=api('/d1/database/8665ff03-6a2c-4852-90ab-6c74375a8c87/query',{'sql':"SELECT count(*) n FROM users u JOIN roles r ON r.role_id=u.role_id WHERE r.role_name='Super Administrator' AND u.status='active'"})
+          assert result[0]['results'][0]['n']==1,'Requires the single existing active owner'
+          source=pathlib.Path('account4-control-room/migrations/0004_initial_owner_password.sql').read_text()
+          match=re.search("SELECT 1,'([a-f0-9]{64})','([a-f0-9]{64})','project-owner'",source)
+          assert match,'Initial authorized owner digest not found'
+          names={x['name'] for x in api('/workers/scripts/heavenlykey/secrets')}
+          for name,value in [('OWNER_DASHBOARD_PASSWORD_HASH',match[1]),('OWNER_DASHBOARD_PASSWORD_SALT',match[2])]:
+              if name in names:
+                  print(name+' already exists; preserved')
+                  continue
+              subprocess.run(['npx','--yes','wrangler@4.151.0','secret','put',name,'--name','heavenlykey'],input=value+'\n',text=True,check=True)
+          print('Owner credential digests configured; existing member credentials and roles untouched. No plaintext password used.')
+          PY

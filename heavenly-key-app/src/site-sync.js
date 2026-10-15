@@ -1,5 +1,5 @@
 // Public-only, fixed-origin read gateway. No user session, cookie, token or private data crosses accounts.
-const ORIGIN = 'https://heavenlykey.alldaywow247.workers.dev';
+const ORIGIN = 'https://heavenlykey.org';
 const HEADERS = {'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','referrer-policy':'no-referrer'};
 const response = (data,status=200) => new Response(JSON.stringify(data),{status,headers:HEADERS});
 const text = (value,max=240) => typeof value==='string' ? value.trim().slice(0,max) : '';

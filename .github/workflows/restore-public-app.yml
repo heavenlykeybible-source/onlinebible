@@ -31,6 +31,8 @@ jobs:
           Path('heavenly-key-app/wrangler.recovery.toml').write_text(source)
           PY
           node --check heavenly-key-app/src/index.js
+          node --test heavenly-key-app/test/offline-preservation.test.mjs
+          node --test heavenly-key-app/test/site-sync.test.mjs
       - name: Deploy existing approved app assets and public shell
         run: npx --yes wrangler@4.151.0 deploy --config heavenly-key-app/wrangler.recovery.toml
       - name: Verify actual recovery upstream before routing
