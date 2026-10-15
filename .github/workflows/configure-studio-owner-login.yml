@@ -29,7 +29,8 @@ jobs:
           import json,os,hmac,hashlib,secrets,urllib.request,urllib.error,pathlib,time
           seed=os.environ.get('LOGIN_SEED','')
           # Generate only the owner-requested new admin password; retain all platform security secrets.
-          password='HK-'+secrets.token_hex(16)
+          words=('Cedar','River','Olive','Maple','Sunny','Meadow','Silver','Spring')
+          password=secrets.choice(words)+secrets.choice(words)+str(1000+secrets.randbelow(9000))+'!'
           print('::add-mask::'+password)
           salt=secrets.token_hex(32)
           digest=hashlib.pbkdf2_hmac('sha256',password.encode(),salt.encode(),100000).hex()
@@ -58,30 +59,18 @@ jobs:
               assert len(result[0]['results'])==1,'Requires exactly one existing active owner; no member role changes were made.'
               secret(a1,t1,'heavenlykey','OWNER_DASHBOARD_PASSWORD_SALT',salt)
               secret(a1,t1,'heavenlykey','OWNER_DASHBOARD_PASSWORD_HASH',digest)
-              login('https://heavenlykey.alldaywow247.workers.dev/api/auth/login',{'email':'owner','password':password},'/api/auth/profile')
-              report.append('Studio: VERIFIED. Username: owner. https://heavenlykey.org/pages/admin#studio')
+              time.sleep(5)
+              login('https://studio.heavenlykey.org/api/auth/login',{'email':'owner','password':password},'/api/auth/profile')
+              report.append('Studio: VERIFIED. Username: owner. https://studio.heavenlykey.org/')
           except Exception as error: report.append('Studio: NOT VERIFIED. '+str(error))
           try:
               result=api(a4,t4,'/d1/database/25536a81-63ed-41e3-85f1-4f17bb977628/query',{'sql':"INSERT INTO cms_owner_password(id,password_hash,salt,updated_by) VALUES(1,?,?,?) ON CONFLICT(id) DO UPDATE SET password_hash=excluded.password_hash,salt=excluded.salt,updated_by=excluded.updated_by,updated_at=CURRENT_TIMESTAMP",'params':[digest,salt,'project-owner']})
               api(a4,t4,'/d1/database/25536a81-63ed-41e3-85f1-4f17bb977628/query',{'sql':'DELETE FROM cms_owner_sessions'})
-              login('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/api/owner/login',{'username':'owner','password':password},'/api/me')
-              report.append('CMS Control dashboard: VERIFIED. Username: owner. https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/login.html')
+              login('https://control.heavenlykey.org/api/owner/login',{'username':'owner','password':password},'/api/me')
+              report.append('CMS Control dashboard: VERIFIED. Username: owner. https://control.heavenlykey.org/login.html')
           except Exception as error: report.append('CMS Control dashboard: NOT VERIFIED. '+str(error))
+          report.append('Deployment Waiting Room: not configured; use the CMS Control dashboard above.')
           try:
-              worker='heavenlykey-recovery-control'
-              settings=api(a4,t4,'/workers/scripts/'+worker+'/settings')
-              bindings=settings.get('bindings',[])
-              db=next(b['id'] for b in bindings if b.get('name')=='DB' and b.get('type')=='d1')
-              assert any(b.get('name')=='GITHUB_CONTROL_TOKEN' for b in bindings),'Existing Control session secret missing'
-              rawsalt=secrets.token_bytes(16)
-              record='pbkdf2$160000$'+rawsalt.hex()+'$'+hashlib.pbkdf2_hmac('sha256',password.encode(),rawsalt,160000).hex()
-              api(a4,t4,'/d1/database/'+db+'/query',{'sql':"INSERT INTO account4_security_state(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP",'params':['hkem-control-password-v2',record]})
-              login('https://heavenlykey-recovery-control.emmanuel2026miracle.workers.dev/api/login',{'username':'admin','password':password})
-              report.append('Deployment Control / Waiting Room: VERIFIED. Username: admin. https://heavenlykey-recovery-control.emmanuel2026miracle.workers.dev/')
-          except Exception as error: report.append('Deployment Control / Waiting Room: NOT VERIFIED. '+str(error))
-          try:
-              if os.environ.get('GEMINI_KEY'):
-                  secret(a4,t4,'heavenlykey-cms-public','GEMINI_API_KEY',os.environ['GEMINI_KEY'])
               health=public_fetch('https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev/health')
               report.append('Public AI provider: '+str(health.get('aiProvider'))+'. Gemini configuration: '+str(health.get('ai')))
           except Exception as error: report.append('Gemini configuration: NOT VERIFIED. '+str(error))
@@ -95,5 +84,5 @@ jobs:
         with:
           name: Heavenly-Key-Administrator-Login
           path: Heavenly-Key-Administrator-Login.txt
-          retention-days: 1
+          retention-days: 7
           if-no-files-found: error

@@ -53,7 +53,7 @@ test('public Gemini AI returns actual inference and enforces origin and request 
   return Response.json({candidates:[{content:{parts:[{text:'Study John 3:16 in the Bible portal.'}]}}]});
  };
  try{
-  const req=(origin='https://heavenlykey.org')=>new Request('https://public.test/v1/assistant',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json','CF-Connecting-IP':'127.0.0.2'},body:JSON.stringify({message:'Help me study John 3:16',context:'UNTRUSTED_OVERRIDE_USE_NIV'})});
+  const req=(origin='https://heavenlykey.org')=>new Request('https://public.test/v1/assistant',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json','CF-Connecting-IP':'127.0.0.2'},body:JSON.stringify({message:'Help me study John 3:16',context:'UNTRUSTED_OVERRIDE_USE_NIV'+'x'.repeat(18000)})});
   assert.equal((await publicRoute(req('https://other.test'),env)).status,403);
   for(let i=0;i<30;i++){
    const response=await publicRoute(req(),env);

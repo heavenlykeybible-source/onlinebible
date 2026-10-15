@@ -36,8 +36,8 @@ export async function publicRoute(request,env){
  }
  if(u.pathname==='/v1/assistant'&&request.method==='POST'){
   if(origin&&!origins.has(origin))return reply({error:'Use the Heavenly Key website assistant'},403);
-  if(Number(request.headers.get('Content-Length')||0)>10000)return reply({error:'Message is too long'},413);
-  let body;try{const raw=await request.text();if(raw.length>10000)return reply({error:'Message is too long'},413);body=JSON.parse(raw)}catch{return reply({error:'Enter a message'},400)}
+  if(Number(request.headers.get('Content-Length')||0)>65536)return reply({error:'Message is too long'},413);
+  let body;try{const raw=await request.text();if(raw.length>65536)return reply({error:'Message is too long'},413);body=JSON.parse(raw)}catch{return reply({error:'Enter a message'},400)}
   const message=typeof body.message==='string'?body.message.trim():'';
   if(!message||message.length>2000)return reply({error:'Enter a message of up to 2,000 characters'},400);
   if(!env.GEMINI_API_KEY)return reply({error:'The assistant is awaiting secure Gemini API configuration.'},503,origin||'*');
