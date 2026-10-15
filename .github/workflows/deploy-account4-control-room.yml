@@ -1,6 +1,11 @@
 name: Deploy Account 4 Control Room (manual, guarded)
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'account4-control-room/**'
+      - '.github/workflows/deploy-account4-control-room.yml'
 permissions:
   contents: read
 concurrency:
