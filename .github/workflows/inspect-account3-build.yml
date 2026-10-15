@@ -1,0 +1,45 @@
+name: Inspect Account 3 Cloudflare Build Failure
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/inspect-account3-build.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      CF_TOKEN: ${{ secrets.CF_ACCOUNT3_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CF_ACCOUNT3_ACCOUNT_ID }}
+    steps:
+      - name: Inspect Worker deployment and independent Cloudflare builds read-only
+        shell: python
+        run: |
+          import os,json,urllib.request,urllib.error
+          token=os.environ['CF_TOKEN']; account=os.environ['CF_ACCOUNT']
+          assert account=='cd095c096c2d5a42501e7d77cecbb34c'
+          def get(path):
+              req=urllib.request.Request('https://api.cloudflare.com/client/v4/accounts/'+account+path,headers={'Authorization':'Bearer '+token})
+              try:
+                  with urllib.request.urlopen(req,timeout=25) as r:data=json.load(r)
+              except urllib.error.HTTPError as e:
+                  print('READ_DENIED '+path+' HTTP '+str(e.code));return None
+              if not data.get('success'):
+                  print('READ_ERROR '+path+' '+str([x.get('code') for x in data.get('errors',[])]));return None
+              return data.get('result')
+          name='heavenly-key-global-community'
+          scripts=get('/workers/scripts') or []
+          worker=next((x for x in scripts if x.get('id')==name),None)
+          assert worker,'Expected community Worker missing'
+          print('WORKER_FOUND '+name)
+          deployment=get('/workers/scripts/'+name+'/deployments')
+          print('ACTIVE_DEPLOYMENT '+json.dumps(deployment))
+          tag=worker.get('tag');assert tag,'Worker tag missing'
+          triggers=get('/builds/workers/'+tag+'/triggers')
+          if triggers is not None:
+              print('BUILD_CONFIG '+json.dumps(triggers))
+          builds=get('/builds/workers/'+tag+'/builds?per_page=3')
+          if builds is not None:
+              print('BUILD_HISTORY '+json.dumps(builds))
