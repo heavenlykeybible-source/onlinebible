@@ -49,7 +49,7 @@ jobs:
               assert.equal(await form.locator(portal.password).inputValue(),password);
               const [login]=await Promise.all([
                 page.waitForResponse(r=>new URL(r.url()).pathname===portal.api&&r.request().method()==='POST',{timeout:30000}),
-                form.locator('button[type="submit"]').click()
+                form.getByRole('button',{name:/Sign in/i}).click()
               ]);
               if(login.status()!==200){const body=await login.json().catch(()=>({}));throw Error(portal.name+' mobile form sign-in HTTP '+login.status()+': '+JSON.stringify(body))}
               const profile=await context.request.get(new URL(portal.profile,portal.url).href);
