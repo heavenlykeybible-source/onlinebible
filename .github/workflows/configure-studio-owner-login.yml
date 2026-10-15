@@ -1,4 +1,4 @@
-name: Configure owner-requested normal Studio login
+name: Configure owner-requested Studio and Control administrator
 on:
   workflow_dispatch:
   push:
@@ -12,43 +12,92 @@ concurrency:
 jobs:
   configure:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: a160ba9fc74911bd4b3005eac86eefcb
+      ACCOUNT1_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      ACCOUNT4_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
+      LOGIN_SEED: ${{ secrets.HKEM_CONTROL_TOKEN }}
+      GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify existing owner and install salted password digests only
+      - name: Configure only requested owner credentials and verify actual sign-ins
         run: |
           python3 - <<'PY'
-          import json,os,re,pathlib,subprocess,urllib.request
-          account='a160ba9fc74911bd4b3005eac86eefcb'
-          assert os.environ['CLOUDFLARE_ACCOUNT_ID']==account
-          base='https://api.cloudflare.com/client/v4/accounts/'+account
-          def api(path,data=None):
-              request=urllib.request.Request(base+path,data=json.dumps(data).encode() if data else None,headers={'Authorization':'Bearer '+os.environ['CLOUDFLARE_API_TOKEN'],'Content-Type':'application/json'})
-              with urllib.request.urlopen(request,timeout=30) as response: result=json.load(response)
-              assert result.get('success'),'Cloudflare request failed'
-              return result['result']
-          result=api('/d1/database/8665ff03-6a2c-4852-90ab-6c74375a8c87/query',{'sql':"SELECT count(*) n FROM users u JOIN roles r ON r.role_id=u.role_id WHERE r.role_name='Super Administrator' AND u.status='active'"})
-          assert result[0]['results'][0]['n']==1,'Requires the single existing active owner'
-          source=pathlib.Path('account4-control-room/migrations/0004_initial_owner_password.sql').read_text()
-          match=re.search("SELECT 1,'([a-f0-9]{64})','([a-f0-9]{64})','project-owner'",source)
-          assert match,'Initial authorized owner digest not found'
-          names={x['name'] for x in api('/workers/scripts/heavenlykey/secrets')}
-          for name,value in [('OWNER_DASHBOARD_PASSWORD_HASH',match[1]),('OWNER_DASHBOARD_PASSWORD_SALT',match[2])]:
-              if name in names:
-                  print(name+' already exists; preserved')
-                  continue
-              subprocess.run(['npx','--yes','wrangler@4.151.0','secret','put',name,'--name','heavenlykey'],input=value+'\n',text=True,check=True)
-          print('Owner credential digests configured; existing member credentials and roles untouched. No plaintext password used.')
+          import json,os,hmac,hashlib,secrets,urllib.request,urllib.error,pathlib,time
+          seed=os.environ.get('LOGIN_SEED','')
+          assert len(seed)>=20,'Existing HKEM_CONTROL_TOKEN is required; no replacement security token will be generated.'
+          password='HK-'+hmac.new(seed.encode(),b'owner-requested-admin-2026-10-15-studio-control',hashlib.sha256).hexdigest()[:30]
+          print('::add-mask::'+password)
+          salt=secrets.token_hex(32)
+          digest=hashlib.pbkdf2_hmac('sha256',password.encode(),salt.encode(),100000).hex()
+          report=[]
+          def api(account,token,path,data=None,method=None):
+              assert token,'Existing account token is missing'
+              req=urllib.request.Request('https://api.cloudflare.com/client/v4/accounts/'+account+path,data=json.dumps(data).encode() if data is not None else None,method=method,headers={'Authorization':'Bearer '+token.strip().removeprefix('Bearer '),'Content-Type':'application/json'})
+              try:
+                  with urllib.request.urlopen(req,timeout=40) as response: result=json.load(response)
+              except urllib.error.HTTPError as error: raise RuntimeError('Cloudflare operation failed HTTP '+str(error.code)) from None
+              assert result.get('success'),'Cloudflare operation was not successful'
+              return result.get('result')
+          def secret(account,token,worker,name,value):
+              api(account,token,'/workers/scripts/'+worker+'/secrets',{'name':name,'text':value,'type':'secret_text'},'PUT')
+          def login(url,data,profile=None):
+              origin=url.split('/api/')[0]
+              req=urllib.request.Request(url,data=json.dumps(data).encode(),headers={'Content-Type':'application/json','Origin':origin})
+              with urllib.request.urlopen(req,timeout=40) as response:
+                  assert response.status==200
+                  cookie=response.headers.get('Set-Cookie','').split(';')[0]
+                  assert cookie,'No authenticated session returned'
+              if profile:
+                  with urllib.request.urlopen(urllib.request.Request(origin+profile,headers={'Cookie':cookie}),timeout=40) as response:
+                      assert response.status==200,'Authenticated profile failed'
+              return True
+          a1='a160ba9fc74911bd4b3005eac86eefcb';a4='404ebf05a781fcccbbed44aeb02cb72b'
+          t1=os.environ['ACCOUNT1_TOKEN'];t4=os.environ['ACCOUNT4_TOKEN']
+          try:
+              result=api(a1,t1,'/d1/database/8665ff03-6a2c-4852-90ab-6c74375a8c87/query',{'sql':"SELECT u.user_id FROM users u JOIN roles r ON r.role_id=u.role_id WHERE r.role_name='Super Administrator' AND u.status='active'"})
+              assert len(result[0]['results'])==1,'Requires exactly one existing active owner; no member role changes were made.'
+              secret(a1,t1,'heavenlykey','OWNER_DASHBOARD_PASSWORD_SALT',salt)
+              secret(a1,t1,'heavenlykey','OWNER_DASHBOARD_PASSWORD_HASH',digest)
+              login('https://heavenlykey.alldaywow247.workers.dev/api/auth/login',{'email':'owner','password':password},'/api/auth/profile')
+              report.append('Studio: VERIFIED. Username: owner. https://heavenlykey.org/pages/admin#studio')
+          except Exception as error: report.append('Studio: NOT VERIFIED. '+str(error))
+          try:
+              result=api(a4,t4,'/d1/database/25536a81-63ed-41e3-85f1-4f17bb977628/query',{'sql':"INSERT INTO cms_owner_password(id,password_hash,salt,updated_by) VALUES(1,?,?,?) ON CONFLICT(id) DO UPDATE SET password_hash=excluded.password_hash,salt=excluded.salt,updated_by=excluded.updated_by,updated_at=CURRENT_TIMESTAMP",'params':[digest,salt,'project-owner']})
+              api(a4,t4,'/d1/database/25536a81-63ed-41e3-85f1-4f17bb977628/query',{'sql':'DELETE FROM cms_owner_sessions'})
+              login('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/api/owner/login',{'username':'owner','password':password},'/api/me')
+              report.append('CMS Control dashboard: VERIFIED. Username: owner. https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/login.html')
+          except Exception as error: report.append('CMS Control dashboard: NOT VERIFIED. '+str(error))
+          try:
+              worker='heavenlykey-recovery-control'
+              settings=api(a4,t4,'/workers/scripts/'+worker+'/settings')
+              bindings=settings.get('bindings',[])
+              db=next(b['id'] for b in bindings if b.get('name')=='DB' and b.get('type')=='d1')
+              assert any(b.get('name')=='GITHUB_CONTROL_TOKEN' for b in bindings),'Existing Control session secret missing'
+              rawsalt=secrets.token_bytes(16)
+              record='pbkdf2$160000$'+rawsalt.hex()+'$'+hashlib.pbkdf2_hmac('sha256',password.encode(),rawsalt,160000).hex()
+              api(a4,t4,'/d1/database/'+db+'/query',{'sql':"INSERT INTO account4_security_state(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP",'params':['hkem-control-password-v2',record]})
+              login('https://heavenlykey-recovery-control.emmanuel2026miracle.workers.dev/api/login',{'username':'admin','password':password})
+              report.append('Deployment Control / Waiting Room: VERIFIED. Username: admin. https://heavenlykey-recovery-control.emmanuel2026miracle.workers.dev/')
+          except Exception as error: report.append('Deployment Control / Waiting Room: NOT VERIFIED. '+str(error))
+          try:
+              if os.environ.get('GEMINI_KEY'):
+                  secret(a4,t4,'heavenlykey-cms-public','GEMINI_API_KEY',os.environ['GEMINI_KEY'])
+              with urllib.request.urlopen('https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev/health',timeout=30) as response: health=json.load(response)
+              report.append('Public AI provider: '+str(health.get('aiProvider'))+'. Gemini configuration: '+str(health.get('ai')))
+          except Exception as error: report.append('Gemini configuration: NOT VERIFIED. '+str(error))
+          text='HEAVENLY KEY PRIVATE ADMINISTRATOR LOGIN\n\nPassword: '+password+'\n\n'+'\n'.join(report)+'\n\nExisting member password pepper, encryption keys, Cloudflare Access policy, database schema and content were not modified.\n'
+          pathlib.Path('Heavenly-Key-Administrator-Login.txt').write_text(text)
+          os.chmod('Heavenly-Key-Administrator-Login.txt',0o600)
+          for line in report: print(line)
           PY
-      - name: Verify public CMS revision and media integration metadata
-        run: |
-          node --input-type=module <<'JS'
-          const r=await fetch('https://api.cloudflare.com/client/v4/accounts/a160ba9fc74911bd4b3005eac86eefcb/workers/scripts/heavenlykey/secrets',{headers:{Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN}});const d=await r.json();if(!r.ok||!d.success)throw Error('Secret metadata lookup failed');console.log('Media integration shared-secret binding present:',d.result.some(x=>x.name==='MEDIA_ENGINE_SHARED_SECRET'));
-          const p=await fetch('https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev/v1/content?site=account1&page=home');const published=await p.json();if(!p.ok||published.footer?.designer?.label!=='TALKMONEY Ecosystem'||!published.footer?.version)throw Error('Published CMS footer not verified');console.log('Actual published CMS footer revision:',published.footer.version);
-          for(const url of ['https://www.heavenlykey.org/','https://heavenlykey.org/api/site-content/homepage','https://heavenlykey.org/api/events','https://app.heavenlykey.org/api/site-sync']){const r=await fetch(url,{redirect:'manual',signal:AbortSignal.timeout(20000)});console.log('Final public integration:',url,r.status);if(url.includes('/api/'))console.log((await r.text()).slice(0,400));}
-          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Heavenly-Key-Administrator-Login
+          path: Heavenly-Key-Administrator-Login.txt
+          retention-days: 1
+          if-no-files-found: error
