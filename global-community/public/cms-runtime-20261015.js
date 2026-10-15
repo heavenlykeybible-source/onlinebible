@@ -97,7 +97,7 @@
  }
  function sharing(){if(!document.querySelector('main')||site==='account4')return;const container=document.createElement('div');container.className='hkem-share-tools';container.dataset.cmsIgnore='';const b=document.createElement('button');b.type='button';b.textContent=site==='account3'?'Share & invite to the community':'Share this app or page';const status=document.createElement('span');status.setAttribute('role','status');b.onclick=async()=>{const u=new URL(location.href);for(const key of ['hkem-cms','hkem-session','hkem-control'])u.searchParams.delete(key);const data={title:document.title,url:u.href};try{if(navigator.share){await navigator.share(data);status.textContent=''}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(u.href);status.textContent='Link copied. Share it with your family and friends.'}else{prompt('Copy this link to share',u.href)}}catch(e){if(e.name!=='AbortError')status.textContent='Sharing could not open. Please copy the page link.'}};container.append(b,status);const footer=document.querySelector('footer');if(footer)footer.prepend(container);else document.querySelector('main').append(container)}
  async function start(){collect();sharing();try{const response=await fetch(PUBLIC+'/v1/content?site='+site+'&page='+encodeURIComponent(key),{credentials:'omit',cache:'no-store'});if(response.ok){const data=await response.json();apply(data.content?.fields);applyMenu(data.menu);applyFooter(data.footer)}}catch{}
-  if(editing)editor();else if(!['account3','account4'].includes(site))assistant();
+  if(editing)editor();else if(site!=='account4')assistant();
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,450),{once:true});else setTimeout(start,450);
 })();
