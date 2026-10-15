@@ -70,7 +70,7 @@ crons = ["* * * * *"]
 
 # Account 2 Media/Broadcast Engine
 [vars]
-MEDIA_ENGINE_URL = "https://heavenlykey-media.omegawealthcreator.workers.dev"
+MEDIA_ENGINE_URL = "https://heavenlykey-media.faithofourfatherstv.workers.dev"
 PUBLIC_SITE_URL = "https://heavenlykey.alldaywow247.workers.dev"
 
 [env.staging.vars]
