@@ -133,7 +133,7 @@ jobs:
 
       - name: Deploy public CMS snapshots and public AI
         run: npx wrangler deploy --config ../cms-public/wrangler.toml
-      - name: Deploy owner password dashboard with server authentication on every asset
+      - name: Deploy public owner page with password-protected editing APIs
         run: |
           python3 - <<'PYOWNER'
           from pathlib import Path
@@ -151,6 +151,6 @@ jobs:
           const ai=await fetch(root+'/v1/assistant',{method:'POST',headers:{Origin:'https://heavenlykey.org','Content-Type':'application/json'},body:JSON.stringify({message:'Briefly explain John 3:16 and link to the Heavenly Key Bible portal.'})});
           const answer=await ai.json();if(!ai.ok||!answer.response?.trim())throw Error('Real public AI inference failed: '+(answer.error||ai.status));console.log('Real public AI response verified:',answer.response.slice(0,700));
           const gate=await fetch('https://heavenlykey-control-room.emmanuel2026miracle.workers.dev/',{redirect:'manual'});if(![302,303,307].includes(gate.status)||!gate.headers.get('location')?.includes('cloudflareaccess.com'))throw Error('Original Access protection failed');
-          const owner=await fetch('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/',{redirect:'manual'});if(owner.status!==302||!owner.headers.get('location')?.endsWith('/login.html'))throw Error('Owner dashboard must require sign-in');
-          const denied=await fetch('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/api/me');if(denied.status!==401)throw Error('Unauthenticated admin API accessible');console.log('Both administrator sign-in gates verified');
+          const owner=await fetch('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/',{redirect:'manual'});if(owner.status!==200)throw Error('Owner page should open publicly');
+          const denied=await fetch('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/api/me');if(denied.status!==401)throw Error('Unauthenticated admin API accessible');console.log('Public owner page and protected editing APIs verified');
           JS

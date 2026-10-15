@@ -37,7 +37,7 @@ try{
  for(const url of ['https://app.heavenlykey.org/','https://heavenly-key-app.heavenlykeyapp.workers.dev/','https://heavenlykey-media.faithofourfatherstv.workers.dev/','https://heavenlykey.org/pages/admin#studio']){
   try{const r=await fetch(url,{redirect:'manual',signal:AbortSignal.timeout(20000)}),text=await r.text();console.log(JSON.stringify({additionalPublicCheck:url,http:r.status,location:r.headers.get('location'),title:text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]}))}catch(error){console.log(JSON.stringify({additionalPublicCheck:url,error:error.message}))}
  }
- const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage();await page.goto('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/');if(!page.url().includes('/login'))throw Error('Owner dashboard did not require login');await page.locator('input[type=password]').waitFor();await page.screenshot({path:'/tmp/heavenly-key-screenshots/owner-signin-mobile.png'});await context.close();
+ const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage();await page.goto('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/login.html');await page.locator('input[type=password]').waitFor();await page.screenshot({path:'/tmp/heavenly-key-screenshots/owner-signin-mobile.png'});await context.close();
 }finally{await browser.close()}
 if(failures.length)throw Error(failures.join('\n'));
 console.log('Live desktop/mobile CMS renderer, community home and public AI interface verification passed.');

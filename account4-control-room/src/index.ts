@@ -36,14 +36,13 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
  const accessActor=ownerHost?null:await authenticate(request,env);
  const actor=accessActor||(ownerHost?await ownerSession(request,env.DB):null);
  if(!u.pathname.startsWith('/api/')){
-  if(ownerHost&&!actor&&!['/login','/login.html','/control.css','/owner-login.js'].includes(u.pathname))return Response.redirect(u.origin+'/login.html',302);
   return env.ASSETS.fetch(request);
  }
  if(!actor)return fail('Administrator sign-in required',401);
  if(!['GET','HEAD','OPTIONS'].includes(request.method)&&(request.headers.get('Origin')!==u.origin||request.headers.get('Sec-Fetch-Site')==='cross-site'))return fail('Use the Control Room to make this change.',403);
  try{
   const location=()=>keyOf(u);
-  if(u.pathname==='/api/owner/password'&&request.method==='POST'){if(!accessActor)return fail('Use protected owner access to create or change the password.',403);const data=await body(request,4096),password=data.generate===true?generatedPassword():data.password;await setOwnerPassword(env.DB,password,actor);return json({ok:true,password:data.generate===true?password:undefined,signInUrl:'https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/'})}
+  if(u.pathname==='/api/owner/password'&&request.method==='POST'){if(!accessActor&&!ownerHost)return fail('Owner sign-in required.',403);const data=await body(request,4096),password=data.generate===true?generatedPassword():data.password;await setOwnerPassword(env.DB,password,actor);return json({ok:true,password:data.generate===true?password:undefined,signInUrl:'https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/'})}
   if(u.pathname==='/api/owner/logout'&&request.method==='POST')return new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json','cache-control':'no-store','set-cookie':await ownerLogout(request,env.DB)}});
   if(u.pathname==='/api/me')return json({actor,role:'administrator'});
   if(u.pathname==='/api/system/health'&&request.method==='GET'){
