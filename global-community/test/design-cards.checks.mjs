@@ -29,7 +29,7 @@ test('one shared Heavenly Key AI is present in composer and as a small search su
  const fs=await import('node:fs');
  const app=fs.readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
  assert.equal((app.match(/function openHeavenlyKeyAi\(/g)||[]).length,1);
- for(const key of ["'/api/community-ai'","hk-ai-search-suggestion","hk-ai-composer","DC.POST_GUIDES","DC.FEATURED_CARD_PRESETS"])assert.ok(app.includes(key),key);
+ for(const key of ["'https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev/v1/assistant'","hk-ai-search-suggestion","hk-ai-composer","DC.POST_GUIDES","DC.FEATURED_CARD_PRESETS"])assert.ok(app.includes(key),key);
  assert.ok(app.includes("if(!requireSignIn())return"));
  assert.ok(!app.includes("YOUR_AI_API_KEY"));
 });
