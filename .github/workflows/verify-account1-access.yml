@@ -1,0 +1,49 @@
+name: Verify Account 1 Cloudflare Access
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/verify-account1-access.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT: ${{ secrets.CF_ACCOUNT1_ACCOUNT_ID }}
+    steps:
+      - name: Validate Account 1 credentials and inspect domain routing without changes
+        shell: python
+        run: |
+          import os, json, urllib.request, urllib.error
+          token=os.environ.get('CF_TOKEN','')
+          account=os.environ.get('CF_ACCOUNT','')
+          assert token, 'Missing CLOUDFLARE_API_TOKEN'
+          assert account=='a160ba9fc74911bd4b3005eac86eefcb', 'CF_ACCOUNT1_ACCOUNT_ID is missing or mismatched'
+          def get(path):
+              req=urllib.request.Request('https://api.cloudflare.com/client/v4'+path,headers={'Authorization':'Bearer '+token})
+              try:
+                  with urllib.request.urlopen(req,timeout=30) as r: data=json.load(r)
+              except urllib.error.HTTPError as e:
+                  print('Cloudflare read denied: HTTP '+str(e.code))
+                  return None
+              if not data.get('success'):
+                  print('Cloudflare read rejected: '+str([e.get('code') for e in data.get('errors',[])]))
+                  return None
+              return data.get('result')
+          scripts=get('/accounts/'+account+'/workers/scripts')
+          assert scripts is not None, 'Account 1 Workers access failed'
+          print('Account 1 Workers access verified. Worker names: '+', '.join(s.get('id','') for s in scripts))
+          zones=get('/zones?name=heavenlykey.org')
+          if zones is None:
+              print('DNS access unavailable with this token')
+          else:
+              assert len(zones)==1, 'Expected exactly one heavenlykey.org zone'
+              zone=zones[0]
+              assert zone.get('account',{}).get('id')==account, 'Domain is not under Account 1'
+              records=get('/zones/'+zone['id']+'/dns_records?name=global.heavenlykey.org')
+              print('Global DNS records: '+json.dumps([{k:r.get(k) for k in ['type','name','content','proxied']} for r in records or []]))
+              routes=get('/zones/'+zone['id']+'/workers/routes')
+              print('Global Worker routes: '+json.dumps([r for r in routes or [] if 'global.heavenlykey.org' in r.get('pattern','')]))
