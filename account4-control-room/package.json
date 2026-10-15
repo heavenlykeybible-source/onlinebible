@@ -11,5 +11,9 @@
     "typescript": "^5.9.3",
     "wrangler": "^4.45.0",
     "@cloudflare/workers-types": "^4.20250927.0"
-  }
+  },
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "packageManager": "npm@10.9.2"
 }
