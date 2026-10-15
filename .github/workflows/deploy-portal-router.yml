@@ -69,17 +69,15 @@ jobs:
             const old=domains.find(x=>x.hostname===hostname);
             if(old&&old.service!=='heavenlykey-portals')throw Error(hostname+' already belongs to another Worker');
             if(old){console.log('Existing custom domain confirmed:',hostname);continue}
-            const records=await api('/zones/'+zone+'/dns_records?name='+encodeURIComponent(hostname));
-            if(records.length){
-              if(records.some(x=>!['A','AAAA','CNAME'].includes(x.type)))throw Error(hostname+' has an unsupported DNS configuration; preserved');
-              for(const record of records){if(!record.proxied)await api('/zones/'+zone+'/dns_records/'+record.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({proxied:true})});}
+            try{
+              await api('/accounts/'+account+'/workers/domains',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({hostname,service:'heavenlykey-portals',environment:'production',zone_id:zone})});
+              console.log('Custom domain attached:',hostname);
+            }catch(error){
+              if(!String(error.message).includes('100117'))throw error;
               const pattern=hostname+'/*',existing=routes.find(x=>x.pattern===pattern);
               if(existing&&existing.script!=='heavenlykey-portals')throw Error(hostname+' already has another exact Worker route; preserved');
               if(!existing)await api(routePath,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pattern,script:'heavenlykey-portals'})});
               console.log('Hostname routed with existing DNS records preserved:',hostname);
-            }else{
-              await api('/accounts/'+account+'/workers/domains',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({hostname,service:'heavenlykey-portals',environment:'production',zone_id:zone})});
-              console.log('Custom domain attached:',hostname);
             }
           }
           JS
