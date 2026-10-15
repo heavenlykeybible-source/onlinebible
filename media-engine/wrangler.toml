@@ -15,7 +15,7 @@ bucket_name = "heavenlykey-media-engine"
 
 [[kv_namespaces]]
 binding = "LIVE_STATUS_KV"
-id = "48b29391b8534b1aaea98552264c3a66"
+id = "1678e0f0cc6c4facb360346df667445c"
 
 [vars]
 MEDIA_ENGINE_VERSION = "v1"
