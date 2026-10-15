@@ -25,6 +25,7 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
  const actor=await authenticate(request,env);if(!actor)return fail("Cloudflare Access administrator authentication required",401);
  try{
  if(u.pathname==="/api/me")return json({actor,role:"administrator"});
+ if(u.pathname==="/api/system/health"&&request.method==="GET"){let cms="unavailable";try{await env.DB.prepare("SELECT 1 FROM cms_entries LIMIT 1").first();cms="ready"}catch{}return json({cms,ai:env.AI?"binding_present":"binding_missing",media:env.MEDIA?"binding_present":"binding_missing",deployment:"disabled",note:"AI binding presence does not guarantee successful inference. CMS drafts are not published to other websites."})}
  if(u.pathname==="/api/deploy/sites"&&request.method==="GET")return json({sites:SITES,executionEnabled:false});
  if(u.pathname==="/api/deploy/plan"&&request.method==="POST"){if(Number(request.headers.get("content-length")||0)>4096)return fail("Request too large",413);const raw=await request.text();if(raw.length>4096)return fail("Request too large",413);try{return json({plan:planDeployment(JSON.parse(raw))})}catch(e){return fail(e instanceof Error?e.message:"Invalid request",400)}}
  if(u.pathname==="/api/entry"&&request.method==="GET"){const {site,kind,key}=keyOf(u);const entry=await env.DB.prepare("SELECT content,version,updated_at FROM cms_entries WHERE site=? AND kind=? AND entry_key=?").bind(site,kind,key).first();return json({entry:entry||null})}
