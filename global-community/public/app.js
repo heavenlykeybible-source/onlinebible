@@ -1,10 +1,21 @@
 (async()=>{
 "use strict";
-const DC=await import("./design-cards.js");
-const PasswordPolicy=await import("./password-policy.js");
+const [DC,PasswordPolicy]=await Promise.all([import("./design-cards.js"),import("./password-policy.js")]);
 const $=(s,r=document)=>r.querySelector(s),root=$("#page-root");let page=document.body.dataset.page;
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined&&text!==null)n.textContent=String(text);if(cls)n.className=cls;return n;};
-async function api(path,method="GET",body){const init={method,credentials:"same-origin",headers:{Accept:"application/json"}};if(body!==undefined){init.headers["Content-Type"]="application/json";init.body=JSON.stringify(body);}let r;try{r=await fetch(path,init);}catch{throw Error("Network unavailable. Check your connection and try again.");}let d={};try{d=await r.json();}catch{}if(!r.ok)throw Error(d?.error?.message||("Request failed (HTTP "+r.status+")."));return d;}
+async function api(path,method="GET",body){
+ const init={method,credentials:"same-origin",headers:{Accept:"application/json"}};
+ if(body!==undefined){init.headers["Content-Type"]="application/json";init.body=JSON.stringify(body);}
+ // Bound reads on poor connections. Writes are never retried or aborted here.
+ const controller=method==="GET"?new AbortController():null;
+ const timer=controller?setTimeout(()=>controller.abort(),12000):null;
+ if(controller)init.signal=controller.signal;
+ try{
+  let r;try{r=await fetch(path,init);}catch(e){throw Error(e.name==="AbortError"?"The connection is taking too long. Please try again.":"Network unavailable. Check your connection and try again.");}
+  let d={};try{d=await r.json();}catch(e){if(controller?.signal.aborted)throw Error("The connection is taking too long. Please try again.");}
+  if(!r.ok)throw Error(d?.error?.message||("Request failed (HTTP "+r.status+")."));return d;
+ }finally{if(timer!==null)clearTimeout(timer);}
+}
 const dateTime=value=>{if(value==null||value==='')return new Date(NaN);if(value instanceof Date)return value;const text=String(value).trim();return new Date(/(?:Z|[+-]\d{2}:?\d{2})$/i.test(text)?text:text.replace(' ','T')+'Z');};
 const status=(node,msg)=>{if(node)node.textContent=msg||"";};
 let session=null,notificationEvents=null;
@@ -453,7 +464,7 @@ async function navigate(target,options={}){
 }
 async function renderPage(){
  await sessionLoad();if(session?.user.status==='restricted'&&page!=='safety'&&page!=='account'){navigate('safety.html',{replace:true});return;}
- await networkNotifications();
+ void networkNotifications();
  for(const link of document.querySelectorAll('.navlinks a,.mobile-dock a')){const target=new URL(link.href,location.href),active=pageFor(target)===page&&(!target.hash||target.hash===location.hash);if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}
  const more=document.querySelector('.mobile-more');if(more){more.querySelector('summary')?.classList.toggle('current',!!more.querySelector('a[aria-current=page]'));}
  const label={home:'Home',fellowship:'Fellowship',prayer:'Prayer',groups:'Groups',grow:'Grow in Christ',missions:'Missions',spaces:'Spaces',profile:'Profile',messages:'Messages',safety:'Safety & privacy',account:'Account',salvation:'Find hope in Christ'}[page]||'Community';document.title=label+' | Heavenly Key Global Christian Social Network';const hero=document.querySelector('.hero h1');if(hero)hero.textContent=label;
@@ -461,7 +472,7 @@ async function renderPage(){
 }
 document.body.dataset.currentViewUrl=location.href;
 networkChrome();
-const {mountMediaDock}=await import('./media-dock.js');mountMediaDock({onOpen:()=>{keepNavigation=true;}});
+import('./media-dock.js').then(({mountMediaDock})=>mountMediaDock({onOpen:()=>{keepNavigation=true;}})).catch(()=>{/* Media controls must not block the community. */});
 document.addEventListener('input',e=>{if(root.contains(e.target)&&e.target.closest('form')&&!e.target.closest('.chat-form'))viewDirty=true;});
 root.addEventListener('submit',e=>{if(e.defaultPrevented)return;viewDirty=false;});
 document.addEventListener('click',e=>{
@@ -470,6 +481,9 @@ document.addEventListener('click',e=>{
  e.preventDefault();document.querySelectorAll('.mobile-more,.notifications').forEach(n=>n.open=false);navigate(url.href);
 });
 window.addEventListener('popstate',()=>{if(keepNavigation)navigate(location.href,{fromHistory:true});});
-viewBusy=true;try{await renderPage();}finally{viewBusy=false;if(queuedNavigation){const queued=queuedNavigation;queuedNavigation=null;navigate(...queued);}}
+const loading=el('section',null,'card community-loading');loading.setAttribute('role','status');loading.append(el('p','Loading your community…'));
+root.append(loading);
+viewBusy=true;try{await renderPage();}finally{loading.remove();viewBusy=false;if(queuedNavigation){const queued=queuedNavigation;queuedNavigation=null;navigate(...queued);}}
 
 })().catch(e=>{const host=document.querySelector("#page-root");if(host)host.textContent="Unable to load. Please refresh. "+e.message;});
+
