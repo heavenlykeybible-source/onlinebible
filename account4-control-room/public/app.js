@@ -7,7 +7,7 @@
  function status(text){$('#status').textContent=text}
  async function api(path,init){const response=await fetch(path,init);let data;try{data=await response.json()}catch{throw Error('Sign in to the Control Room, then reload this page.')}if(!response.ok)throw Error(data.error||'The request could not be completed.');return data}
  const post=(path,body)=>api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
- const emptyFooter=()=>({schema:1,copyright:'Copyright © Heavenly Key Evangelistic Movement 2012-2026.',designer:{label:'TALKMONEY',href:'https://talkmoney.uk'}});
+ const emptyFooter=()=>({schema:1,copyright:'Copyright © Heavenly Key Evangelistic Movement 2012-2026.',designer:{label:'TALKMONEY Ecosystem',href:'https://talkmoney.uk'}});
  function message(type,data={}){if(preview&&!preview.closed)preview.postMessage({type,nonce,...data},sites[$('#site').value].origin)}
  function render(){
   $('#advanced').value=JSON.stringify(doc,null,2);$('#target').textContent='Editing '+effective()+' · '+(kind==='page'?pageKey():kind+' across this website');

@@ -19,8 +19,11 @@ let enhanceAttempts=0;
 async function enhance(){if(document.body.dataset.page!=='home')return;let member=false;try{const r=await fetch('/api/me',{credentials:'same-origin',headers:{Accept:'application/json'}});member=r.ok;}catch{}
  const stream=document.querySelector('.social-stream'),aside=document.querySelector('.social-sidebar');if(!stream||!aside){if(++enhanceAttempts<25)setTimeout(enhance,120);return;}enhanceAttempts=0;
  document.body.classList.toggle('community-visitor',!member);document.body.classList.toggle('community-member',member);
- if(member){document.querySelector('.community-welcome')?.remove();document.querySelector('.reference-banner')?.classList.add('member-banner');if(!aside.querySelector('.community-app-card'))aside.prepend(appCard(true));if(!aside.querySelector('.community-bible-card'))aside.prepend(bibleCard());memberFeedShell();}
- else {const welcome=document.querySelector('.community-welcome');if(welcome){welcome.classList.add('visitor-first-picture');stream.prepend(welcome);}const hero=document.querySelector('.reference-banner');if(hero&&!stream.querySelector('.community-app-card.visitor'))hero.after(appCard(false));else if(!stream.querySelector('.community-app-card.visitor'))stream.prepend(appCard(false));if(!aside.querySelector('.community-bible-card'))aside.prepend(bibleCard());memberFeedShell();visitorFooter();}
+ document.querySelectorAll('.community-welcome,.reference-banner,.reference-family,.reference-mission,.community-purpose,.community-app-card,.community-bible-card,.hk-family-promo').forEach(n=>n.remove());
+ const nav=document.querySelector('.social-rail');if(nav&&!nav.querySelector('.hk-community-ministry-note')){const note=node('div','hk-community-ministry-note');const logo=document.createElement('img');logo.src='/assets/community-mark.svg';logo.alt='Heavenly Key';note.append(logo,node('p','','A community by Heavenly Key Evangelistic Movement.'));nav.append(note);}
+ const sentinel=stream.querySelector('[data-load-more]');if(sentinel)sentinel.setAttribute('aria-label','Load more community posts');
+
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(enhance,30));else setTimeout(enhance,30);
 })();
+
