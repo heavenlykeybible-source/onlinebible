@@ -17,3 +17,9 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
 
 .flags img{display:block;width:690px;max-width:none;height:28px;object-fit:contain}.flags{font-size:16px}.hkem-ui-2{font-size:16px}
+
+/* Keep the scrolling country flags consistently small in every browser and viewport. */
+.world-strip .flags{display:flex;align-items:center;flex:0 0 auto;line-height:1}
+.world-strip .flags img{display:block;flex:none;width:690px!important;height:20px!important;max-height:20px!important;min-height:0!important;max-width:none!important;object-fit:contain;object-position:center}
+.world-strip .flag-window,.world-strip .flag-track{min-height:0}
+@media(max-width:600px){.world-strip .flags img{height:16px!important;max-height:16px!important}}
