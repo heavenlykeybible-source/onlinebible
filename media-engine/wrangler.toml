@@ -7,7 +7,7 @@ compatibility_date = "2025-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "heavenlykey-media-db"
-database_id = "c0fe5ca1-cb39-4fbb-bad0-e6b2fa8c825a"
+database_id = "0a512013-8b98-46b2-9404-4df65b0c0f04"
 
 [[r2_buckets]]
 binding = "MEDIA_R2"
@@ -15,7 +15,7 @@ bucket_name = "heavenlykey-media-engine"
 
 [[kv_namespaces]]
 binding = "LIVE_STATUS_KV"
-id = "48b29391b8534b1aaea98552264c3a66"
+id = "1678e0f0cc6c4facb360346df667445c"
 
 [vars]
 MEDIA_ENGINE_VERSION = "v1"
