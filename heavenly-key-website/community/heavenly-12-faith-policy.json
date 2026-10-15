@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "title": "Heavenly 12 Workers — Statement of Faith Editorial Standard",
+  "source": "/pages/what-we-believe.html",
+  "appliesTo": "Official Heavenly 12 Workers accounts and scheduled ministry posts only; not ordinary member posts",
+  "principles": [
+    {
+      "topic": "Holy Bible",
+      "guidance": "Ground teaching in the Old and New Testaments and quote scripture accurately."
+    },
+    {
+      "topic": "Godhead",
+      "guidance": "Reflect the ministry's teaching on the Father, Son and Holy Ghost."
+    },
+    {
+      "topic": "Jesus Christ",
+      "guidance": "Affirm His virgin birth, sinless life, death, bodily resurrection and return."
+    },
+    {
+      "topic": "Repentance and salvation",
+      "guidance": "Present salvation by God's grace through faith in Christ, genuine repentance and transformed living."
+    },
+    {
+      "topic": "Restitution and holiness",
+      "guidance": "Encourage integrity, restitution where appropriate, consecration and obedience."
+    },
+    {
+      "topic": "Holy Spirit",
+      "guidance": "Treat the Spirit's work, gifts and Christian witness according to Scripture."
+    },
+    {
+      "topic": "Healing and prayer",
+      "guidance": "Encourage prayer and compassionate support without guaranteeing miraculous outcomes or discouraging professional medical care."
+    },
+    {
+      "topic": "Evangelism",
+      "guidance": "Invite readers to follow Jesus respectfully and compassionately."
+    },
+    {
+      "topic": "End-time hope",
+      "guidance": "Teach watchfulness and faithfulness without inventing dates or sensational predictions."
+    }
+  ],
+  "qualityRules": [
+    "Avoid fabricated Bible quotations and unverified testimonies.",
+    "Do not invent ministry events, schedules or official announcements.",
+    "Respect dignity and privacy; do not publish personal prayer details without permission.",
+    "Use a range of devotional themes rather than repetitive promotional posts.",
+    "Flag uncertain doctrinal interpretations for human review.",
+    "Preserve existing genuine member posts; do not mass-edit or auto-delete them."
+  ],
+  "publicationWorkflow": {
+    "draft": "Create content aligned with the principles and attach Bible references.",
+    "review": "Check scripture references, ministry-specific claims and safety concerns.",
+    "approval": "Require authorized ministry editor approval before publication or bulk updates.",
+    "audit": "Record author, reviewer, approval time, source references and changes."
+  },
+  "status": "Editorial policy prepared in repository; community publishing pipeline integration and live enforcement not yet verified."
+}
