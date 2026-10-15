@@ -37,7 +37,7 @@ test('public Gemini AI returns actual inference and enforces origin and request 
  const db=database();let calls=0;const env={DB:db,GEMINI_API_KEY:'test-key-not-a-real-secret'};
  const originalFetch=globalThis.fetch;
  globalThis.fetch=async(url,options)=>{
-  assert.match(String(url),/generativelanguage\\.googleapis\\.com/);
+  assert.ok(String(url).startsWith('https://generativelanguage.googleapis.com/'));
   assert.equal(options.headers['x-goog-api-key'],env.GEMINI_API_KEY);
   const payload=JSON.parse(options.body);
   assert.match(payload.systemInstruction.parts[0].text,/Heavenly Key Evangelistic Movement/);
