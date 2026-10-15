@@ -6,7 +6,7 @@ workers_dev = true
 directory = "./public"
 binding = "ASSETS"
 run_worker_first = ["/api/*"]
-# Fill existing Account 4 D1 ID and R2 bucket name before deployment.
+# Account 4 D1 and R2 resources are explicitly bound below; do not replace with resources from other accounts.
 [[d1_databases]]
 binding = "DB"
 database_name = "heavenlykey-control-room-db"
