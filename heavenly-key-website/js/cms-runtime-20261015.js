@@ -20,11 +20,11 @@
  function collect(){
   const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let node;
   while((node=walker.nextNode())){const el=node.parentElement;if(!el||el.closest(skip)||!node.nodeValue.trim()||node.nodeValue.length>5000)continue;const p=selector(el),i=[...el.childNodes].indexOf(node),id='t_'+hash(p+'|text:'+i);descriptors.set(id,{key:id,type:'text',value:node.nodeValue,node,element:el,label:node.nodeValue.trim().slice(0,90)})}
-  for(const el of document.querySelectorAll('img,a[href],main section,[data-cms-section]')){if(el.closest(skip))continue;const p=selector(el);
+  for(const el of document.querySelectorAll('img,a[href],main,main section,[data-cms-section]')){if(el.closest(skip))continue;const p=selector(el);
    const add=(prefix,type,value)=>{const id=prefix+'_'+hash(p+'|'+type);descriptors.set(id,{key:id,type,value,element:el,label:(el.getAttribute('alt')||el.textContent||el.getAttribute('aria-label')||el.tagName).trim().slice(0,90)})};
    if(el.tagName==='IMG'){add('i','image',el.getAttribute('src')||'');add('a','alt',el.getAttribute('alt')||'')}
    if(el.tagName==='A')add('l','link',el.getAttribute('href')||'');
-   if(el.matches('main section,[data-cms-section]')){add('v','visible',!el.hidden);add('b','background','')}
+   if(el.matches('main,main section,[data-cms-section]')){if(el.tagName!=='MAIN')add('v','visible',!el.hidden);add('b','background','');add('s','layout','original');add('c','tone','original')}
   }
  }
  function apply(fields){for(const f of fields||[]){const d=descriptors.get(f.key);if(!d||d.type!==f.type)continue;const el=d.element;
@@ -34,6 +34,8 @@
   if(f.type==='link'&&safe(f.value))el.setAttribute('href',f.value);
   if(f.type==='visible'&&typeof f.value==='boolean')el.hidden=!f.value;
   if(f.type==='background'&&safe(f.value,true))el.style.backgroundImage=f.value?'url('+JSON.stringify(f.value)+')':'';
+  if(f.type==='layout'&&['original','contained','wide','full'].includes(f.value)){for(const v of ['contained','wide','full'])el.classList.remove('hkem-layout-'+v);if(f.value!=='original')el.classList.add('hkem-layout-'+f.value)}
+  if(f.type==='tone'&&['original','royal','wine','gold','light','dark'].includes(f.value)){for(const v of ['royal','wine','gold','light','dark'])el.classList.remove('hkem-tone-'+v);if(f.value!=='original')el.classList.add('hkem-tone-'+f.value)}
   d.value=f.value;
  }}
  function menuTarget(){return document.querySelector('.nav:not(.hk-family-nav),.navlinks,nav[aria-label="Main navigation"],header nav')}
@@ -72,7 +74,7 @@
  function assistant(){
   if(document.getElementById('hkem-public-assistant'))return;
   const root=document.createElement('aside');root.id='hkem-public-assistant';root.dataset.cmsIgnore='';root.setAttribute('aria-label','Heavenly Key AI assistant');root.classList.add('hkem-ui-2');
-  const toggle=document.createElement('button');toggle.type='button';toggle.textContent='Heavenly Key AI';toggle.setAttribute('aria-expanded','false');toggle.classList.add('hkem-ui-3');
+  const toggle=document.createElement('button');toggle.type='button';toggle.textContent='AI';toggle.setAttribute('aria-label','Open Heavenly Key AI assistant');toggle.title='Heavenly Key AI';toggle.setAttribute('aria-expanded','false');toggle.classList.add('hkem-ui-3');
   const panel=document.createElement('section');panel.hidden=true;panel.classList.add('hkem-ui-4');
   const title=document.createElement('strong');title.textContent='Heavenly Key AI';const close=document.createElement('button');close.type='button';close.textContent='Close';close.classList.add('hkem-ui-5');
   const answer=document.createElement('div');answer.setAttribute('role','status');answer.classList.add('hkem-ui-6');answer.textContent='Ask about the ministry, a Bible passage, prayer wording or Christian writing.';
@@ -83,8 +85,9 @@
    try{const response=await fetch(PUBLIC+'/v1/assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message}),signal:controller.signal,credentials:'omit'});const data=await response.json();if(!response.ok)throw Error(data.error||'The assistant could not respond.');answer.textContent=data.response;input.value=''}catch(error){answer.textContent=error.name==='AbortError'?'The assistant is taking longer than expected. Please try again.':error.message}finally{clearTimeout(timer);sendButton.disabled=false}
   };
  }
- async function start(){collect();try{const response=await fetch(PUBLIC+'/v1/content?site='+site+'&page='+encodeURIComponent(key),{credentials:'omit',cache:'no-store'});if(response.ok){const data=await response.json();apply(data.content?.fields);applyMenu(data.menu);applyFooter(data.footer)}}catch{}
-  if(editing)editor();else if(site!=='account4')assistant();
+ function sharing(){if(!document.querySelector('main')||site==='account4')return;const container=document.createElement('div');container.className='hkem-share-tools';container.dataset.cmsIgnore='';const b=document.createElement('button');b.type='button';b.textContent=site==='account3'?'Share & invite to the community':'Share this app or page';const status=document.createElement('span');status.setAttribute('role','status');b.onclick=async()=>{const u=new URL(location.href);for(const key of ['hkem-cms','hkem-session','hkem-control'])u.searchParams.delete(key);const data={title:document.title,url:u.href};try{if(navigator.share){await navigator.share(data);status.textContent=''}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(u.href);status.textContent='Link copied. Share it with your family and friends.'}else{prompt('Copy this link to share',u.href)}}catch(e){if(e.name!=='AbortError')status.textContent='Sharing could not open. Please copy the page link.'}};container.append(b,status);const footer=document.querySelector('footer');if(footer)footer.prepend(container);else document.querySelector('main').append(container)}
+ async function start(){collect();sharing();try{const response=await fetch(PUBLIC+'/v1/content?site='+site+'&page='+encodeURIComponent(key),{credentials:'omit',cache:'no-store'});if(response.ok){const data=await response.json();apply(data.content?.fields);applyMenu(data.menu);applyFooter(data.footer)}}catch{}
+  if(editing)editor();else if(!['account3','account4'].includes(site))assistant();
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,450),{once:true});else setTimeout(start,450);
 })();

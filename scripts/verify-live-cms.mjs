@@ -18,10 +18,10 @@ try{
    console.log(JSON.stringify({label,url,http,sourceMatch:matched,title:html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]}));
    if(!matched)throw Error(label+': deployed HTML differs from approved repository source');
    const context=await browser.newContext({viewport:{width:1280,height:900}}),page=await context.newPage();const violations=[];page.on('console',msg=>{if(msg.type()==='error')violations.push(msg.text())});
-   await page.goto(url,{waitUntil:'domcontentloaded'});await page.locator('#hkem-public-assistant').waitFor({timeout:25000});
+   await page.goto(url,{waitUntil:'domcontentloaded'});await page.locator(label==='community'?'.hk-ai-small-icon':'#hkem-public-assistant').first().waitFor({timeout:25000});
    const renderer=await page.evaluate(()=>window.__hkemCentralCms===true);if(!renderer)throw Error(label+': CMS renderer not loaded');
-   if(label==='community'){await page.locator('.hk-official-posts article').first().waitFor({timeout:15000});console.log('Community home renders actual official publications');}
-   if(label==='main'){
+   if(label==='community'){await page.locator('.hk-official-posts article').first().waitFor({timeout:15000});if(await page.locator('#hkem-public-assistant').count())throw Error('Community AI must not float');if(!await page.locator('#hk-community-ai').evaluate(e=>!e.open))throw Error('Community AI should be closed initially');console.log('Community publications render; AI is a small navigation/search icon with chat closed');}
+   if(label==='app-page'){if(await page.locator('#download-options .downloadcard').count()!==5)throw Error('App installation cards did not render');console.log('All five device installation cards render');}\n   if(label==='main'){const tiny=await page.locator('#hkem-public-assistant>button').boundingBox();if(tiny.width>46||tiny.height>46)throw Error('Main AI icon is too large');if(await page.locator('#hk-floating-radio').count()){if(!await page.locator('#hk-floating-radio').evaluate(e=>e.classList.contains('hkr-mini')))throw Error('Radio should start as tiny icon');if(!await page.locator('#hkr-audio').evaluate(e=>e.paused))throw Error('Radio must not autoplay');}
     await page.locator('#hkem-public-assistant>button').click();await page.locator('#hkem-public-assistant textarea').fill('Where can I read the Heavenly Key Bible?');await page.locator('#hkem-public-assistant form button').click();
     await page.waitForFunction(()=>{const s=document.querySelector('#hkem-public-assistant [role=status]')?.textContent;return s&&s!=='Thinking…'},{},{timeout:60000});
     const answer=await page.locator('#hkem-public-assistant [role=status]').innerText();if(!/bible\.heavenlykey\.org/i.test(answer))throw Error('Website AI did not return the Bible portal link: '+answer);console.log('Public AI chat interface returned actual live response:',answer.slice(0,300));
@@ -34,6 +34,7 @@ try{
    await context.close();
   }catch(error){failures.push(error.message);console.error(error.message)}
  }
+ for(const channel of ['radio','video']){const r=await fetch('https://heavenlykey.org/api/broadcast/programme?channel='+channel),data=await r.json();console.log('RADIO_PROGRAMME',JSON.stringify({channel,http:r.status,...data}));if(channel==='radio'&&r.ok&&data.items?.length){const url=new URL(data.items[0].url,'https://heavenlykey.org');const audio=await fetch(url,{headers:{Range:'bytes=0-4095'}});console.log('RADIO_AUDIO',JSON.stringify({http:audio.status,type:audio.headers.get('content-type'),range:audio.headers.get('content-range')}));await audio.body?.cancel();}}
  for(const url of ['https://app.heavenlykey.org/','https://heavenly-key-app.heavenlykeyapp.workers.dev/','https://heavenlykey-media.faithofourfatherstv.workers.dev/','https://heavenlykey.org/pages/admin#studio']){
   try{const r=await fetch(url,{redirect:'manual',signal:AbortSignal.timeout(20000)}),text=await r.text();console.log(JSON.stringify({additionalPublicCheck:url,http:r.status,location:r.headers.get('location'),title:text.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]}))}catch(error){console.log(JSON.stringify({additionalPublicCheck:url,error:error.message}))}
  }

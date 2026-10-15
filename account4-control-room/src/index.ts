@@ -31,7 +31,7 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
  if(!ownerHost&&!u.pathname.startsWith('/api/'))return env.ASSETS.fetch(request);
  if(ownerHost&&u.pathname==='/api/owner/login'&&request.method==='POST'){
   if(request.headers.get('Origin')!==u.origin)return fail('Invalid sign-in origin.',403);
-  try{const data=await body(request,4096),result=await ownerLogin(request,env.DB,data.password);return result.ok?new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json','cache-control':'no-store','set-cookie':result.cookie!}}):fail(result.error!,result.status)}catch{return fail('Sign-in is temporarily unavailable.',503)}
+  try{const data=await body(request,4096);if(data.username!==undefined&&data.username!=='owner')return fail('Sign-in failed. Check your username and password.',401);const result=await ownerLogin(request,env.DB,data.password);return result.ok?new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json','cache-control':'no-store','set-cookie':result.cookie!}}):fail(result.error!,result.status)}catch{return fail('Sign-in is temporarily unavailable.',503)}
  }
  const accessActor=ownerHost?null:await authenticate(request,env);
  const actor=accessActor||(ownerHost?await ownerSession(request,env.DB):null);

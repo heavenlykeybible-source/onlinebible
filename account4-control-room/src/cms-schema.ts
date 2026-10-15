@@ -1,4 +1,4 @@
-export type CmsField = {key:string;type:'text'|'image'|'alt'|'link'|'visible'|'background';value:string|boolean};
+export type CmsField = {key:string;type:'text'|'image'|'alt'|'link'|'visible'|'background'|'layout'|'tone';value:string|boolean};
 export type CmsDocument = {schema:1;fields?:CmsField[];items?:{key?:string;label:string;href:string;newTab:boolean;visible:boolean}[];copyright?:string;designer?:{label:string;href:string}};
 export const AI_MODEL='@cf/meta/llama-3.1-8b-instruct-fp8';
 export const PUBLIC_CMS_ORIGIN='https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev';
@@ -29,8 +29,10 @@ export function validateDocument(kind:string,input:unknown):CmsDocument {
  if(!Array.isArray(d.fields)||d.fields.length>600)throw Error('A page can contain up to 600 editable fields.');
  const keys=new Set<string>();
  for(const f of d.fields){
-  if(!f||!/^([tilavb])_[a-z0-9]{7,12}$/.test(f.key)||keys.has(f.key)||!['text','image','alt','link','visible','background'].includes(f.type))throw Error('An editable page field is invalid.');
+  if(!f||!/^([tilavbsc])_[a-z0-9]{7,12}$/.test(f.key)||keys.has(f.key)||!['text','image','alt','link','visible','background','layout','tone'].includes(f.type))throw Error('An editable page field is invalid.');
   keys.add(f.key);
+  if(f.type==='layout'){if(!['original','contained','wide','full'].includes(String(f.value)))throw Error('Choose a supported page width.');continue}
+  if(f.type==='tone'){if(!['original','royal','wine','gold','light','dark'].includes(String(f.value)))throw Error('Choose a supported colour.');continue}
   if(f.type==='visible'){if(typeof f.value!=='boolean')throw Error('Choose whether the section is visible.');continue}
   if(typeof f.value!=='string'||f.value.length>(f.type==='text'?5000:1000))throw Error('An edited field is too long.');
   if(['image','background'].includes(f.type)&&(!safeUrl(f.value,true)||/^(mailto|tel):/.test(f.value)))throw Error('Use an image path or HTTPS picture link.');

@@ -28,7 +28,7 @@ function expiryHours(hours=48){return new Date(Date.now()+hours*3600000).toISOSt
 export default {
  async fetch(request:Request,env:Env):Promise<Response>{
   const url=new URL(request.url);
-  if(url.pathname==='/'&&['GET','HEAD'].includes(request.method))return Response.redirect('https://heavenlykey.alldaywow247.workers.dev/pages/admin#studio',302);
+  if(url.pathname==='/'&&['GET','HEAD'].includes(request.method))return Response.redirect('https://heavenlykey.org/pages/admin#studio',302);
   if(url.pathname==='/health'&&request.method==='GET') return json({ok:true,service:'heavenlykey-media-engine',version:env.MEDIA_ENGINE_VERSION??'v1'});
   const marker=request.headers.get('X-Heavenly-Key-Internal'); const auth=request.headers.get('Authorization')??'';
   if(marker==='media-engine-public-v1' && request.method==='GET' && url.pathname==='/api/broadcast/live') {
