@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "updated": "2026-10-15",
+  "organization": "Heavenly Key Evangelistic Movement",
+  "instructions": "Only use verified facts below for specific ministry claims. Never invent service schedules, telephone numbers, addresses, personnel or financial details. For prayer and counseling, direct visitors to ministry contact or prayer pages. General Christian questions may be answered as general guidance, clearly distinguished from official ministry positions.",
+  "pages": [
+    {
+      "title": "Homepage",
+      "url": "/",
+      "description": "Official Heavenly Key website homepage."
+    },
+    {
+      "title": "About the Ministry",
+      "url": "/pages/about.html",
+      "description": "Ministry overview and introduction."
+    },
+    {
+      "title": "Statement of Faith",
+      "url": "/pages/what-we-believe.html",
+      "description": "Official faith and beliefs."
+    },
+    {
+      "title": "Meet the President",
+      "url": "/pages/meet-the-pastor.html",
+      "description": "Official ministry leadership profile."
+    },
+    {
+      "title": "Ministries",
+      "url": "/pages/ministries.html",
+      "description": "Ministry departments and activities."
+    },
+    {
+      "title": "Global Revival and Destiny Prayer Cry",
+      "url": "/pages/grdpc.html",
+      "description": "GRDPC ministry information."
+    },
+    {
+      "title": "Faith of Our Fathers Radio",
+      "url": "/pages/radio.html",
+      "description": "Online ministry radio."
+    },
+    {
+      "title": "Heavenly Key Bible",
+      "url": "/pages/bible-reader.html",
+      "description": "Online Bible reader."
+    },
+    {
+      "title": "Heavenly Key App",
+      "url": "/pages/app.html",
+      "description": "Ministry app information."
+    },
+    {
+      "title": "Partner With Us",
+      "url": "/pages/partner.html",
+      "description": "Partnership and support."
+    },
+    {
+      "title": "Contact Us",
+      "url": "/pages/contact.html",
+      "description": "Official contact information."
+    },
+    {
+      "title": "Prayer Request",
+      "url": "/pages/community.html#prayer",
+      "description": "Prayer request page."
+    },
+    {
+      "title": "I Say Yes to Jesus",
+      "url": "/pages/i-said-yes.html",
+      "description": "Christian commitment and follow-up."
+    },
+    {
+      "title": "Live Broadcast",
+      "url": "/live/",
+      "description": "Live broadcast page."
+    }
+  ],
+  "editorialNote": "Seed directory only. Detailed approved ministry text must be ingested and verified through a secured CMS knowledge-management workflow."
+}
