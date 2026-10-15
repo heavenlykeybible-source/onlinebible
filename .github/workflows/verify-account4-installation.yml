@@ -1,0 +1,34 @@
+name: Verify Account 4 Installation Access
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/verify-account4-installation.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
+      ACCOUNT: ${{ secrets.ACCOUNT_4_ACCOUNT_ID }}
+      PIN: ${{ secrets.ACCOUNT4_PROTECTED_D1_ID }}
+    steps:
+      - name: Check existing Account 4 credentials and resources without changes
+        shell: python
+        run: |
+          import os,json,urllib.request,urllib.error
+          missing=[name for name,key in [('ACCOUNT_4_TOKEN','TOKEN'),('ACCOUNT_4_ACCOUNT_ID','ACCOUNT')] if not os.environ.get(key)]
+          if missing: raise SystemExit('Missing GitHub repository secrets: '+', '.join(missing))
+          account=os.environ['ACCOUNT'];token=os.environ['TOKEN']
+          def get(path):
+              req=urllib.request.Request('https://api.cloudflare.com/client/v4/accounts/'+account+path,headers={'Authorization':'Bearer '+token})
+              with urllib.request.urlopen(req,timeout=25) as r:data=json.load(r)
+              assert data.get('success'),'Cloudflare resource lookup failed'
+              return data['result']
+          workers=get('/workers/scripts')
+          print('Account 4 workers: '+json.dumps([x.get('id') for x in workers]))
+          dbs=get('/d1/database')
+          print('Account 4 database identities: '+json.dumps([{k:x.get(k) for k in ['name','uuid']} for x in dbs]))
+          print('Protected database pin configured: '+str(bool(os.environ.get('PIN'))))
