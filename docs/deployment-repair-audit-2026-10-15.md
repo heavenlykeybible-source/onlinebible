@@ -19,19 +19,19 @@
 | 5 | Not yet located | Deployment/account access still required |
 | 6 | https://onlinebible.heavenlykeybible.workers.dev/ | HTTP 200; source-matching Bible, health and Genesis 1 API verified |
 
-## Custom-domain blocker and prepared repair
+## Custom domains — repaired and independently verified
 
-global.heavenlykey.org and bible.heavenlykey.org still return 522. Account 1's zone 23f3be9052bf609e8ccd85ac1b375019 has only the heavenlykey.org/* Worker route. No Global/Bible routes were present when inspected.
+Initially, global.heavenlykey.org and bible.heavenlykey.org returned 522, and Account 1's zone had only heavenlykey.org/*. After the owner saved the correct Account 1 browser session, both missing routes were added to zone 23f3be9052bf609e8ccd85ac1b375019. Both custom-domain health endpoints now return HTTP 200 with the intended service JSON.
 
-Prepared portal-router/ as a separate fixed-origin gateway that preserves the existing applications. Eight routing tests pass, covering fixed upstreams, request bodies, cookies, same-origin writes, cross-site rejection, redirect rewriting and network errors. The routing Worker heavenlykey-portals was uploaded to Account 1. Binding its domain routes was denied by Cloudflare: HTTP 403 / No access to the specified resource. Neither requested route was added. Existing routes and DNS records were not deleted or changed.
+Prepared portal-router/ as a separate fixed-origin gateway that preserves the existing applications. Eight routing tests pass, covering fixed upstreams, request bodies, cookies, same-origin writes, cross-site rejection, redirect rewriting and network errors. The routing Worker heavenlykey-portals was uploaded to Account 1. Initial token-based route creation was denied (HTTP 403). The authorized Account 1 browser session subsequently added both exact routes. Existing main-site routing and DNS records were preserved. The failed deployment job was rerun after the routes existed and succeeded, including its independent public-domain verification.
 
 The workflow .github/workflows/deploy-portal-router.yml can deploy the gateway and add only:
 - global.heavenlykey.org/* → heavenlykey-portals
 - bible.heavenlykey.org/* → heavenlykey-portals
 
-Do not report these domains as repaired until both actual URLs pass their health and content checks.
+Verified publicly: Global /api/health returns ok:true/service:global-community; Bible /health returns ok:true/product:HEAVENLY KEY BIBLE. The free verification workflow also confirmed the Global homepage equals its upstream frontend and cross-site writes return 403. Broader member authentication and mobile visual testing remain outstanding.
 
-An Account 1 browser sign-in handoff was prepared for alldaywow247@gmail.com. Profile ID: prof_6520036d3b444b16. Wait for the owner to save the profile before using it.
+The currently connected TinyFish account's verified Account 1 profile is prof_eb810e0969f248f2 (Account 1 ONLY — alldaywow247@gmail.com). Dashboard identity was verified before route changes. Earlier profile IDs belong to the previously connected TinyFish account and must not be reused in the current connection. The owner requests minimal paid browser usage; prefer existing connectors, APIs and local/free checks.
 
 ## Content and CMS gaps
 
@@ -48,6 +48,7 @@ An Account 1 browser sign-in handoff was prepared for alldaywow247@gmail.com. Pr
 - CMS/schema/content audit: https://github.com/heavenlykeybible-source/onlinebible/actions/runs/38701758867
 - Zone-route permission inspection: https://github.com/heavenlykeybible-source/onlinebible/actions/runs/38702565819
 - Independent live Bible/community verification: https://github.com/heavenlykeybible-source/onlinebible/actions/runs/38703567590
-- Routing authorization failure: https://github.com/heavenlykeybible-source/onlinebible/actions/runs/38703294553
+- Initial routing authorization failure: https://github.com/heavenlykeybible-source/onlinebible/actions/runs/38703294553
+- Successful routing rerun and live custom-domain checks: https://github.com/heavenlykeybible-source/onlinebible/actions/runs/38703707093
 
 No existing member posts, credentials, D1 databases or R2 buckets were deleted or reset.
