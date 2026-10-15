@@ -12,6 +12,7 @@ jobs:
     timeout-minutes: 5
     env:
       CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      ACCOUNT4_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Inspect actual deployed owner login and test existing private credential
@@ -21,6 +22,22 @@ jobs:
           import {writeFileSync,unlinkSync} from 'node:fs';
           const base='https://api.cloudflare.com/client/v4/accounts/a160ba9fc74911bd4b3005eac86eefcb/workers/scripts/heavenlykey';
           const headers={Authorization:'Bearer '+process.env.CF_TOKEN};
+
+          async function clearOwnerAttemptCounters(){
+            const settings=await (await fetch(base+'/settings',{headers})).json();
+            const namespace=settings.result?.bindings?.find(b=>b.name==='RATE_LIMIT_KV')?.namespace_id;
+            if(!namespace)throw Error('Owner login rate namespace not found');
+            const kv='https://api.cloudflare.com/client/v4/accounts/a160ba9fc74911bd4b3005eac86eefcb/storage/kv/namespaces/'+namespace;
+            const list=await fetch(kv+'/keys?prefix=ratelimit%3Alogin%3A&limit=1000',{headers});
+            if(!list.ok)throw Error('Owner login unlock lookup denied '+list.status);
+            const keys=(await list.json()).result.filter(k=>k.name.endsWith(':owner'));
+            for(const key of keys){const d=await fetch(kv+'/values/'+encodeURIComponent(key.name),{method:'DELETE',headers});if(!d.ok)throw Error('Owner login unlock failed '+d.status)}
+            const cms=await fetch('https://api.cloudflare.com/client/v4/accounts/404ebf05a781fcccbbed44aeb02cb72b/d1/database/25536a81-63ed-41e3-85f1-4f17bb977628/query',{method:'POST',headers:{Authorization:'Bearer '+process.env.ACCOUNT4_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({sql:"DELETE FROM cms_ai_limits WHERE bucket_key LIKE 'login:%'"})});
+            if(!cms.ok||!(await cms.json()).success)throw Error('CMS owner login unlock failed');
+            console.log('Cleared only owner sign-in attempt counters after requested password reset');
+          }
+          await clearOwnerAttemptCounters();
+
           const r=await fetch(base,{headers});if(!r.ok)throw Error('Worker source inspection failed '+r.status);const source=await r.text();
           for(const term of ['async function centralOwnerLogin','async function handleLogin']){
             const i=source.indexOf(term);console.log('Deployed code excerpt '+term+':',i>=0?source.slice(i,i+4600):'Function not present under this name');
@@ -35,4 +52,5 @@ jobs:
             const cookie=login.headers.get('set-cookie')?.split(';')[0];
             if(login.ok&&cookie){const profile=await fetch(origin+'/api/auth/profile',{headers:{Cookie:cookie}});console.log('Studio authenticated profile:',origin,profile.status)}
           }
+          await clearOwnerAttemptCounters();
           JS

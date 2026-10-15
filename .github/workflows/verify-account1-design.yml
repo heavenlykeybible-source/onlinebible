@@ -28,10 +28,16 @@ jobs:
         env:
           NODE_PATH: /tmp/hkem-ui/node_modules
         run: node scripts/test-account1-chat-ui.cjs
+      - name: Verify deployed mobile assistant and radio page
+        env:
+          NODE_PATH: /tmp/hkem-ui/node_modules
+        run: node scripts/test-live-assistant.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: Account1-Desktop-Mobile-Chat
-          path: native-chat-*.png
+          path: |
+            native-chat-*.png
+            live-assistant-mobile.png
           if-no-files-found: ignore
           retention-days: 7
