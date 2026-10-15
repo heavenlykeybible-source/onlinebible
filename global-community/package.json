@@ -17,8 +17,8 @@
     "test:social-adverts": "node --test test/social-adverts.checks.mjs"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250101.0",
+    "@cloudflare/workers-types": "5.20261015.1",
     "typescript": "^5.5.0",
-    "wrangler": "^4.145.0"
+    "wrangler": "4.151.0"
   }
 }
