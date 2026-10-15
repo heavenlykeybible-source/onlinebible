@@ -17,5 +17,5 @@ bucket_name = "heavenlykey-control-room-media"
 [ai]
 binding = "AI"
 [vars]
-ACCESS_TEAM_DOMAIN = "REPLACE_WITH_ACCESS_TEAM_DOMAIN"
-ACCESS_AUD = "REPLACE_WITH_ACCESS_AUD"
+ACCESS_TEAM_DOMAIN = "raspy-darkness-1dc8.cloudflareaccess.com"
+ACCESS_AUD = "3bf4d8f65406e5890c8f27e0ada19f44ff09033b7624728925519a6e797a8b87"
