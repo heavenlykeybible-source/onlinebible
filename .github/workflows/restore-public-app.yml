@@ -42,8 +42,9 @@ jobs:
           import {readFileSync} from 'node:fs';
           import {createHash} from 'node:crypto';
           const root='https://heavenly-key-app-recovery.alldaywow247.workers.dev';
-          let html;for(let i=0;i<5;i++){try{const r=await fetch(root+'/');if(r.ok){html=await r.text();break}}catch{}await new Promise(r=>setTimeout(r,2000))}
-          const hash=s=>createHash('sha256').update(s).digest('hex');if(!html||hash(html)!==hash(readFileSync('heavenly-key-app/public/index.html','utf8')))throw Error('Approved app source mismatch');
+          const hash=s=>createHash('sha256').update(s).digest('hex'),expected=hash(readFileSync('heavenly-key-app/public/index.html','utf8'));let html,matched=false;
+          for(let i=0;i<12;i++){try{const r=await fetch(root+'/?verified-release='+process.env.GITHUB_SHA,{cache:'no-store'});html=await r.text();matched=r.ok&&hash(html)===expected;if(matched)break;console.log('Waiting for app deployment propagation',r.status,html.length)}catch{}await new Promise(r=>setTimeout(r,3000))}
+          if(!matched)throw Error('Approved app source mismatch after propagation');
           const r=await fetch(root+'/api/health'),health=await r.json();if(!r.ok||health.status!=='ok'||health.service!=='heavenly-key-app')throw Error('App health failed');
           for(const slug of ['android','iphone','ipad','windows','mac']){const r=await fetch(root+'/download/'+slug+'/');if(!r.ok)throw Error('Device installation guide unavailable: '+slug)}
           console.log('Approved app recovery upstream verified, including all five device guides. Temporarily hosted in Account 1; Account 5 is not claimed repaired.');
