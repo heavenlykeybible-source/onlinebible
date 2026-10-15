@@ -31,6 +31,7 @@ jobs:
           Path('heavenly-key-app/wrangler.recovery.toml').write_text(source)
           PY
           node --check heavenly-key-app/src/index.js
+          npm --prefix heavenly-key-app run build
           node --test heavenly-key-app/test/offline-preservation.test.mjs
           node --test heavenly-key-app/test/site-sync.test.mjs
       - name: Deploy existing approved app assets and public shell

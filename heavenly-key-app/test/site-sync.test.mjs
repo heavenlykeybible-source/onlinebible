@@ -16,7 +16,7 @@ test('published website content is filtered and no credentials are forwarded',as
  assert.equal(j.programme.title,'GRDPC');
  assert.ok(!JSON.stringify(j).includes('ignored_admin_secret'));assert.ok(!JSON.stringify(j).includes('private_contact'));
  for(const x of seen){
-  assert.ok(x.url.startsWith('https://heavenlykey.alldaywow247.workers.dev/api/'));
+  assert.ok(x.url.startsWith('https://heavenlykey.org/api/'));
   assert.equal(x.options.credentials,'omit');assert.equal(x.options.redirect,'error');
   assert.equal(x.options.headers.Cookie,undefined);
  }
@@ -36,7 +36,7 @@ test('release-aware worker and foreground update UI preserve user-controlled rel
  const sw=readFileSync(new URL('../public/sw.js',import.meta.url),'utf8');
  const platform=readFileSync(new URL('../public/platform.js',import.meta.url),'utf8');
  assert.match(sw,/const RELEASE='[^']+';/);
- assert.match(sw,/heavenly-key-app-shell-v7-/);
+ assert.match(sw,/heavenly-key-app-shell-v10-/);
  assert.match(platform,/registration\.update\(\)/);
  assert.match(platform,/ACTIVATE_REVIEWED_SHELL/);
  assert.match(platform,/Update app/);
