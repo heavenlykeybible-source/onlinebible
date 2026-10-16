@@ -19,7 +19,7 @@ const jsonBody=async(request:Request):Promise<Record<string,unknown>|null>=>{
  return value!==null&&typeof value==="object"&&!Array.isArray(value)?value as Record<string,unknown>:null;
 };
 export async function handleClientAccounts(request:Request,env:Env):Promise<Response>{
- const actor=await requireMinimumRole(request,env,"Owner");
+ const actor=await requireMinimumRole(request,env,"Super Administrator");
  if(!actor)return reply({error:"forbidden"},403);
  const userId=actor.userId;
  const path=new URL(request.url).pathname.replace(/\/$/,"");
