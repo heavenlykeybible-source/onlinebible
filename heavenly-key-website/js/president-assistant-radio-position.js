@@ -22,12 +22,12 @@ style.textContent=`
 document.head.appendChild(style);
 
 /* Apply approved artwork only after both uploaded image assets are available. */
-const artwork=['/assets/ministry/approved-ai-floating-icon.webp','/assets/ministry/approved-radio-floating-icon.webp'];
+const artwork=['/assets/ministry/approved-ai-floating-icon.svg','/assets/ministry/approved-radio-floating-icon.svg'];
 Promise.all(artwork.map(src=>new Promise((resolve,reject)=>{const img=new Image();img.onload=resolve;img.onerror=reject;img.src=src;}))).then(()=>{
  const css=document.createElement('style');
  css.textContent=`
- .president-photo .hk-president-controls #hkem-assistant .hkem-launcher{background:transparent url('/assets/ministry/approved-ai-floating-icon.webp') center/100% 100% no-repeat!important;border:0!important;border-radius:0!important;box-shadow:none!important;aspect-ratio:1485/348!important;height:auto!important;min-height:0!important;font-size:0!important;color:transparent!important}
- .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{background:transparent url('/assets/ministry/approved-radio-floating-icon.webp') center/100% 100% no-repeat!important;border:0!important;border-radius:0!important;box-shadow:none!important;aspect-ratio:1485/317!important;height:auto!important;min-height:0!important;font-size:0!important;color:transparent!important;animation:none!important}
+ .president-photo .hk-president-controls #hkem-assistant .hkem-launcher{background:transparent url('/assets/ministry/approved-ai-floating-icon.svg') center/100% 100% no-repeat!important;border:0!important;border-radius:0!important;box-shadow:none!important;aspect-ratio:1485/348!important;height:auto!important;min-height:0!important;font-size:0!important;color:transparent!important}
+ .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{background:transparent url('/assets/ministry/approved-radio-floating-icon.svg') center/100% 100% no-repeat!important;border:0!important;border-radius:0!important;box-shadow:none!important;aspect-ratio:1485/317!important;height:auto!important;min-height:0!important;font-size:0!important;color:transparent!important;animation:none!important}
  .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble::before,.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble::after{content:none!important;animation:none!important}
  `;
  document.head.appendChild(css);
