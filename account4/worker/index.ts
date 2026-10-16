@@ -1,9 +1,10 @@
 // Account 4-only entry point. Do not deploy over the existing Control Room.
 import {createReleaseRouter} from "./release-router";
+import {createStudioSso} from "./studio-sso";
 import {createClientRegistryRouter,type QueryDb} from "./client-registry";
 import {createOwnerVerifier,type IdentityConfig} from "./identity-adapter";
 import type {RegistryDb} from "./release-approval";
-interface Env extends IdentityConfig {DB:RegistryDb & QueryDb}
+interface Env extends IdentityConfig {DB:RegistryDb & QueryDb;STUDIO_ORIGIN?:string;STUDIO_REDEEM_SECRET?:string}
 const secure=(response:Response)=>{
  const headers=new Headers(response.headers);
  headers.set("Cache-Control","no-store");
@@ -17,6 +18,8 @@ export default {
   const url=new URL(request.url);
   if(url.pathname==="/api/control/health"&&request.method==="GET")
    return secure(Response.json({service:"account4-client-registry",status:"integration-pending"}));
+  if(url.pathname==="/api/control/studio/launch"||url.pathname==="/api/control/studio/redeem")
+   return secure(await createStudioSso(createOwnerVerifier(env))(request,env));
   if(url.pathname==="/api/control/releases/approve")
    return secure(await createReleaseRouter(createOwnerVerifier(env))(request,env.DB));
   if(url.pathname==="/api/control/clients"||/^\/api\/control\/clients\/[0-9a-f-]{36}\/sites\/?$/i.test(url.pathname))
