@@ -9,7 +9,7 @@ export const SITES = {
  account4: {role:"Central control room", hostname:""},
  account5: {role:"Applications", hostname:"app.heavenlykey.org"},
  account6: {role:"Holy Bible", hostname:"bible.heavenlykey.org"},
- account7: {role:"Heavenly Key Radio public website", hostname:"radio.heavenlykey.org", provisioningStatus:"pending", broadcastAccount:"account2"}
+ account7: {role:"Heavenly Key Radio public website", hostname:"radio.heavenlykey.org", accountEmail:"Heavenlykeyradio@gmail.com", managedByAccount:"account4", provisioningStatus:"pending", broadcastAccount:"account2"}
 } as const;
 export type SiteId=keyof typeof SITES;
 export function planDeployment(input:unknown){
