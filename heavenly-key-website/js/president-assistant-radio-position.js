@@ -10,8 +10,11 @@ style.textContent=`
 .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{animation:none!important}
 .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble::before{animation:none!important}
 .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble::after{background:transparent!important;color:#fff!important;border:0!important}
-.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble::after{content:"FAITH OF OUR FATHERS RADIO\\A 🔴 LIVE • Listen Now"!important;white-space:pre-line!important}
-.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{position:relative!important}
+.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble::after{content:"FAITH OF OUR FATHERS RADIO\\A LIVE • Listen Now"!important;white-space:pre-line!important}
+.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{position:relative!important;padding-right:22px!important}
+.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble::after{padding-right:3px!important}
+.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{background-image:radial-gradient(circle at calc(100% - 12px) 13px,#ff2929 0 5px,transparent 5.5px),linear-gradient(115deg,#006f3d,#004a31 65%,#002f29)!important;background-repeat:no-repeat!important}
+@media(prefers-reduced-motion:no-preference){.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{animation:hk-radio-live-indicator 1.1s step-end infinite!important}@keyframes hk-radio-live-indicator{0%,100%{background-image:radial-gradient(circle at calc(100% - 12px) 13px,#ff2929 0 5px,transparent 5.5px),linear-gradient(115deg,#006f3d,#004a31 65%,#002f29)}50%{background-image:radial-gradient(circle at calc(100% - 12px) 13px,transparent 0 5px,transparent 5.5px),linear-gradient(115deg,#006f3d,#004a31 65%,#002f29)}}}
 .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{--hk-live:#ff2424}
 .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble::selection{background:transparent}
 @media(max-width:600px){.president-photo .hk-president-controls{width:min(88%,225px);gap:6px}}
