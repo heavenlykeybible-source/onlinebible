@@ -3,7 +3,7 @@
  * Studio must create its own Secure HttpOnly session after successful redemption.
  */
 import type {VerifyOwner} from "./approval-handler";
-interface Stmt {bind(...values:unknown[]):Stmt;run():Promise<{meta?:{changes?:number}}>}; 
+interface Stmt {bind(...values:unknown[]):Stmt;run():Promise<{meta?:{changes?:number}}>};first<T=unknown>():Promise<T|null>}; 
 interface DB {prepare(sql:string):Stmt}
 const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
 const hex=async(value:string)=>Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value)))).map(v=>v.toString(16).padStart(2,"0")).join("");
@@ -41,9 +41,9 @@ export function createStudioSso(verifyOwner:VerifyOwner){
   if(typeof ticket!=="string"||!validTicket(ticket))return json({error:"invalid_ticket"},400);
   const digest=await hex(ticket);
   // Atomic compare-and-swap prevents replay across concurrent requests.
-  const result=await env.DB.prepare("UPDATE control_studio_tickets SET consumed_at=? WHERE ticket_hash=? AND consumed_at IS NULL AND expires_at>?").bind(Math.floor(Date.now()/1000),digest,Math.floor(Date.now()/1000)).run();
-  if(result.meta?.changes!==1)return json({error:"expired_or_consumed"},403);
-  // Studio must fetch identity from trusted storage, not accept a caller-supplied role.
-  return json({status:"redeemed",ticketHash:digest});
+  const now=Math.floor(Date.now()/1000);
+  const redeemed=await env.DB.prepare("UPDATE control_studio_tickets SET consumed_at=? WHERE ticket_hash=? AND consumed_at IS NULL AND expires_at>? RETURNING owner_user_id").bind(now,digest,now).first<{owner_user_id:string}>();
+  if(!redeemed)return json({error:"expired_or_consumed"},403);
+  return json({status:"redeemed",userId:redeemed.owner_user_id,role:"owner"});
  };
 }
