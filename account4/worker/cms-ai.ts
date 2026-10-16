@@ -1,5 +1,5 @@
 import type {VerifyOwner} from "./approval-handler";
-interface Statement {bind(...args:unknown[]):Statement;first<T=unknown>():Promise<T|null>;all<T=unknown>():Promise<{results:T[]}>;run():Promise<{meta?:{changes?:number}}>}}
+interface Statement {bind(...args:unknown[]):Statement;first<T=unknown>():Promise<T|null>;all<T=unknown>():Promise<{results:T[]}>;run():Promise<{meta?:{changes?:number}}>;}
 export interface CmsDb {prepare(sql:string):Statement}
 const reply=(data:unknown,status=200)=>Response.json(data,{status,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
