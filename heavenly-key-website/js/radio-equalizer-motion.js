@@ -20,8 +20,15 @@ function install(eq,audio){
   bar.style.setProperty('--eq-delay',(-((i*11)%19)/17).toFixed(2)+'s');
   eq.appendChild(bar);
  }
- const sync=()=>eq.classList.toggle('hk-eq-playing',!!audio&&!audio.paused&&!audio.ended);
- if(audio){['play','playing','pause','ended','emptied','error','waiting'].forEach(e=>audio.addEventListener(e,sync));}
+ let buffering=false;
+ const sync=()=>eq.classList.toggle('hk-eq-playing',!!audio&&!audio.paused&&!audio.ended&&audio.readyState>=HTMLMediaElement.HAVE_CURRENT_DATA&&!buffering&&audio.error===null);
+ const setBuffering=()=>{buffering=true;sync()};
+ const setPlaying=()=>{buffering=false;sync()};
+ if(audio){
+  ['waiting','stalled','seeking','loadstart','emptied','error','abort','suspend'].forEach(e=>audio.addEventListener(e,setBuffering));
+  ['playing','canplay','seeked'].forEach(e=>audio.addEventListener(e,setPlaying));
+  ['pause','ended','volumechange'].forEach(e=>audio.addEventListener(e,sync));
+ }
  sync();
 }
 function mount(){
