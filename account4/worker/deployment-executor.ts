@@ -1,7 +1,6 @@
 /** Deployment executor: an approved immutable R2 artifact is sent to its exact
  * registered Cloudflare Worker destination. No arbitrary URLs or user tokens.
- * Bindings, routes, secrets and other Workers configuration are intentionally
- * not overwritten by this minimal module upload.
+ * IMPORTANT: a raw Worker upload can replace existing bindings and configuration.\n * This executor must fail closed until a safe versioned deployment mechanism is integrated.
  */
 interface Statement {bind(...values:unknown[]):Statement;first<T=unknown>():Promise<T|null>;run():Promise<{meta?:{changes?:number}}>;}
 interface Db {prepare(sql:string):Statement}
@@ -13,6 +12,13 @@ const sha256=async(buffer:ArrayBuffer)=>Array.from(new Uint8Array(await crypto.s
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 interface Job {id:string;target_id:string;source_ref:string;source_sha256:string;cloudflare_account_id:string;cloudflare_project_name:string;target_kind:string;enabled:number}
 export async function executeApprovedDeployment(req:Request,env:ExecutorEnv):Promise<Response>{
+ // Production safety lock: do not overwrite an existing Worker configuration.
+ // Implement versioned deployments with a verified manifest before enabling.
+ return reply({error:"versioned_deployment_not_integrated"},503);
+}
+
+/* Disabled prototype retained for review only.
+export async function unsafePrototype(req:Request,env:ExecutorEnv):Promise<Response>{
  if(req.method!=="POST")return reply({error:"method_not_allowed"},405);
  if(!env.DEPLOY_EXECUTOR_SECRET||!env.CLOUDFLARE_DEPLOY_TOKEN||!env.DEPLOY_ARTIFACTS)return reply({error:"executor_not_configured"},503);
  const auth=req.headers.get("Authorization");
@@ -49,3 +55,5 @@ export async function executeApprovedDeployment(req:Request,env:ExecutorEnv):Pro
   return reply({status:"failed",error:code},502);
  }
 }
+
+*/
