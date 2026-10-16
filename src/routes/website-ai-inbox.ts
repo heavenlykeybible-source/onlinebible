@@ -4,15 +4,16 @@ import { withSecurityHeaders } from "./auth";
 const reply=(data:unknown,status=200)=>withSecurityHeaders(Response.json(data,{status}));
 type Period="all"|"week"|"month"|"year"|"last_year";
 const periods:Period[]=["all","week","month","year","last_year"];
+function stamp(d:Date){return d.toISOString().slice(0,19).replace("T"," ")}
 function cutoff(p:Period):string|null{
  const now=new Date(),year=now.getUTCFullYear(),month=now.getUTCMonth();
- if(p==="week"){const d=new Date(now);d.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));d.setUTCHours(0,0,0,0);return d.toISOString();}
- if(p==="month")return new Date(Date.UTC(year,month,1)).toISOString();
- if(p==="year")return new Date(Date.UTC(year,0,1)).toISOString();
- if(p==="last_year")return new Date(Date.UTC(year-1,0,1)).toISOString();
+ if(p==="week"){const d=new Date(now);d.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));d.setUTCHours(0,0,0,0);return stamp(d);}
+ if(p==="month")return stamp(new Date(Date.UTC(year,month,1)));
+ if(p==="year")return stamp(new Date(Date.UTC(year,0,1)));
+ if(p==="last_year")return stamp(new Date(Date.UTC(year-1,0,1)));
  return null;
 }
-function filter(p:Period){const from=cutoff(p);if(p==="all")return {sql:"1=1",args:[] as string[]};if(p==="last_year")return {sql:"created_at >= ? AND created_at < ?",args:[from!,new Date(Date.UTC(new Date().getUTCFullYear(),0,1)).toISOString()]};return {sql:"created_at >= ?",args:[from!]};}
+function filter(p:Period){const from=cutoff(p);if(p==="all")return {sql:"1=1",args:[] as string[]};if(p==="last_year")return {sql:"created_at >= ? AND created_at < ?",args:[from!,stamp(new Date(Date.UTC(new Date().getUTCFullYear(),0,1)))]};return {sql:"created_at >= ?",args:[from!]};}
 export async function handleWebsiteAiInbox(request:Request,env:Env):Promise<Response>{
  const actor=await requireMinimumRole(request,env,"Administrator");
  if(!actor)return reply({error:"Administrator access required."},403);
