@@ -127,6 +127,7 @@ async function serveAsset(request:Request,env:Env,row:Release,path:string,prefix
  }
  if(preview)headers.set('content-security-policy' ,`sandbox allow-scripts; default-src 'none'; script-src https://control.heavenlykey.org https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev 'unsafe-inline'; style-src https: 'unsafe-inline'; img-src https: data:; font-src https: data:; media-src https:; connect-src 'none'; form-action 'none'; frame-src 'none'; base-uri 'none'; frame-ancestors 'self' https://control.heavenlykey.org https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev`);
  let body:BodyInit|null=object.body;
+ if(row.target==='account6'&&path==='/sw.js'){body='self.HK_RELEASE='+JSON.stringify(`${row.id}:${row.revision}`)+';\n'+await object.text();headers.set('Service-Worker-Allowed','/');headers.set('cache-control','no-cache, max-age=0, must-revalidate');}
  if(asset.type==='text/html')body=htmlOutput(await object.text(),prefix,row,preview,path);
  if(['application/javascript','text/javascript'].includes(asset.type)&&!/(?:^|\/)sw\.js$/.test(path))body=(await object.text()).replace(/(['"`])(\/[^/][^'"`\s]*)\1/g,(all,q,link)=>files[link]&&!protectedRoute(link)?q+prefix+link.slice(1)+q:all);
  if(asset.type==='text/css')body=(await object.text()).replace(/url\(\s*(['"]?)(\/[^/][^)'"\s]*)\1\s*\)/g,(_,q,path)=>`url(${q}${prefix}${path.slice(1)}${q})`);

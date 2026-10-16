@@ -18,8 +18,10 @@ const request=(path,data,method='POST')=>new Request('https://control.heavenlyke
 async function submit(e,target='account1',text='New design',sha='a'.repeat(40)){
  const path=RELEASE_TARGETS[target].entry,html=`<html><head><link href="/style.css" rel="stylesheet"></head><body><h1>${text}</h1><img src="/new.png"></body></html>`,data=new TextEncoder().encode(html),css=new TextEncoder().encode('body{color:green}'),image=new Uint8Array([1,2,3]);
  const manifest={[path]:{sha256:await digest(data),size:data.length,type:'text/html'},'/style.css':{sha256:await digest(css),size:css.length,type:'text/css'},'/new.png':{sha256:await digest(image),size:3,type:'image/png'}};
+ const sw=new TextEncoder().encode('/* worker fixture */');if(target==='account6')manifest['/sw.js']={sha256:await digest(sw),size:sw.length,type:'application/javascript'};
  const response=await intakeRoute(request('/api/releases/ingest',{target,title:'Approved redesign',source:'direct-ai',sourceSha:sha,manifest}),e,'ai-intake');assert.equal(response.status,201);const {id}=await response.json();
  for(const [p,bytes] of [[path,data],['/style.css',css],['/new.png',image]])await intakeRoute(new Request('https://control.heavenlykey.org/api/releases/'+id+'/asset?path='+p,{method:'PUT',body:bytes}),e,'ai-intake');
+ if(target==='account6')await intakeRoute(new Request('https://control.heavenlykey.org/api/releases/'+id+'/asset?path=/sw.js',{method:'PUT',body:sw}),e,'ai-intake');
  await intakeRoute(request('/api/releases/'+id+'/ready',{}),e,'ai-intake');return id;
 }
 async function admin(e,id,action,version=1,extra={},actor='admin'){return adminReleaseRoute(request('/api/releases/'+id+'/'+action,{expectedRevision:version,...extra}),e,actor)}
@@ -85,4 +87,11 @@ test('wrong file bytes and protected database files cannot enter a ready public 
  await assert.rejects(intakeRoute(new Request('https://control.heavenlykey.org/api/releases/'+arrival.id+'/asset?path=/index.html',{method:'PUT',body:bytes}),e,'ai'),x=>x.status===422);
  await assert.rejects(intakeRoute(request('/api/releases/'+arrival.id+'/ready',{}),e,'ai'),x=>x.status===409);
  await assert.rejects(intakeRoute(request('/api/releases/ingest',{target:'account1',title:'Protected path',source:'ai',sourceSha:'e'.repeat(40),manifest:{...manifest,'/database.sql':{sha256:'0'.repeat(64),size:1,type:'text/plain'}}}),e,'ai'),x=>x.status===400);
+});
+
+test('every approved Bible release changes worker identity even when worker source is unchanged',async()=>{
+ const e=env();let last='';for(let i=0;i<2;i++){const id=await submit(e,'account6','Bible '+i,String(i+1).repeat(40));await admin(e,id,'viewed');await admin(e,id,'approve');const r=await publicReleaseRoute(asset('bible.heavenlykey.org','/sw.js'),e);const body=await r.text();assert.ok(body.includes('self.HK_RELEASE="'+id+':1"'));assert.notEqual(body,last);assert.equal(r.headers.get('Service-Worker-Allowed'),'/');assert.match(r.headers.get('cache-control'),/no-cache/);last=body;}
+});
+test('Bible reader links from all public portals resolve to the same approved Bible host',async()=>{
+ for(const host of ['heavenlykey.org','global.heavenlykey.org','app.heavenlykey.org','studio.heavenlykey.org']){const r=await route(new Request('https://'+host+'/bible/?chapter=3'),()=>{throw Error('unexpected upstream')});assert.equal(r.status,302);assert.equal(r.headers.get('location'),'https://bible.heavenlykey.org/?chapter=3');}
 });

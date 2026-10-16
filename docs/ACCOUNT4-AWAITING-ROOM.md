@@ -47,3 +47,7 @@ A public Ask Kumuyi API was not verified, and the site could not be retrieved du
 ## Audio Bible availability
 
 The independent Bible reader includes a chapter-specific external KJV listening link to Bible.is. It opens the provider in a new tab; audio is not copied, proxied or represented as Heavenly Key recordings. Device speech remains available where supported. Missing ministry recordings show Coming Soon without hiding online listening. Native Bible Brain streaming is not configured: it requires a developer key and provider content attribution.
+
+## Installed Bible updates
+
+Approve & install activates the exact previewed release pointer without another deployment after the pipeline is installed. The Bible service-worker response includes the active release identity so every approved Bible change produces a new worker and separate shell cache, even if sw.js source is unchanged. Installed readers check on launch, return to foreground, reconnect and every 15 minutes while open. They show Update now; activation and refresh happen after the reader saves any unfinished note and clicks. Other open tabs show a refresh notice. Scripture downloads, notes and progress storage are preserved. Closed apps receive the notice on their next online opening; no background push notification service is configured. Shared Bible links use bible.heavenlykey.org; /bible routes from all canonical portals redirect there. Independent tools and user posts are not overwritten.
