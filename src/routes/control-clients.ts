@@ -3,7 +3,7 @@
  * Requires a verified owner session; never accepts caller-supplied owner IDs.
  * Intentionally does not expose Cloudflare credentials or deployment capabilities.
  */
-import { requireAuth } from "../middleware/session";
+import { requireMinimumRole } from "../middleware/rbac";
 import type { Env } from "../services/auth-service";
 
 const reply=(data:unknown,status=200)=>new Response(JSON.stringify(data),{
@@ -19,11 +19,9 @@ const jsonBody=async(request:Request):Promise<Record<string,unknown>|null>=>{
  return value!==null&&typeof value==="object"&&!Array.isArray(value)?value as Record<string,unknown>:null;
 };
 export async function handleClientAccounts(request:Request,env:Env):Promise<Response>{
- const userId=await requireAuth(request,env);
- if(!userId)return reply({error:"unauthorized"},401);
- // Fail closed: only a verified active owner can operate the master registry.
- const owner=await env.DB.prepare("SELECT 1 FROM users WHERE user_id=? AND status='active' AND role='owner'").bind(userId).first();
- if(!owner)return reply({error:"forbidden"},403);
+ const actor=await requireMinimumRole(request,env,"Owner");
+ if(!actor)return reply({error:"forbidden"},403);
+ const userId=actor.userId;
  const path=new URL(request.url).pathname.replace(/\/$/,"");
  if(path==="/api/control/clients"&&request.method==="GET"){
   const rows=await env.DB.prepare("SELECT id,display_name,slug,status,created_at FROM control_clients ORDER BY created_at DESC LIMIT 100").all();
