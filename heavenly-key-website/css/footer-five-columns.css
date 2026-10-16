@@ -2,3 +2,5 @@
 /* Approved footer credit: bright yellow TALKMONEY ECOSYSTEM link. */
 .site-footer .copyright-inner a[href*="talkmoney.uk"]{color:#ffdf26!important;text-decoration-color:#ffdf26!important;font-weight:900}
 .site-footer .copyright-inner a[href*="talkmoney.uk"]:hover,.site-footer .copyright-inner a[href*="talkmoney.uk"]:focus-visible{color:#fff18b!important;text-decoration-color:#fff18b!important}
+
+.site-footer .copyright-inner .hk-footer-legal{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}.site-footer .copyright-inner .hk-footer-legal a{color:#f8f6e8;text-decoration:none;border-bottom:1px solid #d8cba2;font-weight:650;font-size:12px}.site-footer .copyright-inner .hk-footer-legal a:hover,.site-footer .copyright-inner .hk-footer-legal a:focus-visible{color:#ffe37b;border-bottom-color:#ffe37b}@media(max-width:680px){.site-footer .copyright-inner .hk-footer-legal{width:100%;gap:18px}}
