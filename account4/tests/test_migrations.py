@@ -49,6 +49,35 @@ class ReleaseMigrationTests(unittest.TestCase):
         with self.assertRaises(sqlite3.IntegrityError):
             self.change("approved", approved_by=None, approved_at="2026-10-16")
 
+    def test_cannot_skip_build_or_preview(self):
+        for state in ("preview", "deploying", "deployed"):
+            with self.subTest(state=state), self.assertRaises(sqlite3.IntegrityError):
+                self.change(state)
+
+    def test_rejected_release_cannot_be_approved(self):
+        self.change("building")
+        self.change("preview")
+        self.change("rejected")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.change("approved", approved_by="owner", approved_at="2026-10-16")
+
+    def test_deployment_requires_approval(self):
+        self.change("building")
+        self.change("preview")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.change("deploying")
+        self.change("approved", approved_by="owner", approved_at="2026-10-16")
+        self.change("deploying")
+        self.change("deployed")
+        self.assertEqual(self.db.execute("SELECT status FROM control_client_releases WHERE id='r'").fetchone()[0],"deployed")
+
+    def test_cannot_replace_approved_identity(self):
+        self.change("building")
+        self.change("preview")
+        self.change("approved", approved_by="owner", approved_at="2026-10-16")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.change("deploying", approved_by="other")
+
     def tearDown(self):
         self.db.close()
 
