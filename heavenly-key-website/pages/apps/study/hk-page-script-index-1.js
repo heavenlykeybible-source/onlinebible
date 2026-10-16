@@ -1,1 +1,0 @@
-document.querySelector('.hk-family-toggle').addEventListener('click',function(){const p=document.getElementById('hk-family-links'),open=p.hidden;p.hidden=!open;this.setAttribute('aria-expanded',String(open))});if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
