@@ -20,6 +20,32 @@ style.textContent=`
 @media(max-width:600px){.president-photo .hk-president-controls{width:min(88%,225px);gap:6px}}
 `;
 document.head.appendChild(style);
+
+/* Exact approved artwork: retain original interactive launchers underneath. */
+const originalArt=document.createElement('style');
+originalArt.textContent=`
+.president-photo .hk-president-controls #hkem-assistant .hkem-launcher,
+.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{
+background:transparent url('/assets/ministry/approved-ai-floating-icon.webp') center/100% 100% no-repeat!important;
+border:0!important;border-radius:0!important;box-shadow:none!important;
+aspect-ratio:1485/348!important;height:auto!important;min-height:0!important;
+font-size:0!important;color:transparent!important;
+}
+.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{
+background-image:url('/assets/ministry/approved-radio-floating-icon.webp')!important;
+aspect-ratio:1485/317!important;
+animation:none!important;
+}
+.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble::before,
+.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble::after{
+content:none!important;animation:none!important;
+}
+.president-photo .hk-president-controls #hkem-assistant .hkem-launcher img{
+opacity:0!important;
+}
+`;
+document.head.appendChild(originalArt);
+
 function mount(){
  const photo=document.querySelector('.president-section .president-photo');
  const assistant=document.getElementById('hkem-assistant');
