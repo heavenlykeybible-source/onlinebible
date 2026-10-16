@@ -3,7 +3,7 @@
 'use strict';
 const css=document.createElement('style');
 css.textContent=`
-.hk-president-controls{width:min(96%,var(--hk-controls-width,260px))!important}
+.hk-president-controls{width:min(100%,var(--hk-controls-width,160px))!important}
 .hk-size-row{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;position:relative;z-index:5}
 .hk-size-row button{font:700 13px/1 Arial,sans-serif;min-width:32px;min-height:32px;border:1px solid #b78a24;border-radius:16px;background:#fff9e9;color:#15432d;cursor:pointer;box-shadow:0 2px 6px #0002}
 .hk-size-row button:focus-visible{outline:3px solid #2865dc;outline-offset:2px}
@@ -12,10 +12,10 @@ css.textContent=`
 .hk-president-controls #hkem-assistant .hkem-launcher,.hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{width:var(--hk-launch-width,100%)!important;max-width:100%!important}
 #hk-floating-radio:not(.hkr-mini):not(.hkr-closed){width:min(var(--hk-radio-player-width,370px),calc(100vw - 16px))!important}
 #hkem-assistant .hkem-iphone-chat{width:min(var(--hk-ai-panel-width,355px),calc(100vw - 14px))!important}
-@media(max-width:600px){.hk-president-controls{width:min(96%,var(--hk-controls-width,225px))!important}}
+@media(max-width:600px){.hk-president-controls{width:min(52vw,var(--hk-controls-width,160px))!important}}
 `;
 document.head.appendChild(css);
-const ranges={ai:[150,200,260,320],radio:[150,200,260,320]};
+const ranges={ai:[100,130,160,180],radio:[100,130,160,180]};
 function read(key,def){try{const n=Number(localStorage.getItem('hk-size-'+key));return Number.isInteger(n)&&n>=0&&n<4?n:def}catch{return def}}
 function save(key,n){try{localStorage.setItem('hk-size-'+key,String(n))}catch{}}
 function apply(){
