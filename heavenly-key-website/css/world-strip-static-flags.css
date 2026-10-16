@@ -1,0 +1,14 @@
+/* Account 1: compact static flags and separate mission ticker */
+.world-strip{background:linear-gradient(90deg,#750523 0%,#750523 68%,#005735 100%);overflow:hidden}
+.world-inner{display:flex!important;align-items:center!important;gap:12px!important;padding-right:0!important;min-height:52px;height:auto!important}
+.world-fixed{display:flex;align-items:center;gap:10px;flex:0 0 auto;min-width:0}
+.world-intro{font-size:clamp(12px,1.15vw,16px)!important;font-weight:900!important;line-height:1.3!important;letter-spacing:.025em;white-space:nowrap}
+.world-flags-static{display:block;width:clamp(72px,10vw,150px);height:20px;object-fit:contain;flex-shrink:0;animation:none!important;transform:none!important}
+.world-marquee{flex:1;min-width:0;overflow:hidden;white-space:nowrap;position:relative}
+.world-marquee-text{display:inline-block;white-space:nowrap;font-size:clamp(12px,1.2vw,17px);font-weight:900;line-height:1.5;padding-left:0;animation:hk-mission-left-to-right 27s linear infinite}
+@keyframes hk-mission-left-to-right{from{transform:translateX(-100%)}to{transform:translateX(max(100vw,100%))}}
+.world-cross{align-self:stretch;display:flex;align-items:center;justify-content:center;flex:0 0 40px;color:#fff;background:#005735;font-family:Arial,sans-serif;font-weight:900;font-size:39px;line-height:1}
+.world-strip .motion-toggle,.header-earth,.earth{display:none!important}
+@media(max-width:760px){.world-inner{gap:7px!important;min-height:47px}.world-fixed{gap:5px}.world-intro{font-size:10px!important;white-space:normal;max-width:124px;line-height:1.15!important}.world-flags-static{width:65px;height:16px}.world-marquee-text{font-size:12px}.world-cross{flex-basis:27px;font-size:30px}}
+@media(max-width:390px){.world-intro{max-width:105px;font-size:9px!important}.world-flags-static{width:46px}.world-cross{flex-basis:24px}}
+@media(prefers-reduced-motion:reduce){.world-marquee-text{animation:none!important;white-space:normal}.world-marquee{overflow:auto}}
