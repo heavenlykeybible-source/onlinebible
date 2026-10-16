@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Heavenly Key Deployment Portal</title>
+<style>
+:root{font:16px system-ui,sans-serif;background:#f7faf7;color:#14281c}*{box-sizing:border-box}body{margin:0}header{background:#075b37;color:white;padding:22px}main{max-width:1080px;margin:auto;padding:22px}section{background:white;border:1px solid #c7d8cc;border-radius:12px;padding:20px;margin:16px 0}h1{font-size:26px}h2{font-size:21px}label{display:block;margin:12px 0 6px;font-weight:650}input,select,button{font:inherit}input,select{width:100%;padding:12px;border:1px solid #9bb6a3;border-radius:8px}button{padding:12px 16px;background:#075b37;color:white;border:0;border-radius:8px;margin:10px 8px 0 0;cursor:pointer}li{margin:12px 0}small{font-size:14px}#message{min-height:26px}</style></head>
+<body><header><h1>Heavenly Key Deployment Portal</h1><p>Owner-controlled releases • Isolated destinations • Explicit approval</p></header>
+<main><p id="message" role="status" aria-live="polite"></p>
+<section><h2>Choose deployment destination</h2><label for="target">Registered Cloudflare target</label><select id="target"><option value="">Loading...</option></select><button id="refresh">Refresh targets</button><p><small>Only enabled, preconfigured destinations can receive deployment jobs.</small></p></section>
+<section><h2>Prepare release</h2><label for="source">Immutable source reference</label><input id="source" placeholder="releases/2026-10-16/account-1"><label for="digest">Source SHA-256 (64 hexadecimal characters)</label><input id="digest" maxlength="64" spellcheck="false"><button id="create">Create pending deployment</button><p><small>Creating a job does not deploy or change the live website.</small></p></section>
+<section><h2>Deployment approval queue</h2><button id="jobsRefresh">Refresh jobs</button><ul id="jobs"></ul></section>
+</main><script>
+"use strict";
+const el=id=>document.getElementById(id);
+function say(s){el("message").textContent=s}
+async function api(path,options){const r=await fetch(path,{credentials:"same-origin",...options});const b=await r.json();if(!r.ok)throw Error(b.error||"Request failed");return b}
+const post=(path,b)=>api(path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});
+async function targets(){try{const r=await api("/api/control/deploy/targets");el("target").replaceChildren();for(const t of r.targets){const option=document.createElement("option");option.value=t.id;option.textContent=t.label+" — "+t.target_kind+" / "+t.cloudflare_project_name+(t.enabled?"":" (disabled)");option.disabled=!t.enabled;el("target").append(option)}say(r.targets.length+" targets registered")}catch(e){say(e.message)}}
+async function jobs(){try{const r=await api("/api/control/deploy/jobs");el("jobs").replaceChildren();for(const j of r.jobs){const li=document.createElement("li");li.append(document.createTextNode(j.label+" — "+j.status+" — "+j.source_ref+" "));if(j.status==="pending"){const b=document.createElement("button");b.textContent="Approve release";b.onclick=async()=>{if(!confirm("Approve this exact release? This does not yet deploy it."))return;try{await post("/api/control/deploy/jobs/"+encodeURIComponent(j.id)+"/approve",{});say("Release approved; executor not connected");await jobs()}catch(e){say(e.message)}};li.append(b)}el("jobs").append(li)}}catch(e){say(e.message)}}
+el("create").onclick=async()=>{try{const r=await post("/api/control/deploy/jobs",{targetId:el("target").value,sourceRef:el("source").value,sha256:el("digest").value});say("Pending job "+r.id+" created. No deployment performed.");await jobs()}catch(e){say(e.message)}};
+el("refresh").onclick=targets;el("jobsRefresh").onclick=jobs;targets();jobs();
+</script></body></html>
