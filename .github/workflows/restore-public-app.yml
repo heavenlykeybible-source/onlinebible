@@ -1,9 +1,6 @@
 name: Restore approved public app while Account 5 connection is pending
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/restore-public-app.yml', 'heavenly-key-app/**']
 permissions:
   contents: read
 concurrency:
@@ -49,3 +46,4 @@ jobs:
           for(const slug of ['android','iphone','ipad','windows','mac']){const r=await fetch(root+'/download/'+slug+'/');if(!r.ok)throw Error('Device installation guide unavailable: '+slug)}
           console.log('Approved app recovery upstream verified, including all five device guides. Temporarily hosted in Account 1; Account 5 is not claimed repaired.');
           JS
+

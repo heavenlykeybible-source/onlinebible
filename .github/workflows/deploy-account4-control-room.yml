@@ -1,13 +1,6 @@
 name: Deploy Account 4 Control Room (manual, guarded)
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'account4-control-room/**'
-      - 'cms-public/**'
-      - 'shared-cms/**'
-      - '.github/workflows/deploy-account4-control-room.yml'
 permissions:
   contents: read
 concurrency:
@@ -21,6 +14,7 @@ jobs:
       run:
         working-directory: account4-control-room
     env:
+      ACCOUNT4_RELEASE_INGEST_TOKEN: ${{ secrets.ACCOUNT4_RELEASE_INGEST_TOKEN }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.ACCOUNT_4_ACCOUNT_ID }}
       ACCOUNT4_D1_ID: ${{ secrets.ACCOUNT4_CONTROL_ROOM_D1_ID }}
@@ -28,6 +22,9 @@ jobs:
       ACCESS_TEAM_DOMAIN: ${{ secrets.ACCOUNT4_ACCESS_TEAM_DOMAIN }}
       ACCESS_AUD: ${{ secrets.ACCOUNT4_ACCESS_AUD }}
     steps:
+      - name: Require the separate submit-only release credential before installation
+        run: |
+          test "${#ACCOUNT4_RELEASE_INGEST_TOKEN}" -ge 32 || { echo "::error::Configure ACCOUNT4_RELEASE_INGEST_TOKEN before installing the release pipeline."; exit 1; }
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -141,6 +138,19 @@ jobs:
           Path('wrangler.owner.toml').write_text(s)
           PYOWNER
           npx wrangler deploy --config wrangler.owner.toml
+      - name: Configure submit-only intake on the two control workers
+        run: |
+          node --input-type=module <<'JS'
+          const account=process.env.CLOUDFLARE_ACCOUNT_ID;
+          for(const worker of ['heavenlykey-control-room','heavenlykey-owner-dashboard']){
+            const response=await fetch('https://api.cloudflare.com/client/v4/accounts/'+account+'/workers/scripts/'+worker+'/secrets',{
+              method:'PUT',headers:{Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN,'Content-Type':'application/json'},
+              body:JSON.stringify({name:'RELEASE_INGEST_TOKEN',type:'secret_text',text:process.env.ACCOUNT4_RELEASE_INGEST_TOKEN})
+            });
+            if(!response.ok)throw Error('Release intake secret configuration failed for '+worker+' (HTTP '+response.status+')');
+          }
+          console.log('Submit-only release intake configured; existing credentials untouched.');
+          JS
       - name: Verify live public publishing service, private gate and real AI response
         run: |
           node --input-type=module <<'JS'
@@ -154,3 +164,4 @@ jobs:
           const owner=await fetch('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/',{redirect:'manual'});if(owner.status!==200)throw Error('Owner page should open publicly');
           const denied=await fetch('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/api/me');if(denied.status!==401)throw Error('Unauthenticated admin API accessible');console.log('Public owner page and protected editing APIs verified');
           JS
+

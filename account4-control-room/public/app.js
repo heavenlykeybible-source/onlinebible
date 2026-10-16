@@ -54,7 +54,7 @@
   const add=(row,text)=>{const td=document.createElement('td');td.textContent=text;row.append(td);return td};
   for(const site of Object.keys(labels)){
    const updates=items.filter(i=>i.site===site);
-   if(!updates.length){const row=document.createElement('tr');add(row,labels[site]);add(row,'No updates received');add(row,'—');add(row,'—');add(row,'—');add(row,'—');add(row,'—');root.append(row);continue}
+
    for(const item of updates){const row=document.createElement('tr');add(row,labels[site]);add(row,item.key+' · '+item.kind+' · v'+item.version);add(row,item.status==='approved'?'Approved':'New update').className=item.status==='approved'?'':'new-update';add(row,displayDate(item.arrivedAt));add(row,item.approvedVersion?'v'+item.approvedVersion+' · '+displayDate(item.approvedAt):'—');
     const working=add(row,item.status==='approved'?'Checking…':'Awaiting approval');
     if(item.status==='approved')verifyWorking(item,working);

@@ -1,9 +1,10 @@
+import {ingestAuthorized,intakeRoute,adminReleaseRoute,previewReleaseRoute} from './public-releases.ts';
 import {awaitingRoom,previewUpdate,approveUpdate} from './awaiting-room.ts';
 import {SITES,planDeployment} from './deployment-engine.ts';
 import {AI_MODEL,PUBLIC_CMS_ORIGIN,validateDocument} from './cms-schema.ts';
 import {saveDraft,publishDraft,restoreDraft} from './cms-storage.ts';
 import {ownerSession,ownerLogin,ownerLogout,setOwnerPassword,generatedPassword} from './owner-auth.ts';
-interface Env {DB:D1Database;MEDIA:R2Bucket;AI:Ai;ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUD:string}
+interface Env {DB:D1Database;MEDIA:R2Bucket;AI:Ai;ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUD:string;RELEASE_INGEST_TOKEN?:string}
 const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
 const fail=(message:string,status=400)=>json({error:message},status);
 function b64url(s:string){const p=s.replace(/-/g,"+").replace(/_/g,"/");return Uint8Array.from(atob(p+"=".repeat((4-p.length%4)%4)),c=>c.charCodeAt(0))}
@@ -28,6 +29,12 @@ async function body(request:Request,max=210000){if(!(request.headers.get('conten
 function imageType(b:Uint8Array){if(b.length>=8&&[137,80,78,71,13,10,26,10].every((n,i)=>b[i]===n))return 'image/png';if(b[0]===255&&b[1]===216&&b[2]===255)return 'image/jpeg';if(String.fromCharCode(...b.slice(0,6)).startsWith('GIF8'))return 'image/gif';if(String.fromCharCode(...b.slice(0,4))==='RIFF'&&String.fromCharCode(...b.slice(8,12))==='WEBP')return 'image/webp';return ''}
 export default {async fetch(request:Request,env:Env):Promise<Response>{
  const u=new URL(request.url);
+ try{
+  const preview=await previewReleaseRoute(request,env);if(preview)return preview;
+  if(u.pathname.startsWith('/api/releases/')&&await ingestAuthorized(request,env)){
+   const response=await intakeRoute(request,env,'source-intake');return response||fail('Intake connections cannot approve or edit releases.',403);
+  }
+ }catch(error:any){return fail(error.message,error.status||500)}
  const ownerHost=u.hostname==='heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev';
  if(!ownerHost&&!u.pathname.startsWith('/api/'))return env.ASSETS.fetch(request);
  if(ownerHost&&u.pathname==='/api/owner/login'&&request.method==='POST'){
@@ -43,6 +50,9 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
  if(!['GET','HEAD','OPTIONS'].includes(request.method)&&(request.headers.get('Origin')!==u.origin||request.headers.get('Sec-Fetch-Site')==='cross-site'))return fail('Use the Control Room to make this change.',403);
  try{
   const location=()=>keyOf(u);
+  const releaseResponse=await adminReleaseRoute(request,env,actor);if(releaseResponse)return releaseResponse;
+  if(u.pathname.startsWith('/api/releases/')){const intake=await intakeRoute(request,env,actor);if(intake)return intake;}
+
   if(u.pathname==='/api/owner/password'&&request.method==='POST'){if(!accessActor&&!ownerHost)return fail('Owner sign-in required.',403);const data=await body(request,4096),password=data.generate===true?generatedPassword():data.password;await setOwnerPassword(env.DB,password,actor);return json({ok:true,password:data.generate===true?password:undefined,signInUrl:'https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/'})}
   if(u.pathname==='/api/owner/logout'&&request.method==='POST')return new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json','cache-control':'no-store','set-cookie':await ownerLogout(request,env.DB)}});
   if(u.pathname==='/api/me')return json({actor,role:'administrator'});

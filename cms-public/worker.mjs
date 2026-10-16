@@ -1,3 +1,4 @@
+import {publicReleaseRoute,retiredPublicationVersions} from '../account4-control-room/src/public-releases.ts';
 import {ministryContext} from '../shared-cms/ministry-knowledge.mjs';
 const MINISTRY_FACTS=[
 'Heavenly Key Evangelistic Movement official website: https://heavenlykey.org .',
@@ -14,6 +15,7 @@ const origins=new Set(['https://studio.heavenlykey.org','https://control.heavenl
 function reply(data,status=200,origin='*') {return Response.json(data,{status,headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'GET, HEAD, POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Vary':'Origin'}})}
 export async function publicRoute(request,env){
  const u=new URL(request.url),origin=request.headers.get('Origin');
+ try{const release=await publicReleaseRoute(request,env);if(release)return release}catch(error){return reply({error:'The website release could not be read.'},error.status||503)}
  if(request.method==='OPTIONS')return origins.has(origin)?reply({},200,origin):reply({error:'Origin not permitted'},403);
  if(u.pathname==='/health'&&request.method==='GET'){
   try{await env.DB.prepare('SELECT 1 FROM cms_publications LIMIT 1').first();return reply({ok:true,service:'heavenly-key-public-cms',publishing:'ready',ai:env.GEMINI_API_KEY?'configured':'unavailable',aiProvider:'gemini'})}catch{return reply({ok:false,error:'CMS publication tables are not ready'},503)}
@@ -23,7 +25,8 @@ export async function publicRoute(request,env){
   if(!/^account[1-6]$/.test(site||'')||!/^[-A-Za-z0-9_/]{1,100}$/.test(page))return reply({error:'Unknown website or page'},400);
   const rows=await env.DB.prepare("SELECT kind,entry_key,content,revision_version,published_at FROM cms_publications WHERE site=? AND ((kind='page' AND entry_key=?) OR (kind IN ('menu','footer') AND entry_key='site'))").bind(site,page).all();
   const result={schema:1,site,page,content:null,menu:null,footer:null};
-  for(const row of rows.results||[]){const value={...JSON.parse(row.content),version:row.revision_version,publishedAt:row.published_at};if(row.kind==='page')result.content=value;else result[row.kind]=value;}
+  let retired=new Map();try{retired=await retiredPublicationVersions(env.DB,site,page)}catch(error){if(!/no such table/i.test(error.message))throw error}
+  for(const row of rows.results||[]){if(row.revision_version<=(retired.get(row.kind+'/'+row.entry_key)||0))continue;const value={...JSON.parse(row.content),version:row.revision_version,publishedAt:row.published_at};if(row.kind==='page')result.content=value;else result[row.kind]=value;}
   return reply(result);
  }
  const media=u.pathname.match(/^\/v1\/media\/([a-f0-9-]{36})$/);
@@ -78,3 +81,4 @@ export async function publicRoute(request,env){
  return reply({error:'Public resource not found'},404);
 }
 export default {async fetch(request,env){try{return await publicRoute(request,env)}catch{return reply({error:'The CMS service is temporarily unavailable'},503)}}};
+

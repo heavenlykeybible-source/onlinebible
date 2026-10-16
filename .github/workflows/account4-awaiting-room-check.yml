@@ -1,0 +1,30 @@
+name: Check Account 4 awaiting room without deployment
+on:
+  pull_request:
+    paths: ['account4-control-room/**', 'cms-public/**', 'portal-router/**', 'scripts/account4-intake.mjs', 'bible/**', 'public-apps/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --prefix account4-control-room --ignore-scripts --no-audit --no-fund
+      - run: npm run check --prefix account4-control-room
+      - run: node --experimental-strip-types --test account4-control-room/test/*.mjs portal-router/worker.test.mjs
+      - run: npm ci --prefix global-community --ignore-scripts --no-audit --no-fund
+      - run: node --test account4-control-room/test/release-room-dom.cjs
+      - name: Preserve Bible integrity and behavior
+        run: |
+          node bible/tests/scripture.mjs
+          node bible/tests/assets.mjs
+          node bible/tests/offline.cjs
+          node bible/tests/reader.cjs
+          node bible/tests/study-tools.cjs
+          node bible/tests/worker.mjs
+      - name: Preserve app private and offline data
+        run: node --test heavenly-key-app/test/offline-preservation.test.mjs heavenly-key-app/test/offline-learning.test.mjs

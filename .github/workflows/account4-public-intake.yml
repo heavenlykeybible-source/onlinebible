@@ -1,0 +1,45 @@
+name: Send website updates to Account 4 awaiting room
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'bible/public/**'
+      - 'public-apps/**'
+      - 'heavenly-key-website/**'
+      - 'global-community/public/**'
+      - 'heavenly-key-app/public/**'
+      - 'account4-control-room/public/**'
+      - 'shared-cms/**'
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: 'Comma-separated account1–account6 or app-bible, app-community, app-radio, app-study, app-walk; empty selects changed targets'
+        required: false
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: account4-public-intake
+  cancel-in-progress: false
+jobs:
+  arrive:
+    if: vars.ACCOUNT4_RELEASE_PIPELINE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate public snapshots and send directly to awaiting room
+        env:
+          ACCOUNT4_RELEASE_INGEST_TOKEN: ${{ secrets.ACCOUNT4_RELEASE_INGEST_TOKEN }}
+          ACCOUNT4_INTAKE_ORIGIN: https://control.heavenlykey.org
+          SOURCE_SHA: ${{ github.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+          RELEASE_TARGETS: ${{ inputs.targets }}
+        run: node --experimental-strip-types scripts/account4-intake.mjs
+# No Cloudflare deployment credentials, database commands or approval calls are used here.

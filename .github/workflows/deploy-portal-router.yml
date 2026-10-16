@@ -1,9 +1,6 @@
 name: Repair Heavenly Key Portal Routing
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['portal-router/**', '.github/workflows/deploy-portal-router.yml']
 permissions:
   contents: read
   actions: read
@@ -125,3 +122,4 @@ jobs:
             const cross=await fetch(origin+path,{method:'POST',headers:{Origin:'https://unrelated.example','Content-Type':'application/json'},body:'{}'});if(cross.status!==403)throw Error('Cross-site login protection failed');
           }
           JS
+

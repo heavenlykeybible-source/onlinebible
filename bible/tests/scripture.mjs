@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const root = new URL("../../heavenly-key-website/bible/data/kjv/", import.meta.url);
+const root = new URL("../public/data/kjv/", import.meta.url);
 const manifest = JSON.parse(await readFile(new URL("manifest.json", root), "utf8"));
 assert.equal(manifest.books.length, 66);
 let chapters = 0, verses = 0;
@@ -23,3 +23,4 @@ for (const book of manifest.books) {
 }
 assert.equal(chapters,1189);assert.equal(verses,31102);
 console.log("PASS: complete 66-book KJV bundle; 1,189 chapters, 31,102 verses and all file checksums.");
+

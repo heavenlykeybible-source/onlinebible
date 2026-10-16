@@ -1,0 +1,3 @@
+/* Account 1 approved visual identity — safe non-destructive refresh for legacy functional pages. */
+:root{--hk-green:#005334;--hk-deep:#003f27;--hk-wine:#790326;--hk-gold:#ffdf26}
+html{scroll-behavior:smooth}body{font-size:max(16px,1rem);background-color:#fff;color:#151515}a{overflow-wrap:anywhere}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--hk-gold);outline-offset:3px}header, .site-header{border-bottom:3px solid var(--hk-gold)}h1,h2,h3{overflow-wrap:break-word}button,.button,[type=submit]{min-height:42px}img{max-width:100%;height:auto}footer{border-top:3px solid var(--hk-gold)}@media(max-width:760px){body{overflow-x:hidden}main,section,article{max-width:100%}nav{max-width:100%}}

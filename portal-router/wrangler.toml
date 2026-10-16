@@ -2,4 +2,13 @@ name = "heavenlykey-portals"
 main = "worker.mjs"
 compatibility_date = "2026-10-01"
 workers_dev = true
-routes = [{ pattern = "global.heavenlykey.org/*", zone_id = "23f3be9052bf609e8ccd85ac1b375019" }, { pattern = "bible.heavenlykey.org/*", zone_id = "23f3be9052bf609e8ccd85ac1b375019" }]
+# Activate only in the separately approved installation deployment.
+routes = [
+  { pattern = "heavenlykey.org/*", zone_id = "23f3be9052bf609e8ccd85ac1b375019" },
+  { pattern = "www.heavenlykey.org/*", zone_id = "23f3be9052bf609e8ccd85ac1b375019" },
+  { pattern = "control.heavenlykey.org/*", zone_id = "23f3be9052bf609e8ccd85ac1b375019" },
+  { pattern = "studio.heavenlykey.org/*", zone_id = "23f3be9052bf609e8ccd85ac1b375019" },
+  { pattern = "app.heavenlykey.org/*", zone_id = "23f3be9052bf609e8ccd85ac1b375019" },
+  { pattern = "global.heavenlykey.org/*", zone_id = "23f3be9052bf609e8ccd85ac1b375019" },
+  { pattern = "bible.heavenlykey.org/*", zone_id = "23f3be9052bf609e8ccd85ac1b375019" }
+]

@@ -5,7 +5,7 @@ const worker=(await import("data:text/javascript;base64,"+Buffer.from(source).to
 const calls=[];globalThis.fetch=async(url,options)=>{calls.push({url,options});return Response.json({success:true,items:[]});};
 const env={ASSETS:{fetch:async request=>{
  const path=new URL(request.url).pathname;
- try{return new Response(await readFile(new URL("../../heavenly-key-website/bible/"+(path==="/"?"index.html":path.slice(1)),import.meta.url)));}catch{return new Response("Not found",{status:404});}
+ try{return new Response(await readFile(new URL("../public/"+(path==="/"?"index.html":path.slice(1)),import.meta.url)));}catch{return new Response("Not found",{status:404});}
 }}};
 assert.equal((await worker.fetch(new Request("https://bible.test/health"),env)).status,200);
 assert.equal((await worker.fetch(new Request("https://bible.test/"),env)).status,200);
@@ -37,3 +37,4 @@ await worker.fetch(new Request("https://bible.test/api/hymns"),{...env,MINISTRY_
 assert.equal(configuredUrl,"https://central.example/api/hymns");
 for(const origin of ["http://central.example","https://user:pass@central.example","https://central.example/private","https://central.example/?secret=1"]){configuredUrl=null;assert.equal((await worker.fetch(new Request("https://bible.test/api/hymns"),{...env,MINISTRY_PUBLIC_API_ORIGIN:origin})).status,502);assert.equal(configuredUrl,null);}
 console.log("PASS: read-only methods, health HEAD and validated migration-ready public media origin.");
+
