@@ -218,7 +218,7 @@ async function loadChapter() {
  const verses = Array.isArray(data.verses) ? data.verses : [];
  const valid = verses.filter(v => v.isPlaceholder === false && typeof v.text === "string" && v.text.trim());
  narrationText=valid.map(v=>v.text);el("narrate").disabled=!narrationText.length;
- for(const verse of valid) { const p = document.createElement("p"), sup = document.createElement("sup"), select=document.createElement("button"); sup.textContent = String(verse.number); p.append(sup,document.createTextNode(verse.text)); select.type="button";select.className="verse-action";select.textContent="Study";select.setAttribute("aria-label","Study verse "+verse.number);select.addEventListener("click",()=>selectVerse(verse,name,num));p.append(select); el("verses").append(p); }
+ for(const verse of valid) { const p = document.createElement("p"), sup = document.createElement("sup"), select=document.createElement("button"); sup.textContent = String(verse.number); p.append(sup,document.createTextNode(verse.text)); select.type="button";select.className="verse-action";select.textContent="Study";select.setAttribute("aria-label","Study verse "+verse.number);select.addEventListener("click",()=>selectVerse(verse,name,num));p.append(select);window.HKVerseCommentary?.attach(p,{book:name,chapter:num,verse:verse.number,text:verse.text}); el("verses").append(p); }
  message("reader-status",data.warning || (valid.length ? "" : "Scripture for this chapter has not been published yet."));
  if(valid.length && valid.length === verses.length && !data.warning) {
  shareText = name+" "+num+" (KJV)\n\n"+valid.map(v=>v.number+" "+v.text).join("\n")+"\n\nHEAVENLY KEY BIBLE";

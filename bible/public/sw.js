@@ -1,9 +1,9 @@
 "use strict";
-const SHELL = "hk-bible-shell-v4";
+const SHELL = "hk-bible-shell-v5";
 const SCRIPTURE = "hk-bible-kjv-ae1f46af-v1";
 const PREFIX = new URL("./", self.location.href).pathname;
 self.addEventListener("install", event => {
- event.waitUntil(caches.open(SHELL).then(cache => cache.addAll(["./index.html","./style.css","./app.js","./study-tools.js","./manifest.webmanifest","./icon.svg","./icon-192.png","./icon-512.png","./data/hymns.json"])));
+ event.waitUntil(caches.open(SHELL).then(cache => cache.addAll(["./index.html","./style.css","./app.js","./study-tools.js","./verse-commentary.js","./data/commentary/catalog.json","./manifest.webmanifest","./icon.svg","./icon-192.png","./icon-512.png","./data/hymns.json"])));
 });
 self.addEventListener("activate", event => {
  event.waitUntil((async()=>{
@@ -59,3 +59,4 @@ self.addEventListener("message", event=>{
  })().finally(()=>{download=null;});
  event.waitUntil(download);
 });
+

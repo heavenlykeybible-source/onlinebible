@@ -35,3 +35,11 @@ The old automatic production push triggers are removed from the Account 3, Contr
 - Existing app offline/private-notebook preservation checks pass.
 - TypeScript and JavaScript syntax checks pass.
 - A full rendered-browser pass remains unverified in this environment: Chromium was unavailable and its download failed. No live behavior is claimed before the authorized installation and verification.
+
+## Verse commentary
+
+Every displayed KJV verse now has a commentary entry point, with Ask Kumuyi AI and Deeper Life as the preferred study sources. Scripture text, hashes, user notes and progress remain separate. Source links open in new tabs; a copyable question includes the exact verse and requests a source citation. Imported notes display their author, study title and preferred-source link. No generic AI text is labelled as Pastor Kumuyi's words.
+
+The source catalogue explicitly reports **0 imported commentary verses** until an authorised corpus is supplied. `bible/scripts/import-commentary.mjs` validates canonical references, source attribution and corpus rights metadata, supports a partial corpus, and rejects a falsely declared complete corpus unless it covers all 31,102 verses. Imported public files still pass through Account 4 Preview and Approve. No new database or credential is created.
+
+A public Ask Kumuyi API was not verified, and the site could not be retrieved during research. Deeper Life's Search the Scriptures publication states that bulk reproduction needs permission. The feature therefore links to those sources and accepts authorised content rather than claiming that all official explanations have already been imported.
