@@ -64,13 +64,17 @@ export async function toggleGlobalConnect(env:Env,userId:number,targetType:"prof
   return {connected:true};
 }
 
-export async function listConnections(env:Env,userId:number){
+export async function listConnections(env:Env,userId:number,viewerId:number|null=userId){
   const rows=await env.DB.prepare(`SELECT c.target_type,c.target_id,c.created_at,
     CASE WHEN c.target_type='profile' THEN p.display_name ELSE s.name END display_name
     FROM global_connections c
     LEFT JOIN profiles p ON c.target_type='profile' AND p.user_id=c.target_id
     LEFT JOIN spaces s ON c.target_type='space' AND s.space_id=c.target_id
-    WHERE c.user_id=? ORDER BY c.created_at DESC LIMIT 300`).bind(userId).all<any>();
+    WHERE c.user_id=?
+      AND ((c.target_type='profile' AND EXISTS(SELECT 1 FROM users u WHERE u.user_id=c.target_id AND u.status='active')
+        AND NOT EXISTS(SELECT 1 FROM user_blocks b WHERE (b.blocker_user_id=? AND b.blocked_user_id=c.target_id) OR (b.blocker_user_id=c.target_id AND b.blocked_user_id=?)))
+        OR (c.target_type='space' AND s.status='active'))
+    ORDER BY c.created_at DESC LIMIT 300`).bind(userId,viewerId,viewerId).all<any>();
   return rows.results;
 }
 
@@ -510,4 +514,5 @@ export async function savePost(env:Env,userId:number,postId:number){
   if(old)await env.DB.prepare('DELETE FROM saved_posts WHERE user_id=? AND post_id=?').bind(userId,postId).run();
   else await env.DB.prepare('INSERT OR IGNORE INTO saved_posts(user_id,post_id) VALUES(?,?)').bind(userId,postId).run();return {saved:!old};
 }
+
 

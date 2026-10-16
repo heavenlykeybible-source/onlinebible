@@ -1,3 +1,4 @@
+import {handlePublicBlogFeed} from "./routes/public-blog-feed";
 import {handleGRDPCPublic,handleGRDPCAdmin} from "./routes/grdpc";
 import {handleWebsiteAiInbox,handleWebsiteAiConversation} from "./routes/website-ai-inbox";
 import {runReminders} from "./services/grdpc-service";
@@ -84,6 +85,7 @@ export default {
     const method = request.method;
     const idMatch = (pattern: RegExp) => pathname.match(pattern);
 
+    if (pathname === "/api/public/blog-feed") return handlePublicBlogFeed(request);
     if (method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -370,3 +372,4 @@ export default {
     });
   },
 };
+

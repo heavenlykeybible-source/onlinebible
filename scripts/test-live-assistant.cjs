@@ -7,7 +7,7 @@ const assert=require('node:assert/strict');
  await page.goto('https://heavenlykey.org/',{waitUntil:'domcontentloaded'});
  const toggle=page.getByRole('button',{name:'Open Online Assistant chat',exact:true});await toggle.waitFor({timeout:30000});await toggle.click();
  const img=page.locator('.hkem-chat-header .hkem-ai-avatar img');
- await img.waitFor();assert.ok(await img.evaluate(i=>i.complete&&i.naturalWidth>0));
+ await img.waitFor();await page.waitForFunction(()=>{const i=document.querySelector('.hkem-chat-header .hkem-ai-avatar img');return i&&i.complete&&i.naturalWidth>0},{},{timeout:15000});
  assert.match(await page.locator('.hkem-chat-header').textContent(),/HEAVENLY KEY EVANGELISTIC MOVEMENT AI ASSISTANT/);
  const frame=await page.locator('.hkem-iphone-chat').boundingBox();assert.ok(frame.width<=320&&frame.height<=440&&frame.y>150);
  await page.getByRole('textbox',{name:'Your message',exact:true}).fill('Hello, what ministry resources can you help me find?');
@@ -20,3 +20,4 @@ const assert=require('node:assert/strict');
  assert.equal(await page.locator('#hk-radio-compact:visible').count(),0);console.log('Radio page duplicate floating radio link hidden');
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
+
