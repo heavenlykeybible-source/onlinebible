@@ -4,7 +4,7 @@
 const style=document.createElement('style');
 style.textContent=`
 .president-photo{position:relative!important;overflow:visible!important}
-.president-photo .hk-president-controls{position:absolute;left:50%;bottom:100%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;width:min(100%,260px);z-index:30}
+.president-photo .hk-president-controls{position:absolute;left:50%;bottom:calc(100% + 12px);transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;width:min(100%,260px);z-index:30}
 .president-photo .hk-president-controls #hkem-assistant,.president-photo .hk-president-controls #hk-floating-radio{position:relative!important;inset:auto!important;top:auto!important;bottom:auto!important;left:auto!important;right:auto!important;margin:0!important;width:100%!important;transform:none!important}
 .president-photo .hk-president-controls #hkem-assistant .hkem-launcher,.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{width:100%!important;max-width:100%!important}
 .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{animation:none!important}
