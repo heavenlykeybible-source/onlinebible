@@ -13,3 +13,5 @@
 .site-footer .hk-footer-gallery.hk-gallery-slideshow img{width:100%;height:100%;object-fit:cover}
 .site-footer .hk-gallery-count{font-size:14px;color:#ffe3a2;margin:0}
 @media(prefers-reduced-motion:reduce){.site-footer .hk-footer-gallery.hk-gallery-slideshow a{transition:none}}
+
+.site-footer .hk-footer-column a,.site-footer .hk-footer-column p,.site-footer .copyright-inner p,.site-footer .copyright-inner .hk-footer-legal a,.site-footer .hk-footer-app-label{font-size:14px}
