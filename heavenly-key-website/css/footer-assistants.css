@@ -20,3 +20,7 @@
 @keyframes hk-green-mic{50%{box-shadow:0 0 15px #ffe66ab8}}
 @media(max-width:600px){#hk-floating-radio.hkr-mini .hkr-bubble,#hkem-assistant .hkem-launcher{width:min(45vw,190px)!important;max-width:min(45vw,190px)!important;height:56px!important;min-height:56px!important;padding:5px!important}#hk-floating-radio.hkr-mini .hkr-bubble::before{flex-basis:39px;width:39px;height:39px;font-size:21px}#hkem-assistant .hkem-launcher img{flex-basis:39px;width:39px!important;height:39px!important}#hk-floating-radio.hkr-mini .hkr-bubble::after,#hkem-assistant .hkem-launcher::after{font-size:9px;line-height:1.55;margin-left:5px}}
 @media(prefers-reduced-motion:reduce){#hk-floating-radio.hkr-mini .hkr-bubble,#hkem-assistant .hkem-launcher,#hkem-assistant .hkem-launcher .hkem-pulse,#hk-floating-radio.hkr-mini .hkr-bubble::before{animation:none!important}}
+
+/* Owner correction: both compact launchers sit approximately 3 CSS inches above footer top. */
+#hk-floating-radio,#hkem-assistant{bottom:calc(100% + 3in)!important}
+@media(max-width:600px){#hk-floating-radio,#hkem-assistant{bottom:calc(100% + 3in)!important}}
