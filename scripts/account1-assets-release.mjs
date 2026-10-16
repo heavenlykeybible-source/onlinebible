@@ -18,3 +18,17 @@ const domains=await fetch('https://api.cloudflare.com/client/v4/accounts/'+accou
 console.log('DOMAIN MAP',JSON.stringify(domains.result?.map(d=>({hostname:d.hostname,service:d.service,environment:d.environment}))));
 const source=await parts.get('index.js').text();
 console.log('STATIC HANDLER REFERENCES',source.split('\n').filter(l=>/ASSETS|STATIC|staticOrigin|\.pages\.dev|\.workers\.dev|heavenlykey\.org|portal-router/.test(l)).map(l=>l.slice(0,500)).join('\n'));
+
+async function readApi(path,t=token){const r=await fetch('https://api.cloudflare.com/client/v4'+path,{headers:{Authorization:'Bearer '+t}});const j=await r.json();if(!r.ok||!j.success)throw Error('Read API '+path+' HTTP '+r.status);return j.result}
+console.log('ACCOUNT1 ZONE ROUTES',JSON.stringify(await readApi('/zones/23f3be9052bf609e8ccd85ac1b375019/workers/routes')));
+console.log('ACCOUNT1 PAGES',JSON.stringify((await readApi('/accounts/'+account+'/pages/projects')).map(p=>({name:p.name,subdomain:p.subdomain}))));
+const a4=process.env.ACCOUNT_4_ACCOUNT_ID,t4=process.env.ACCOUNT_4_TOKEN;
+if(a4!=='404ebf05a781fcccbbed44aeb02cb72b'||!t4)throw Error('Account 4 credential contract missing or mismatched');
+console.log('::add-mask::'+t4);
+const workers=await readApi('/accounts/'+a4+'/workers/scripts',t4);
+console.log('ACCOUNT4 WORKERS',JSON.stringify(workers.map(w=>({id:w.id,modified_on:w.modified_on}))));
+for(const name of ['heavenlykey-recovery-control','heavenlykey-owner-dashboard']){
+ const s=await readApi('/accounts/'+a4+'/workers/scripts/'+name+'/settings',t4);
+ console.log('ACCOUNT4 BINDINGS '+name,JSON.stringify(s.bindings.map(b=>({name:b.name,type:b.type,...(b.type==='d1'?{id:b.id}:{}),...(b.name==='GITHUB_REPOSITORY'?{text:b.text}:{})}))));
+}
+console.log('ACCOUNT4 ORIGINAL DB PIN PRESENT',Boolean(process.env.ACCOUNT4_PROTECTED_D1_ID));

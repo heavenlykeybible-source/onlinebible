@@ -18,9 +18,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Read current Account 1 backend and settings without changes
+      - name: Inspect Account 1 routes and Account 4 deployment prerequisites
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT_4_ACCOUNT_ID: ${{ secrets.ACCOUNT_4_ACCOUNT_ID }}
+          ACCOUNT_4_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
+          ACCOUNT4_PROTECTED_D1_ID: ${{ secrets.ACCOUNT4_PROTECTED_D1_ID }}
         run: node scripts/account1-assets-release.mjs --inspect
-
-# Verify direct Account 1 hostname mapping before publishing.
