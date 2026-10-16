@@ -1,5 +1,5 @@
 "use strict";
-const SHELL = "hk-bible-shell-v5";
+const SHELL = "hk-bible-shell-v6";
 const SCRIPTURE = "hk-bible-kjv-ae1f46af-v1";
 const PREFIX = new URL("./", self.location.href).pathname;
 self.addEventListener("install", event => {
@@ -15,7 +15,7 @@ self.addEventListener("fetch", event => {
  const url = new URL(event.request.url);
  if(event.request.method!=="GET"||url.origin!==self.location.origin||!url.pathname.startsWith(PREFIX))return;
  const isScripture = url.pathname.startsWith(PREFIX+"data/kjv/");
- const isShell = [PREFIX,PREFIX+"index.html",PREFIX+"style.css",PREFIX+"app.js",PREFIX+"study-tools.js",PREFIX+"manifest.webmanifest",PREFIX+"icon.svg",PREFIX+"icon-192.png",PREFIX+"icon-512.png",PREFIX+"data/hymns.json"].includes(url.pathname);
+ const isShell = [PREFIX,PREFIX+"index.html",PREFIX+"style.css",PREFIX+"app.js",PREFIX+"study-tools.js",PREFIX+"verse-commentary.js",PREFIX+"data/commentary/catalog.json",PREFIX+"manifest.webmanifest",PREFIX+"icon.svg",PREFIX+"icon-192.png",PREFIX+"icon-512.png",PREFIX+"data/hymns.json"].includes(url.pathname);
  if(!isScripture&&!isShell)return;
  event.respondWith((async()=>{
   const cache=await caches.open(isScripture?SCRIPTURE:SHELL);

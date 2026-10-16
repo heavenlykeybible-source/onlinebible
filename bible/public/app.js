@@ -205,6 +205,9 @@ function chapters(value = 1) {
 }
 async function loadChapter() {
  const token = ++chapterRequest, name = book.value, num = Number(chapter.value);
+ const sourceCode=window.HKVerseCommentary?.codeByBook[name];
+ const audioCode=({SOL:"SNG",JOE:"JOL",NAH:"NAM",MAR:"MRK",JOH:"JHN",PHI:"PHP",JAM:"JAS"})[sourceCode]||sourceCode;
+ el("online-audio").href=audioCode?"https://live.bible.is/bible/ENGKJV/"+audioCode+"/"+num:"https://live.bible.is/";
  stopNarration();narrationText=[];el("narrate").disabled=true;
  stop("chapter-audio"); el("verses").replaceChildren(); el("share").disabled = true;
  selectedVerse=null;el("study-editor").hidden=true;
@@ -227,12 +230,12 @@ async function loadChapter() {
  {
  message("audio-status","Checking chapter recording…");
  try { const metadata=await api("/api/bible/"+encodeURIComponent(name)+"/"+num+"?metadata=1");if(token!==chapterRequest)return;
- if(!metadata.chapterId){if(!speaking)message("audio-status","No approved recording is available for this chapter yet.");return;}
+ if(!metadata.chapterId){if(!speaking)message("audio-status","Heavenly Key recording: Coming Soon. Listen online on Bible.is or use device read-aloud.");return;}
  const audio = await api("/api/bible/audio?chapterId="+encodeURIComponent(metadata.chapterId)); if(token !== chapterRequest)return;
  const recording = (audio.items||[]).find(x=>approvedPath(x.playbackUrl)&&studyTools.isKjvRecording(x));
  if(recording) { el("chapter-audio").src = recording.playbackUrl; el("chapter-audio").hidden = false; if(!speaking)message("audio-status",recording.sourceLabel || "Bible chapter recording"); }
- else if(!speaking)message("audio-status","No approved recording is available for this chapter yet.");
- } catch { if(token===chapterRequest&&!speaking)message("audio-status","A ministry recording is not available for this chapter. You can still read the complete text."); }
+ else if(!speaking)message("audio-status","Heavenly Key recording: Coming Soon. Listen online on Bible.is or use device read-aloud.");
+ } catch { if(token===chapterRequest&&!speaking)message("audio-status","Heavenly Key recording: Coming Soon. Listen online on Bible.is or use device read-aloud."); }
  }
  } catch { if(token===chapterRequest)message("reader-status","This chapter could not be loaded. Check your connection and try again."); }
 }
