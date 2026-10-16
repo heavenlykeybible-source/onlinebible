@@ -3,18 +3,19 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import vm from "node:vm";
 const get=path=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
-const pages=["about","community","contact","events","grdpc","i-said-yes","legal-requests","ministries","missions","partner","privacy","radio","resources","terms","video"];
+const pages=["about","the-ministry","what-we-believe","meet-the-pastor","ministries","partner","contact","resources","radio","privacy","terms","i-said-yes"];
 test("existing public homepage design is retained and new visual editor runs",()=>{
  const html=get("heavenly-key-website/index.html");
- for(const s of ["class=\"slider\"","class=\"president\"","class=\"ticker\"","class=\"navwrap\"","js/home-slider.js","js/site-cms.js","js/homepage-layout.js","data-cms-section=\"hero\"","data-cms-section=\"media\"","data-cms-section=\"bottom\""])
+ for(const s of ["class=\"television\"","president-section","world-strip","main-nav","js/home-renewal.js","js/home-slider.js","js/site-cms.js","js/homepage-layout.js","data-cms-section=\"welcome\"","data-cms-section=\"president\"","hk-primary-footer","president-companions"])
   assert.ok(html.includes(s),"Missing preserved homepage structure: "+s);
  assert.ok(!html.includes("<script>(function(){var slides"),"Legacy slider should not run twice");
 });
 test("all public pages are connected to the content editor",()=>{
  for(const name of pages){
   const html=get("heavenly-key-website/pages/"+name+".html");
-  assert.ok(html.includes("js/site-cms.js"),name+" missing visual content runtime");
-  assert.equal((html.match(/js\/site-cms\.js/g)||[]).length,1,name+" has duplicate editor");
+  const local=(html.match(/js\/site-cms\.js/g)||[]).length,central=(html.match(/js\/account1-cms-runtime\.js/g)||[]).length;
+  assert.ok(local===1||central===1,name+" missing visual content runtime");
+  assert.ok(local<=1&&central<=1,name+" has a duplicate editor runtime");
  }
 });
 test("normal admin contains user-friendly homepage, image library and slide controls",()=>{
@@ -72,3 +73,4 @@ test("website editor JavaScript syntax is valid",()=>{
   assert.doesNotThrow(()=>new vm.Script(get(file),{filename:file}),file);
  }
 });
+

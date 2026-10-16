@@ -14,4 +14,4 @@
 @media(max-width:480px){.hk-homepage .president-visual{grid-template-columns:minmax(0,1fr) 96px;gap:6px}.hk-homepage .president-companions{gap:20px;padding-inline:0}.hk-homepage .president-companions .hkem-launcher{width:92px}.hk-homepage .president-companions #hk-floating-radio .hkr-bubble{width:58px;height:58px}}
 .hk-homepage .president-companions #hk-floating-radio:not(.hkr-mini):not(.hkr-closed){z-index:10050}
 .hk-homepage .president-section .president-copy #president-heading span{color:#ffe4a0}
-.hk-homepage .president-section .president-copy>p.president-invitation{color:#6c1531}
+.hk-homepage .president-section .president-copy>p.president-invitation{color:#000}

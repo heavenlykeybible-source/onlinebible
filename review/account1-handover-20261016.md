@@ -1,6 +1,6 @@
 # Account 1 corrections — 16 October 2026
 
-Development only: `draft/radio-logo-before-deploy`. No production merge or deployment authorized or performed.
+Working branch: `draft/radio-logo-before-deploy`. The owner authorized Account 1 deployment on 16 October 2026 at 17:00 WAT. No production deployment has occurred; the Waiting Room stopped because the repository approval secret is missing.
 
 ## Corrections
 
@@ -62,3 +62,15 @@ The owner requested the pastor photo from Meet the Pastor in the homepage presid
 - Corrected stacking so the open radio player cannot be blocked by the assistant launcher. Corrected two existing low-contrast text treatments within this same president section.
 - Chromium verification passed at 1440px, 768px and 390px: true alpha asset, controls positioned right of the photo, no horizontal overflow, chat Typing… and response, audio playback and minimize, and no JavaScript exceptions. Screenshots reviewed on desktop and phone.
 - Test: `node scripts/account1-president-companions-ui.cjs` (Playwright; optional `HK_CHROMIUM_EXECUTABLE`). Deterministic test responses/audio only; no live deployment is part of this update.
+
+
+## Final owner corrections and deployment attempt
+
+- President invitation (“Join, support and partner…”) now renders black on its light background.
+- Footer share label is now “Share to Bless Others”, centered on its own final row of the black secondary footer. Share behavior remains unchanged.
+- Restored existing CMS script entry-point references required by the immutable production compatibility gate. These legacy scripts return without mutating the current approved television layout when their legacy selectors are absent.
+- Updated visual-CMS regression assertions to the approved current homepage and current public-page runtimes. The eight local compatibility tests passed, and browser regression passed at 1440, 768 and 390px, including explicit black-text and centered-share assertions.
+- The connected GitHub app successfully launched the existing Account 4 Waiting Room workflow for Account 1: https://github.com/heavenlykeybible-source/onlinebible/actions/runs/38929221853 . The workflow stopped at its first credential check. Cloudflare Account 4 token and ID are present; `HKEM_CONTROL_TOKEN` (mapped to `REVIEW_SEED`) is absent. No preview resources were provisioned, and nothing was deployed.
+- The isolated staging trigger workflow only dispatches the existing main-branch Waiting Room for Account 1. It cannot dispatch production or sign owner approval.
+- Browser-based GitHub dispatch could not access this private repository with its saved browser profile. Separately, automatic approval review blocked navigation to the recovery-control owner portal, citing private administrative access outside the isolated staging task. No alternate path was used to enter that blocked portal.
+- Next action: restore the existing owner-approval secret through the authorized Account 4/GitHub setup, stage the latest exact candidate again, review its temporary preview and complete the existing signed owner approval. Do not generate a substitute signing secret or bypass these gates.

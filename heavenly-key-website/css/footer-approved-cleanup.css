@@ -15,3 +15,7 @@
 @media(prefers-reduced-motion:reduce){.site-footer .hk-footer-gallery.hk-gallery-slideshow a{transition:none}}
 
 .site-footer .hk-footer-column a,.site-footer .hk-footer-column p,.site-footer .copyright-inner p,.site-footer .copyright-inner .hk-footer-legal a,.site-footer .hk-footer-app-label{font-size:14px}
+
+/* Owner correction: a centered blessing invitation in the final footer strip. */
+.site-footer .copyright-inner .hk-footer-share-center{flex:1 0 100%;display:flex;justify-content:center;align-items:center;order:10;padding-top:8px;text-align:center}
+.site-footer .copyright-inner .hk-footer-share-center .hk-footer-share{color:#ffe3a2;font-size:14px;font-weight:800;min-height:42px;padding:9px 20px;text-decoration:underline;text-underline-offset:4px}
