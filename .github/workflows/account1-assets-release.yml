@@ -9,21 +9,34 @@ concurrency:
   group: heavenlykey-account-1-production
   cancel-in-progress: false
 jobs:
-  inspect-account1:
+  publish-assets:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 4a7838c73427c2d1e183c54b4efa439e76633421
+          path: reviewed
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Read current Account 1 backend and settings without changes
+      - name: Validate reviewed website and unchanged running backend
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          ACCOUNT_4_ACCOUNT_ID: ${{ secrets.ACCOUNT_4_ACCOUNT_ID }}
-          ACCOUNT_4_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
-          ACCOUNT4_PROTECTED_D1_ID: ${{ secrets.ACCOUNT4_PROTECTED_D1_ID }}
-        run: node scripts/account1-assets-release.mjs --inspect
-
-# Account 4 Workers check only; Pages permissions are unnecessary.
+          WEBSITE_DIRECTORY: reviewed/heavenly-key-website
+        run: node scripts/account1-assets-release.mjs
+      - name: Publish only Account 1 website assets preserving live backend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WEBSITE_DIRECTORY: reviewed/heavenly-key-website
+        run: node scripts/account1-assets-release.mjs --publish
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: account1-pre-release-rollback
+          path: release-backup
+          retention-days: 14
