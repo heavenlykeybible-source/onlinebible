@@ -22,6 +22,11 @@ export async function handleClientAccounts(request:Request,env:Env):Promise<Resp
  const actor=await requireMinimumRole(request,env,"Super Administrator");
  if(!actor)return reply({error:"forbidden"},403);
  const userId=actor.userId;
+ // Cookie-authenticated writes must be same-origin.
+ if(!["GET","HEAD"].includes(request.method)){
+  const origin=request.headers.get("Origin");
+  if(!origin || origin!==new URL(request.url).origin)return reply({error:"invalid_origin"},403);
+ }
  const path=new URL(request.url).pathname.replace(/\/$/,"");
  if(path==="/api/control/clients"&&request.method==="GET"){
   const rows=await env.DB.prepare("SELECT id,display_name,slug,status,created_at FROM control_clients ORDER BY created_at DESC LIMIT 100").all();
