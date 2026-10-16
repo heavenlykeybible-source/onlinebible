@@ -1,6 +1,3 @@
-/** Account 4 draft CMS and AI review interface.
- * Embed in the authenticated Control Room. Never publish from this screen.
- */
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Account 4 CMS & AI Studio</title>
@@ -11,7 +8,7 @@
 <section><h2>Choose site</h2><label for="site">Site ID</label><input id="site" placeholder="Registered site UUID" autocomplete="off"><button id="load">Load documents</button><ul id="docs"></ul></section>
 <section><h2>Create draft</h2><label for="path">Page path</label><input id="path" placeholder="/about"><label for="title">Title</label><input id="title"><label for="newbody">Content</label><textarea id="newbody"></textarea><button id="create">Create draft</button></section>
 <section><h2>Edit draft</h2><label for="docid">Document ID</label><input id="docid" readonly><label for="version">Version</label><input id="version" readonly><label for="body">Draft content</label><textarea id="body"></textarea><button id="save">Save draft</button></section>
-<section><h2>AI Studio review queue</h2><p>Enter a proposed revision for Owner review. This interface does not invoke an AI model.</p><label for="instruction">Editing instruction</label><textarea id="instruction"></textarea><label for="proposal">Proposed content</label><textarea id="proposal"></textarea><button id="generate">Generate AI draft</button><button id="suggest">Submit suggestion</button></section>
+<section><h2>AI Studio review queue</h2><p>Enter a proposed revision for Owner review. Generate an AI draft for review. No automatic publishing.</p><label for="instruction">Editing instruction</label><textarea id="instruction"></textarea><label for="proposal">Proposed content</label><textarea id="proposal"></textarea><button id="generate">Generate AI draft</button><button id="suggest">Submit suggestion</button></section>
 </main><script>
 "use strict";
 const el=id=>document.getElementById(id),notice=(msg,error=false)=>{el("notice").textContent=msg;el("notice").className=error?"danger":""};
@@ -46,7 +43,8 @@ el("save").onclick=async()=>{try{
 el("generate").onclick=async()=>{try{
  const r=await post("/api/control/ai/generate",{instruction:el("instruction").value,currentBody:el("body").value});
  el("proposal").value=r.proposedBody;notice("AI draft generated. Review before submitting; nothing published.");
-}catch(e){notice(e.message,true)}};\nel("suggest").onclick=async()=>{try{
+}catch(e){notice(e.message,true)}};
+el("suggest").onclick=async()=>{try{
  const id=el("docid").value;if(!id)throw Error("Choose a document first");
  const r=await post("/api/control/ai/suggestions",{documentId:id,baseVersion:Number(el("version").value),instruction:el("instruction").value,proposedBody:el("proposal").value});
  notice("Suggestion "+r.id+" submitted for review. No site changes.");
