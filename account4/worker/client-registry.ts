@@ -1,13 +1,13 @@
-import type {RegistryDb} from "./release-approval";
 import type {VerifyOwner} from "./approval-handler";
-type QueryDb=RegistryDb & {prepare(sql:string):ReturnType<RegistryDb["prepare"]> & {all<T=unknown>():Promise<{results:T[]}>}};
+export interface QueryDb {prepare(sql:string):{bind(...args:unknown[]):{first<T=unknown>():Promise<T|null>;run():Promise<unknown>;all<T=unknown>():Promise<{results:T[]}>};all<T=unknown>():Promise<{results:T[]}>}}
 const respond=(data:unknown,status=200)=>Response.json(data,{status,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const host=/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i;
 async function body(request:Request){
  if(!request.headers.get("Content-Type")?.toLowerCase().startsWith("application/json"))return null;
+ if(Number(request.headers.get("Content-Length")||0)>8192)return null;
  const raw=await request.text();
- if(raw.length>8192)return null;
+ if(new TextEncoder().encode(raw).length>8192)return null;
  try{const value:unknown=JSON.parse(raw);return value&&typeof value==="object"&&!Array.isArray(value)?value as Record<string,unknown>:null}catch{return null}
 }
 export function createClientRegistryRouter(verifyOwner:VerifyOwner){
