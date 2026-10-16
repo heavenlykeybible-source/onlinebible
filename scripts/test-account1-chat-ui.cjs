@@ -3,7 +3,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 (async()=>{
- const browser=await browserType.launch({headless:true,args:['--no-sandbox']});
+ const browser=await browserType.launch({headless:true,args:process.env.HK_BROWSER==='webkit'?[]:['--no-sandbox']});
  for(const viewport of [{width:1440,height:1000},{width:390,height:844},{width:412,height:915}]){
   const page=await browser.newPage({viewport});
   await page.route('**/*',async route=>{
