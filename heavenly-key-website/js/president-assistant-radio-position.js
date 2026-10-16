@@ -59,7 +59,7 @@ function mountIndicators(){
  if(bubble&&!bubble.querySelector('.hk-radio-bars')){const bars=document.createElement('span');bars.className='hk-radio-bars';bars.setAttribute('aria-hidden','true');for(let i=0;i<4;i++)bars.appendChild(document.createElement('i'));bubble.appendChild(bars)}
  const bars=bubble?.querySelector('.hk-radio-bars');
  const audio=radio?.querySelector('audio');
- if(bars&&audio&&!audio.dataset.hkIndicatorBound){audio.dataset.hkIndicatorBound='1';const sync=()=>bars.classList.toggle('hk-playing',!audio.paused&&!audio.ended&&audio.readyState>=2&&!audio.error);['playing','pause','ended','waiting','stalled','canplay','error','emptied'].forEach(event=>audio.addEventListener(event,sync));sync()}
+ if(bars&&audio&&!audio.dataset.hkIndicatorBound){audio.dataset.hkIndicatorBound='1';let buffering=false;const sync=()=>bars.classList.toggle('hk-playing',!buffering&&!audio.paused&&!audio.ended&&audio.readyState>=HTMLMediaElement.HAVE_CURRENT_DATA&&!audio.error);['waiting','stalled','seeking','loadstart','emptied','error','abort','suspend'].forEach(event=>audio.addEventListener(event,()=>{buffering=true;sync()}));['playing','canplay','seeked'].forEach(event=>audio.addEventListener(event,()=>{buffering=false;sync()}));['pause','ended','volumechange'].forEach(event=>audio.addEventListener(event,sync));sync()}
 }
 
 function mount(){
