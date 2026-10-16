@@ -21,7 +21,7 @@ console.log('STATIC HANDLER REFERENCES',source.split('\n').filter(l=>/ASSETS|STA
 
 async function readApi(path,t=token){const r=await fetch('https://api.cloudflare.com/client/v4'+path,{headers:{Authorization:'Bearer '+t}});const j=await r.json();if(!r.ok||!j.success)throw Error('Read API '+path+' HTTP '+r.status);return j.result}
 console.log('ACCOUNT1 ZONE ROUTES',JSON.stringify(await readApi('/zones/23f3be9052bf609e8ccd85ac1b375019/workers/routes')));
-console.log('ACCOUNT1 PAGES',JSON.stringify((await readApi('/accounts/'+account+'/pages/projects')).map(p=>({name:p.name,subdomain:p.subdomain}))));
+
 const a4=process.env.ACCOUNT_4_ACCOUNT_ID,t4=process.env.ACCOUNT_4_TOKEN;
 if(a4!=='404ebf05a781fcccbbed44aeb02cb72b'||!t4)throw Error('Account 4 credential contract missing or mismatched');
 console.log('::add-mask::'+t4);
