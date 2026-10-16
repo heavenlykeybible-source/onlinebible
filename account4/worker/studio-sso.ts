@@ -3,7 +3,7 @@
  * Studio must create its own Secure HttpOnly session after successful redemption.
  */
 import type {VerifyOwner} from "./approval-handler";
-interface Stmt {bind(...values:unknown[]):Stmt;run():Promise<{meta?:{changes?:number}}>};first<T=unknown>():Promise<T|null>}; 
+interface Stmt { bind(...values:unknown[]):Stmt; run():Promise<{meta?:{changes?:number}}>; first<T=unknown>():Promise<T|null>; }
 interface DB {prepare(sql:string):Stmt}
 const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
 const hex=async(value:string)=>Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(value)))).map(v=>v.toString(16).padStart(2,"0")).join("");
