@@ -24,7 +24,7 @@
  * is tracked as a known limitation in KNOWN-ISSUES.md.
  */
 const ASSET_VERSION = "1.2.5";
-const CACHE_VERSION = "hk-v13-account1-repair";
+const CACHE_VERSION = "hk-v14-stream-replies";
 const APP_SHELL_CACHE = CACHE_VERSION + "-shell";
 const PAGES_CACHE = CACHE_VERSION + "-pages";
 

@@ -14,6 +14,13 @@ await test('real stream parser handles fragmented UTF-8/CRLF, hides thoughts, pr
  const response=assistantStream(new Response(input));const result=await response.text();
  assert.ok(!result.includes('PRIVATE'));const lines=result.trim().split('\n').map(JSON.parse);assert.equal(lines.filter(x=>x.delta).map(x=>x.delta).join(''),'Faith 🙏 in Christ.');assert.equal(lines.at(-1).done,true);
 });
+await test('backend relays first real text before upstream generation completes',async()=>{
+ let release;const gate=new Promise(r=>release=r);let finished=false;
+ const input=new ReadableStream({async start(c){c.enqueue(encode(event(token('Early answer.'))));await gate;c.enqueue(encode(event(token(' Complete.','STOP'))));finished=true;c.close();}});
+ const response=assistantStream(new Response(input));const reader=response.body.getReader();
+ try{const first=await reader.read();assert.match(new TextDecoder().decode(first.value),/Early answer/);assert.equal(finished,false);}
+ finally{release();while(!(await reader.read()).done){};}
+});
 await test('stream errors and missing finish are explicit, sanitized; never false success',async()=>{
  for(const content of [event(token('Partial answer.')),event({error:{message:'private-provider-key'}}),event({promptFeedback:{blockReason:'SAFETY'}})]){const result=await assistantStream(new Response(content)).text();assert.ok(result.includes('interrupted'));assert.ok(!result.includes('"done":true'));assert.ok(!result.includes('private-provider-key'));}
 });
