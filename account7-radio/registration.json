@@ -1,0 +1,14 @@
+{
+  "account": "account7",
+  "name": "Heavenly Key Radio",
+  "publicOrigin": "https://radio.heavenlykey.org",
+  "purpose": "Dedicated public radio website and player",
+  "broadcastManagementAccount": "account2",
+  "broadcastStudioOrigin": "https://studio.heavenlykey.org",
+  "cloudflareAccountId": null,
+  "workerName": null,
+  "d1DatabaseId": null,
+  "r2BucketName": null,
+  "status": "registered_in_source_pending_cloudflare_verification",
+  "deploymentEnabled": false
+}
