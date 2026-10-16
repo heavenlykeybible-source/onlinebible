@@ -1,4 +1,5 @@
 import {approveRelease,sha256Valid} from "./release-policy";
+import {appendAudit} from "./audit";
 export interface RegistryDb {
  prepare(sql:string):{bind(...args:unknown[]):{first<T=unknown>():Promise<T|null>;run():Promise<unknown>}};
 }
@@ -13,5 +14,7 @@ export async function approvePreview(db:RegistryDb,input:{releaseId:string;siteI
  catch { return "conflict"; }
  const result=await db.prepare("UPDATE control_client_releases SET status='approved',approved_by=?,approved_at=? WHERE id=? AND site_id=? AND status='preview' AND artifact_sha256=? AND approved_by IS NULL")
  .bind(approval.approvedBy,approval.approvedAt,approval.releaseId,approval.siteId,approval.artifactSha256).run() as {meta?:{changes?:number}};
- return result.meta?.changes===1?"approved":"conflict";
+ if(result.meta?.changes!==1)return "conflict";
+ await appendAudit(db,{actorUserId:approval.approvedBy,siteId:approval.siteId,action:"release.approved",details:{releaseId:approval.releaseId,sha256:approval.artifactSha256}});
+ return "approved";
 }
