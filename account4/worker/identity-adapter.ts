@@ -13,7 +13,7 @@ export function createOwnerVerifier(env:IdentityConfig):VerifyOwner {
   if(!env.IDENTITY_VERIFY_URL||!env.IDENTITY_SERVICE_TOKEN)return null;
   let url:URL;
   try{url=new URL(env.IDENTITY_VERIFY_URL)}catch{return null}
-  if(url.protocol!=="https:"||url.username||url.password||url.search||url.hash)return null;
+  if(url.protocol!=="https:"||url.username||url.password||url.search||url.hash||!url.hostname.endsWith(".heavenlykey.org"))return null;
   const cookie=request.headers.get("Cookie");
   if(!cookie||cookie.length>8192)return null;
   try{
