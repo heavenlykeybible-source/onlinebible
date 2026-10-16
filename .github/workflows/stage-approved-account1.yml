@@ -1,0 +1,17 @@
+name: Stage approved Account 1 website candidate
+on:
+  push:
+    branches: [draft/radio-logo-before-deploy]
+    paths: ['.github/workflows/stage-approved-account1.yml']
+permissions:
+  contents: read
+  actions: write
+jobs:
+  send-to-existing-waiting-room:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stage only Account 1 through the existing trusted workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ github.sha }}
+        run: gh workflow run account4-review-stage.yml --repo heavenlykeybible-source/onlinebible --ref main -f account=1 -f target_ref="$TARGET_SHA"
