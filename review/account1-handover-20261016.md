@@ -74,3 +74,18 @@ The owner requested the pastor photo from Meet the Pastor in the homepage presid
 - The isolated staging trigger workflow only dispatches the existing main-branch Waiting Room for Account 1. It cannot dispatch production or sign owner approval.
 - Browser-based GitHub dispatch could not access this private repository with its saved browser profile. Separately, automatic approval review blocked navigation to the recovery-control owner portal, citing private administrative access outside the isolated staging task. No alternate path was used to enter that blocked portal.
 - Next action: restore the existing owner-approval secret through the authorized Account 4/GitHub setup, stage the latest exact candidate again, review its temporary preview and complete the existing signed owner approval. Do not generate a substitute signing secret or bypass these gates.
+
+## Verified production releases — 16 October 2026, 16:26 UTC
+
+The owner subsequently authorized direct Account 1 deployment and separately requested Account 4 automatic uploading/deployment. This supersedes the earlier pending-staging status above.
+
+- Account 1 release succeeded: https://github.com/heavenlykeybible-source/onlinebible/actions/runs/38931610846 .
+- Published 190 static website assets from exact tested candidate `4a7838c73427c2d1e183c54b4efa439e76633421` directly to existing Account 1 Worker `heavenlykey`. No merge to main, Account 4 dependency, database migration, credential rotation or other-account release was used.
+- The earlier full-Worker repository baseline found pre-existing protected-file differences. Those files were not deployed and the baseline was not modified. The assets release re-uploaded the running Account 1 compiled module byte for byte, SHA-256 `09b3be0d41f8f0d47e4b329c15044d27fbce142ffaae8d5b9fe9246de530755d`, and preserved existing bindings and checked settings. Private rollback backup saved in the successful run.
+- Live byte checks passed for homepage, president CSS/JS, transparent portrait, Meet the Pastor and Partner pages.
+- Live browser: both dropdowns open; approved chat opens, displays Typing… and returns a real ministry response; radio opens with volume/minimize/close; no scheduled programme is currently available; gallery moved from image 1 to image 6 automatically. President portrait and black invitation visually verified.
+- Account 4 existing automatic workflow `deploy-account4-control-room.yml` already listens to relevant `main` changes in `account4-control-room/**`, `cms-public/**`, `shared-cms/**` and its own workflow file. It remains enabled; unrelated website pushes do not deploy Account 4.
+- Owner-authorized Account 4 run succeeded: https://github.com/heavenlykeybible-source/onlinebible/actions/runs/38931649924 .
+- Control Room version `fb7ebc94-aea6-438b-a7ca-4fb8a18fa0b8`; public CMS version `ff354579-39fc-4bf2-a839-c2a2a17dfe98`; owner dashboard version `7754e0c1-7c73-4147-9171-81b43ab991ef`.
+- Account 4 install/typecheck/tests, fixed existing resource checks, non-destructive CMS migration, live CMS health, real AI inference, private Access gate and unauthenticated editing API rejection all passed. `https://control.heavenlykey.org/` visually opens the Website Control Room.
+- No recovery-control Worker was found in Account 4. It was not created or substituted for the existing deployed CMS/owner dashboard.
