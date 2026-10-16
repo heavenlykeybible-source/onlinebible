@@ -13,3 +13,11 @@
 .site-footer .hk-footer-gallery.hk-gallery-slideshow img{width:100%;height:100%;object-fit:cover}
 .site-footer .hk-gallery-count{font-size:14px;color:#ffe3a2;margin:0}
 @media(prefers-reduced-motion:reduce){.site-footer .hk-footer-gallery.hk-gallery-slideshow a{transition:none}}
+
+/* Mobile footer gallery containment: prevent the 31-image max-content track
+   from expanding its CSS grid column and the entire viewport. */
+.site-footer .hk-footer-column{min-width:0;max-width:100%}
+.site-footer .hk-footer-gallery.hk-footer-gallery-autoplay{box-sizing:border-box;display:block!important;position:relative;min-width:0!important;width:100%!important;max-width:100%!important;overflow:hidden!important;contain:inline-size}
+.site-footer .hk-footer-gallery-autoplay .hk-footer-gallery-track{display:flex;flex-wrap:nowrap;width:max-content;max-width:none;min-width:0;will-change:transform}
+.site-footer .hk-footer-gallery-autoplay .hk-footer-gallery-track img{display:block;flex:0 0 86px;width:86px;max-width:86px;height:78px;object-fit:cover}
+@media(max-width:760px){.site-footer,.site-footer .wrap,.site-footer .hk-footer-column{min-width:0;max-width:100%;box-sizing:border-box}.site-footer .hk-footer-gallery.hk-footer-gallery-autoplay{width:100%!important;max-width:100%!important;overflow:hidden!important}}
