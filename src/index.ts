@@ -1,4 +1,3 @@
-import { handleClientAccounts } from "./routes/control-clients";
 import {handleGRDPCPublic,handleGRDPCAdmin} from "./routes/grdpc";
 import {handleWebsiteAiInbox,handleWebsiteAiConversation} from "./routes/website-ai-inbox";
 import {runReminders} from "./services/grdpc-service";
@@ -98,7 +97,7 @@ export default {
       });
     }
 
-    if (pathname === "/api/control/clients" || /^\/api\/control\/clients\/[0-9a-f-]{36}\/sites\/?$/i.test(pathname)) {\n      return handleClientAccounts(request, env);\n    }\n\n    if(pathname.startsWith('/api/')&&request.headers.get('Content-Type')?.includes('application/json')&&!['GET','HEAD','OPTIONS'].includes(method)){
+    if(pathname.startsWith('/api/')&&request.headers.get('Content-Type')?.includes('application/json')&&!['GET','HEAD','OPTIONS'].includes(method)){
       try{const body=await request.clone().json();if(!body||Array.isArray(body)||typeof body!=='object')throw new Error();}
       catch{return Response.json({error:{message:'Send a valid JSON object.'}},{status:400});}
     }
