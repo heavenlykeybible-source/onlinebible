@@ -24,3 +24,10 @@
 /* Owner correction: both compact launchers sit approximately 3 CSS inches above footer top. */
 #hk-floating-radio,#hkem-assistant{bottom:calc(100% + 3in)!important}
 @media(max-width:600px){#hk-floating-radio,#hkem-assistant{bottom:calc(100% + 3in)!important}}
+
+/* Owner correction: move BOTH launchers up to the president-photo area, grouped on the right. Keep chat panel fixed and usable. */
+.site-footer #hk-floating-radio,.site-footer #hkem-assistant{position:fixed!important;left:auto!important;right:12px!important;bottom:auto!important;top:auto!important}
+#hk-floating-radio{position:fixed!important;left:auto!important;right:12px!important;top:calc(42dvh + 74px)!important;bottom:auto!important;z-index:10010!important}
+#hkem-assistant{position:fixed!important;left:auto!important;right:12px!important;top:42dvh!important;bottom:auto!important;z-index:10020!important}
+#hkem-assistant .hkem-iphone-chat{position:fixed!important;top:auto!important;right:12px!important;bottom:12px!important}
+@media(max-width:600px){#hk-floating-radio{right:7px!important;top:calc(37dvh + 65px)!important;bottom:auto!important}#hkem-assistant{right:7px!important;top:37dvh!important;bottom:auto!important}#hkem-assistant .hkem-iphone-chat{right:7px!important;bottom:7px!important}}
