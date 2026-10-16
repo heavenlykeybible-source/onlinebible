@@ -1,0 +1,35 @@
+name: Platform reliability regression checks
+on:
+  pull_request:
+    paths:
+      - 'src/routes/public-blog-feed.ts'
+      - 'global-community/src/services.ts'
+      - 'heavenly-key-website/**'
+      - 'scripts/test-*'
+      - '.github/workflows/platform-reliability-check.yml'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node --test scripts/test-public-blog-feed.mjs scripts/test-community-connection-privacy.mjs
+      - name: Install official browser testing dependencies
+        run: |
+          npm install --prefix /tmp/hkem-reliability playwright
+          /tmp/hkem-reliability/node_modules/.bin/playwright install --with-deps chromium webkit
+      - name: Verify desktop and Android-size Chromium layouts under production CSP
+        env:
+          NODE_PATH: /tmp/hkem-reliability/node_modules
+          HK_BROWSER: chromium
+        run: node scripts/test-account1-chat-ui.cjs
+      - name: Verify iPhone-size WebKit layout under production CSP
+        env:
+          NODE_PATH: /tmp/hkem-reliability/node_modules
+          HK_BROWSER: webkit
+        run: node scripts/test-account1-chat-ui.cjs
