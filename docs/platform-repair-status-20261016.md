@@ -6,6 +6,8 @@
 - The homepage recent-blog section showed its failure fallback. The original scripts requested external JSONP, while the production CSP only permits self and jsdelivr scripts.
 - The assistant successfully answered a public question with the official KJV Bible and Community URLs. Its portrait was an embedded data URL excluded by the production img-src policy.
 - The radio page reported `No programme is available right now.` after Play. Playback cannot be certified until an approved programme is configured and played.
+- A secure owner sign-in attempt returned `Sign-in failed. Check your owner password.` Owner administrative access remains unverified. No credentials were exposed or changed.
+- The app destination loaded but labelled itself APP PREVIEW and reported live updates unavailable. Member sign-in and live playback were described as still being connected and tested.
 - Control Room opened the Website Control Room editor with `Administrator sign-in required`; Studio presented its administrator login form. A visible login form does not prove owner access or SSO.
 - Terms and Privacy source pages exist and describe privacy requests, community standards and third-party processing. Publication of these pages does not establish legal or operational compliance.
 
