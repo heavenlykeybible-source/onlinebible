@@ -1,0 +1,51 @@
+/** Account 4 draft CMS and AI review interface.
+ * Embed in the authenticated Control Room. Never publish from this screen.
+ */
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Account 4 CMS & AI Studio</title>
+<style>
+:root{font:16px system-ui,sans-serif;color:#16291e;background:#f6f9f6}*{box-sizing:border-box}body{margin:0}header{background:#075b37;color:white;padding:22px}main{max-width:1100px;margin:auto;padding:24px}h1{margin:0;font-size:26px}h2{font-size:21px}section{background:white;border:1px solid #cbdcd0;border-radius:12px;padding:20px;margin-bottom:18px}label{display:block;font-weight:650;margin:12px 0 6px}input,textarea,select,button{font:inherit}input,textarea,select{width:100%;padding:12px;border:1px solid #8caa95;border-radius:8px}textarea{min-height:170px}button{padding:12px 18px;background:#075b37;color:white;border:0;border-radius:8px;cursor:pointer;margin:10px 8px 0 0}button:disabled{opacity:.5}#notice{min-height:24px}small{font-size:14px}ul{padding-left:20px}li{margin:9px 0} .danger{color:#8b1737}</style>
+</head><body><header><h1>Heavenly Key — CMS & AI Studio</h1><p>Draft editing and Owner review. No automatic publishing.</p></header>
+<main><p id="notice" role="status" aria-live="polite"></p>
+<section><h2>Choose site</h2><label for="site">Site ID</label><input id="site" placeholder="Registered site UUID" autocomplete="off"><button id="load">Load documents</button><ul id="docs"></ul></section>
+<section><h2>Create draft</h2><label for="path">Page path</label><input id="path" placeholder="/about"><label for="title">Title</label><input id="title"><label for="newbody">Content</label><textarea id="newbody"></textarea><button id="create">Create draft</button></section>
+<section><h2>Edit draft</h2><label for="docid">Document ID</label><input id="docid" readonly><label for="version">Version</label><input id="version" readonly><label for="body">Draft content</label><textarea id="body"></textarea><button id="save">Save draft</button></section>
+<section><h2>AI Studio review queue</h2><p>Enter a proposed revision for Owner review. This interface does not invoke an AI model.</p><label for="instruction">Editing instruction</label><textarea id="instruction"></textarea><label for="proposal">Proposed content</label><textarea id="proposal"></textarea><button id="suggest">Submit suggestion</button></section>
+</main><script>
+"use strict";
+const el=id=>document.getElementById(id),notice=(msg,error=false)=>{el("notice").textContent=msg;el("notice").className=error?"danger":""};
+async function api(path,options={}){
+ const response=await fetch(path,{credentials:"same-origin",...options,headers:{"Content-Type":"application/json",...(options.headers||{})}});
+ const result=await response.json();if(!response.ok)throw Error(result.error||"Request failed");return result;
+}
+const post=(path,data)=>api(path,{method:"POST",body:JSON.stringify(data)});
+el("load").onclick=async()=>{try{
+ const result=await api("/api/control/cms/documents?siteId="+encodeURIComponent(el("site").value.trim()));
+ el("docs").replaceChildren();
+ for(const d of result.documents){
+  const li=document.createElement("li"),button=document.createElement("button");
+  button.textContent=d.title+" — "+d.path+" (v"+d.version+")";button.onclick=()=>openDoc(d.id);li.append(button);el("docs").append(li);
+ }
+ notice(result.documents.length+" documents loaded");
+}catch(e){notice(e.message,true)}};
+async function openDoc(id){try{
+ const {document:d}=await api("/api/control/cms/documents/"+encodeURIComponent(id));
+ el("docid").value=d.id;el("version").value=d.version;el("body").value=d.body;
+ notice("Draft opened: "+d.title);
+}catch(e){notice(e.message,true)}}
+el("create").onclick=async()=>{try{
+ const r=await post("/api/control/cms/documents",{siteId:el("site").value.trim(),path:el("path").value.trim(),title:el("title").value,body:el("newbody").value});
+ notice("Draft created: "+r.id);await openDoc(r.id);
+}catch(e){notice(e.message,true)}};
+el("save").onclick=async()=>{try{
+ const id=el("docid").value;if(!id)throw Error("Choose a document first");
+ const r=await post("/api/control/cms/documents/"+encodeURIComponent(id)+"/save",{body:el("body").value,version:Number(el("version").value)});
+ el("version").value=r.version;notice("Draft saved. Not published.");
+}catch(e){notice(e.message,true)}};
+el("suggest").onclick=async()=>{try{
+ const id=el("docid").value;if(!id)throw Error("Choose a document first");
+ const r=await post("/api/control/ai/suggestions",{documentId:id,baseVersion:Number(el("version").value),instruction:el("instruction").value,proposedBody:el("proposal").value});
+ notice("Suggestion "+r.id+" submitted for review. No site changes.");
+}catch(e){notice(e.message,true)}};
+</script></body></html>
