@@ -51,3 +51,14 @@ All seven pages use the approved green, wine-red, gold and white palette. The ho
 Validation: exact word-token comparison confirmed all imported content remains in order. Desktop (1440px) and mobile (390px) Chromium checks passed for every redesigned page, including an audit of rendered text confirming no visible text below 14px, no horizontal overflow, working dropdowns, assistant/radio regression checks, and visual screenshot review. The shared stylesheet includes responsive layouts and reduced-motion support. Reproduce with `node scripts/account1-page-design-ui.cjs` and the same Playwright setup described above.
 
 These page designs are saved to the draft branch only; they have not been merged or deployed.
+
+## Transparent homepage portrait and right-side companions
+
+The owner requested the pastor photo from Meet the Pastor in the homepage president message, with a transparent background and both approved controls to its right.
+
+- Background-extraction edit created with the built-in image-generation tool from the existing `pastor-emmanuel-adiohwo.jpg` reference. Prompt: remove only the black background with actual alpha transparency, preserving the pastor's identity, blue suit, yellow-orange shirt, microphone, hands and pose; no added objects or invented body parts. Saved project asset: `heavenly-key-website/assets/ministry/pastor-emmanuel-transparent.webp` (RGBA, alpha extrema 0–255), encoded as WebP for website delivery.
+- The homepage president section consumes this transparent asset. The original portrait file and Meet the Pastor page remain intact.
+- The existing approved AI assistant and radio controls are grouped vertically immediately to the right of the portrait on desktop, tablet and mobile. Existing panels open within viewport bounds. Opening chat minimizes the radio surface without stopping audio; opening the radio collapses chat.
+- Corrected stacking so the open radio player cannot be blocked by the assistant launcher. Corrected two existing low-contrast text treatments within this same president section.
+- Chromium verification passed at 1440px, 768px and 390px: true alpha asset, controls positioned right of the photo, no horizontal overflow, chat Typing… and response, audio playback and minimize, and no JavaScript exceptions. Screenshots reviewed on desktop and phone.
+- Test: `node scripts/account1-president-companions-ui.cjs` (Playwright; optional `HK_CHROMIUM_EXECUTABLE`). Deterministic test responses/audio only; no live deployment is part of this update.
