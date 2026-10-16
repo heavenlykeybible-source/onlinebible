@@ -10,5 +10,7 @@
   "d1DatabaseId": null,
   "r2BucketName": null,
   "status": "registered_in_source_pending_cloudflare_verification",
-  "deploymentEnabled": false
+  "deploymentEnabled": false,
+  "cloudflareAccountEmail": "Heavenlykeyradio@gmail.com",
+  "managedByAccount": "account4"
 }
