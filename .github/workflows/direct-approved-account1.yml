@@ -1,0 +1,89 @@
+name: Direct owner-approved Account 1 release
+run-name: Direct Account 1 release · 4a7838c73427c2d1e183c54b4efa439e76633421
+on:
+  push:
+    branches: [draft/radio-logo-before-deploy]
+    paths: ['.github/workflows/direct-approved-account1.yml']
+permissions:
+  contents: read
+concurrency:
+  group: heavenlykey-account-1-production
+  cancel-in-progress: false
+jobs:
+  deploy-account-1-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DEPLOY_ENV: production
+      CLOUDFLARE_ACCOUNT_ID: a160ba9fc74911bd4b3005eac86eefcb
+      TARGET_SHA: 4a7838c73427c2d1e183c54b4efa439e76633421
+    steps:
+      - name: Checkout exact owner-approved website candidate
+        uses: actions/checkout@v4
+        with:
+          ref: 4a7838c73427c2d1e183c54b4efa439e76633421
+          persist-credentials: false
+      - name: Load independent existing resource protection policy
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: .trusted-release-policy
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Validate saved Account 1 deployment credentials
+        env:
+          RAW_CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: node scripts/check-deployment-credentials.mjs 1
+      - name: Install reproducible dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Preserve existing CMS, administrator identity and storage resources
+        run: |
+          node .trusted-release-policy/scripts/cms-permanence-gate.mjs
+          node .trusted-release-policy/scripts/account1-auth-permanence-gate.mjs
+          node .trusted-release-policy/scripts/protected-state-gate.mjs
+      - name: Validate release source
+        run: |
+          npm run preflight
+          npm run check:architecture
+          npm run check:frontend
+          node --test scripts/test-visual-cms.mjs
+          npm test
+      - name: Verify existing security secrets without rotating them
+        run: node scripts/configure-runtime.mjs
+      - name: Record current Account 1 deployment for recovery
+        run: npx --yes wrangler@4.145.0 deployments list --json > /tmp/account1-before-direct-release.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Account1-Before-Direct-Release
+          path: /tmp/account1-before-direct-release.json
+          retention-days: 30
+      - name: Deploy only Account 1 code and assets as explicitly requested by the owner
+        run: npx --yes wrangler@4.145.0 deploy
+      - name: Verify the actual published pages and assets
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          import {createHash} from 'node:crypto';
+          const root='https://heavenlykey.org';
+          const paths=['index.html','pages/about.html','pages/the-ministry.html','pages/what-we-believe.html','pages/meet-the-pastor.html','pages/ministries.html','pages/partner.html','pages/contact.html','css/ministry-pages-premium.css','css/president-photo-companions.css','css/footer-approved-cleanup.css','js/online-assistant.js','js/floating-radio.js','js/president-companions.js','assets/ministry/pastor-emmanuel-transparent.webp'];
+          const hash=b=>createHash('sha256').update(b).digest('hex');
+          for(const path of paths){
+            const expected=hash(readFileSync('heavenly-key-website/'+path));let ok=false;
+            for(let attempt=0;attempt<6;attempt++){
+              const r=await fetch(root+'/'+path+'?release='+process.env.TARGET_SHA,{headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(20000)});
+              if(r.ok&&hash(Buffer.from(await r.arrayBuffer()))===expected){ok=true;break;}
+              await new Promise(resolve=>setTimeout(resolve,3000));
+            }
+            if(!ok)throw Error('Published content does not match approved source: '+path);
+            console.log('Verified exact published source: '+path);
+          }
+          const radio=await fetch(root+'/api/broadcast/programme?channel=radio',{signal:AbortSignal.timeout(20000)});
+          if(!radio.ok)throw Error('Radio programme endpoint unavailable: '+radio.status);
+          const profile=await fetch(root+'/api/auth/profile',{signal:AbortSignal.timeout(20000)});
+          if(profile.status!==401)throw Error('Guest account protection did not return 401');
+          console.log('Account 1 direct owner-approved release verified. No Account 4 changes, database migrations, or credential changes.');
+          JS
