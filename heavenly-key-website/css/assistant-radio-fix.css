@@ -16,3 +16,17 @@
 #hkem-assistant .hkem-chat-form input{min-width:0!important;width:0;flex:1}
 #hkem-assistant .hkem-chat-form button{flex:0 0 auto}
 @media(max-width:600px){#hk-floating-radio.hkr-mini .hkr-bubble::after,#hkem-assistant .hkem-launcher::after{margin-left:4px!important;padding:4px 3px!important;font-size:9px!important;line-height:1.15!important}#hkem-assistant .hkem-iphone-chat{right:7px!important;bottom:max(7px,env(safe-area-inset-bottom))!important;width:min(355px,calc(100vw - 14px))!important;height:min(520px,calc(100dvh - 20px))!important}#hkem-assistant .hkem-chat-header strong{font-size:11px!important}}
+
+/* Mobile chat: WhatsApp-style bubbles grow vertically, never horizontally past the phone. */
+#hkem-assistant{box-sizing:border-box!important}
+#hkem-assistant .hkem-iphone-chat{display:flex!important;flex-direction:column!important;contain:layout;overflow:hidden!important;isolation:isolate}
+#hkem-assistant .hkem-iphone-chat[hidden]{display:none!important}
+#hkem-assistant:has(.hkem-iphone-chat:not([hidden])) .hkem-launcher{display:none!important}
+#hkem-assistant .hkem-chat-log{display:flex!important;flex-direction:column!important;align-items:stretch!important;flex:1 1 auto!important;width:100%!important;min-width:0!important;min-height:0!important;overflow-x:hidden!important;overflow-y:auto!important;padding:12px 9px!important}
+#hkem-assistant .hkem-chat-log>*{flex:0 0 auto!important;box-sizing:border-box!important;min-width:0!important;width:fit-content!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-word!important}
+#hkem-assistant .hkem-chat-log>.hkem-chat-visitor{align-self:flex-end!important;max-width:85%!important}
+#hkem-assistant .hkem-chat-log>.hkem-chat-bot,#hkem-assistant .hkem-chat-log>.hkem-chat-welcome{align-self:flex-start!important;max-width:96%!important}
+#hkem-assistant .hkem-chat-log .hkem-chat-bot>span{display:block!important;flex:1 1 0!important;min-width:0!important;width:auto!important;max-width:100%!important;overflow-wrap:anywhere!important;word-break:break-word!important;white-space:pre-wrap!important}
+#hkem-assistant .hkem-chat-log .hkem-chat-visitor>span{display:block!important;max-width:100%!important;overflow-wrap:anywhere!important;white-space:pre-wrap!important}
+#hkem-assistant .hkem-chat-header,#hkem-assistant .hkem-chat-form{width:100%!important;min-width:0!important;flex-shrink:0!important}
+#hkem-assistant .hkem-chat-form input{max-width:100%!important}
