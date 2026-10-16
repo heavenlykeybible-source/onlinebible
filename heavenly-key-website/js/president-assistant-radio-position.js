@@ -4,7 +4,7 @@
 const style=document.createElement('style');
 style.textContent=`
 .president-photo{position:relative!important;overflow:visible!important}
-.president-photo .hk-president-controls{position:absolute;left:50%;bottom:calc(100% + 12px);transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;width:min(100%,260px);z-index:30}
+.president-photo .hk-president-controls{position:absolute;right:0;top:0;left:auto;bottom:auto;transform:translateY(-100%);display:flex;flex-direction:column;align-items:center;gap:8px;width:min(100%,180px);z-index:30}
 .president-photo .hk-president-controls #hkem-assistant,.president-photo .hk-president-controls #hk-floating-radio{position:relative!important;inset:auto!important;top:auto!important;bottom:auto!important;left:auto!important;right:auto!important;margin:0!important;width:100%!important;transform:none!important}
 .president-photo .hk-president-controls #hkem-assistant .hkem-launcher,.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{width:100%!important;max-width:100%!important}
 .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{animation:none!important}
@@ -17,7 +17,7 @@ style.textContent=`
 @media(prefers-reduced-motion:no-preference){.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{animation:hk-radio-live-indicator 1.1s step-end infinite!important}@keyframes hk-radio-live-indicator{0%,100%{background-image:radial-gradient(circle at calc(100% - 12px) 13px,#ff2929 0 5px,transparent 5.5px),linear-gradient(115deg,#006f3d,#004a31 65%,#002f29)}50%{background-image:radial-gradient(circle at calc(100% - 12px) 13px,transparent 0 5px,transparent 5.5px),linear-gradient(115deg,#006f3d,#004a31 65%,#002f29)}}}
 .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{--hk-live:#ff2424}
 .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble::selection{background:transparent}
-@media(max-width:600px){.president-photo .hk-president-controls{width:min(88%,225px);gap:6px}}
+@media(max-width:600px){.president-photo .hk-president-controls{width:min(52vw,160px);gap:5px}}
 `;
 document.head.appendChild(style);
 
@@ -71,6 +71,7 @@ function mount(){
  if(!holder){holder=document.createElement('div');holder.className='hk-president-controls';holder.setAttribute('aria-label','Online Assistant and Faith of Our Fathers Radio');photo.prepend(holder);}
  if(assistant.parentElement!==holder)holder.appendChild(assistant);
  if(radio.parentElement!==holder)holder.appendChild(radio);
+ radio.classList.add('hkr-mini');
  mountIndicators();
  return true;
 }
