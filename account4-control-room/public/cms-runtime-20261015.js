@@ -46,17 +46,17 @@
  function send(type,data={}){if(editing)window.opener.postMessage({type,nonce,site,page:key,...data},CONTROL)}
  function editor(){
   const bar=document.createElement('section');bar.dataset.cmsIgnore='';bar.classList.add('hkem-ui-0');
-  const status=document.createElement('span');status.textContent='Visual CMS: click text, links, pictures or a section to edit. Changes stay private until Publish.';status.classList.add('hkem-ui-status');bar.append(status);
+  const status=document.createElement('span');status.textContent='Visual CMS: click text, links, pictures or a section to edit. Preview your changes. Only administrator approval updates the website.';status.classList.add('hkem-ui-status');bar.append(status);
   function button(label,action){const b=document.createElement('button');b.type='button';b.textContent=label;b.classList.add('hkem-ui-1');b.onclick=action;bar.append(b)}
   const changed=new Map();
   const snapshot=()=>[...changed.values()];
-  button('Save draft',()=>send('hkem-save',{content:{schema:1,fields:snapshot()}}));
-  button('Publish',()=>send('hkem-publish',{content:{schema:1,fields:snapshot()}}));
+  button('Update preview',()=>send('hkem-save',{content:{schema:1,fields:snapshot()}}));
+  
   button('Control Room',()=>window.opener.focus());
   button('Exit',()=>{const url=new URL(location.href);url.searchParams.delete('hkem-cms');url.searchParams.delete('hkem-session');location.href=url});
   document.body.append(bar);
   window.addEventListener('message',event=>{if(event.origin!==CONTROL||event.source!==window.opener||event.data?.nonce!==nonce)return;const data=event.data;
-   if(data.type==='hkem-apply'){for(const f of data.content?.fields||[])changed.set(f.key,f);apply(data.content?.fields);status.textContent='Draft loaded from the Control Room.'}
+   if(data.type==='hkem-apply'){if((!data.kind||data.kind==='page')&&(data.content?.fields||[]).some(f=>descriptors.get(f.key)?.type!==f.type)){status.textContent='Some update fields do not match this page. Approval is blocked until the preview is corrected.';send('hkem-preview-error');return}for(const f of data.content?.fields||[])changed.set(f.key,f);if(data.kind==='menu')applyMenu(data.content);else if(data.kind==='footer')applyFooter(data.content);else apply(data.content?.fields);status.textContent='Update loaded for preview. Check it, then approve in the Control Room.';send('hkem-previewed',{version:data.version})}
    if(data.type==='hkem-status')status.textContent=data.message;
   });
   document.addEventListener('click',event=>{if(event.target.closest('[data-cms-ignore]'))return;const matches=[...descriptors.values()].filter(d=>d.element===event.target||d.element.contains(event.target)).sort((a,b)=>(a.element===event.target?-1:1)-(b.element===event.target?-1:1));
@@ -66,7 +66,7 @@
    if(d.type==='link'&&confirm('Edit this link destination? Press Cancel to edit its visible text.')){const value=prompt('Link destination',String(d.value));if(value!==null&&safe(value)){const f={key:d.key,type:d.type,value};changed.set(f.key,f);apply([f]);send('hkem-change',{field:f})}return}
    let value;if(d.type==='visible')value=confirm('Keep this section visible?');else value=prompt(d.type==='image'?'Picture URL (upload a new picture in the Control Room)':d.label,String(d.value));
    if(value===null)return;
-   const field={key:d.key,type:d.type,value};changed.set(field.key,field);apply([field]);send('hkem-change',{field});status.textContent='Edit ready. Save draft or Publish.';
+   const field={key:d.key,type:d.type,value};changed.set(field.key,field);apply([field]);send('hkem-change',{field});status.textContent='Edit sent to the awaiting room for preview and approval.';
   },true);
   const fields=[...descriptors.values()].map(({key,type,value,label})=>({key,type,value,label}));
   send('hkem-ready',{fields,menu:{schema:1,items:menuItems()},footer:defaultFooter});
@@ -101,3 +101,4 @@
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,450),{once:true});else setTimeout(start,450);
 })();
+

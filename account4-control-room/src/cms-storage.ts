@@ -1,10 +1,10 @@
 import {validateDocument} from './cms-schema.ts';
 export type Location={site:string;kind:string;key:string};
-const conflict=()=>Object.assign(Error('This draft changed in another window. Reload before saving or publishing.'),{status:409});
+const conflict=()=>Object.assign(Error('This update changed in another window. Preview the latest version before approving.'),{status:409});
 export async function saveDraft(db:D1Database,location:Location,content:unknown,expectedVersion:number,actor:string){
  const {site,kind,key}=location;
- if(!Number.isInteger(expectedVersion)||expectedVersion<0)throw Object.assign(Error('Reload the draft before saving.'),{status:400});
- if((content as any)?.schema===1)content=validateDocument(kind,content);
+ if(!Number.isInteger(expectedVersion)||expectedVersion<0)throw Object.assign(Error('Reload the update before saving.'),{status:400});
+ content=validateDocument(kind,content);
  const encoded=JSON.stringify(content);if(!encoded||encoded.length>200000)throw Object.assign(Error('Content exceeds the page size limit.'),{status:400});
  const version=expectedVersion+1;
  const result=await db.batch([
@@ -13,7 +13,7 @@ export async function saveDraft(db:D1Database,location:Location,content:unknown,
   db.prepare("INSERT INTO cms_audit(actor,action,target) SELECT ?,'save',? WHERE changes()>0").bind(actor,site+'/'+kind+'/'+key)
  ]);
  if(!result[0].meta.changes)throw conflict();
- return {ok:true,version};
+ return {ok:true,version,status:'awaiting_review',requiresApproval:true};
 }
 export async function publishDraft(db:D1Database,location:Location,expectedVersion:number,actor:string){
  const {site,kind,key}=location;
@@ -34,3 +34,4 @@ export async function restoreDraft(db:D1Database,location:Location,revisionId:nu
  if(!row)throw Object.assign(Error('Revision not found.'),{status:404});
  return saveDraft(db,location,JSON.parse(row.content),expectedVersion,actor);
 }
+

@@ -1,3 +1,4 @@
+import {awaitingRoom,previewUpdate,approveUpdate} from './awaiting-room.ts';
 import {SITES,planDeployment} from './deployment-engine.ts';
 import {AI_MODEL,PUBLIC_CMS_ORIGIN,validateDocument} from './cms-schema.ts';
 import {saveDraft,publishDraft,restoreDraft} from './cms-storage.ts';
@@ -59,8 +60,11 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
    return json({entry:entry||null,published:published||null});
   }
   if(u.pathname==='/api/revisions'&&request.method==='GET'){const {site,kind,key}=location();return json({items:(await env.DB.prepare('SELECT id,version,editor,created_at FROM cms_revisions WHERE site=? AND kind=? AND entry_key=? ORDER BY id DESC LIMIT 30').bind(site,kind,key).all()).results})}
+  if(u.pathname==='/api/awaiting-room'&&request.method==='GET')return json(await awaitingRoom(env.DB));
+  if(u.pathname==='/api/preview'&&request.method==='POST'){const data=await body(request,4096);return json(await previewUpdate(env.DB,location(),data.expectedVersion,actor))}
+  if(u.pathname==='/api/approve'&&request.method==='POST'){const data=await body(request,4096);return json(await approveUpdate(env.DB,location(),data.expectedVersion,actor))}
   if(u.pathname==='/api/save'&&request.method==='POST'){const data=await body(request);return json(await saveDraft(env.DB,location(),data.content,data.expectedVersion,actor))}
-  if(u.pathname==='/api/publish'&&request.method==='POST'){const data=await body(request,4096);return json(await publishDraft(env.DB,location(),data.expectedVersion,actor))}
+  if(u.pathname==='/api/publish'&&request.method==='POST'){const data=await body(request,4096);return json(await approveUpdate(env.DB,location(),data.expectedVersion,actor))}
   if(u.pathname==='/api/restore'&&request.method==='POST'){const data=await body(request,4096);if(!Number.isSafeInteger(data.revisionId)||data.revisionId<1)return fail('Choose a revision.');return json({...await restoreDraft(env.DB,location(),data.revisionId,data.expectedVersion,actor),published:false})}
   if(u.pathname==='/api/media'&&request.method==='POST'){
    if(Number(request.headers.get('content-length')||0)>5000000)return fail('Image exceeds 5 MB',413);
@@ -86,16 +90,26 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
    const result:any=await env.AI.run(AI_MODEL as any,{messages:[{role:'system',content:system},{role:'user',content:prompt+(context?'\nCurrent draft document:\n'+JSON.stringify(context):'')}],max_tokens:structured?2200:700,temperature:0.3});
    const suggestion=typeof result?.response==='string'?result.response.trim():'';
    if(!suggestion)return fail('AI returned no response. Please try again.',503);
-   let draft=null;
+   let draft=null;let queued:any=null;
    if(structured){
     try{const candidate=validateDocument(location().kind,JSON.parse(suggestion.replace(/^\`\`\`(?:json)?\s*/,'').replace(/\s*\`\`\`$/,'')));
      if(context.fields&&JSON.stringify(candidate.fields?.map(f=>[f.key,f.type]))!==JSON.stringify(context.fields.map((f:any)=>[f.key,f.type])))throw Error('AI changed editable fields');
      draft=candidate;
-    }catch{}
+     if(location().kind==='page'){
+      const current=await env.DB.prepare('SELECT content,version FROM cms_entries WHERE site=? AND kind=? AND entry_key=?').bind(location().site,location().kind,location().key).first<{content:string;version:number}>();
+      if((current?.version||0)!==data.expectedVersion)throw Object.assign(Error('This update changed. Reload before requesting AI edits.'),{status:409});
+      const merged=new Map((current?JSON.parse(current.content).fields||[]:context.fields||[]).map((f:any)=>[f.key,f]));
+      for(const f of candidate.fields||[])merged.set(f.key,f);
+      draft=validateDocument(location().kind,{schema:1,fields:[...merged.values()]});
+     }
+
+    }catch(error:any){if(error?.status)throw error;return fail('AI returned an invalid update. Please try again.',422)}
+    queued=await saveDraft(env.DB,location(),draft,data.expectedVersion,actor);
    }
-   return json({suggestion,draft,requiresApproval:true});
+   return json({suggestion,draft,queued,requiresApproval:true});
   }
   return fail('Route not found.',404);
  }catch(error:any){console.error('Control Room request failed',error?.message);return fail(error?.status?error.message:'The request could not be completed. Please reload and try again.',error?.status||500)}
 }} satisfies ExportedHandler<Env>;
+
 
