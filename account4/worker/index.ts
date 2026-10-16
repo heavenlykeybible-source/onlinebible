@@ -1,5 +1,6 @@
 // Account 4-only entry point. Do not deploy over the existing Control Room.
 import {createReleaseRouter} from "./release-router";
+import {createClientRegistryRouter} from "./client-registry";
 import {createOwnerVerifier,type IdentityConfig} from "./identity-adapter";
 import type {RegistryDb} from "./release-approval";
 interface Env extends IdentityConfig {DB:RegistryDb}
@@ -18,7 +19,8 @@ export default {
    return secure(Response.json({service:"account4-client-registry",status:"integration-pending"}));
   if(url.pathname==="/api/control/releases/approve")
    return secure(await createReleaseRouter(createOwnerVerifier(env))(request,env.DB));
-  // Client registry endpoints remain disabled until migrated to Account 4 auth.
+  if(url.pathname==="/api/control/clients"||/^\/api\/control\/clients\/[0-9a-f-]{36}\/sites\/?$/i.test(url.pathname))
+   return secure(await createClientRegistryRouter(createOwnerVerifier(env))(request,env.DB as Parameters<ReturnType<typeof createClientRegistryRouter>>[1]));
   return secure(Response.json({error:"not_found"},{status:404}));
  }
 };
