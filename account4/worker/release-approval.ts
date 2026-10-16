@@ -8,7 +8,9 @@ export async function approvePreview(db:RegistryDb,input:{releaseId:string;siteI
  const row=await db.prepare("SELECT id,site_id,artifact_sha256,status,approved_by FROM control_client_releases WHERE id=? AND site_id=?")
  .bind(input.releaseId,input.siteId).first<ReleaseRow>();
  if(!row)return "not_found";
- const approval=approveRelease({releaseId:row.id,siteId:row.site_id,artifactSha256:row.artifact_sha256,state:row.status,expectedSha256:input.expectedSha256,actorId:input.ownerUserId,now:new Date().toISOString()});
+ let approval:ReturnType<typeof approveRelease>;
+ try { approval=approveRelease({releaseId:row.id,siteId:row.site_id,artifactSha256:row.artifact_sha256,state:row.status,expectedSha256:input.expectedSha256,actorId:input.ownerUserId,now:new Date().toISOString()}); }
+ catch { return "conflict"; }
  const result=await db.prepare("UPDATE control_client_releases SET status='approved',approved_by=?,approved_at=? WHERE id=? AND site_id=? AND status='preview' AND artifact_sha256=? AND approved_by IS NULL")
  .bind(approval.approvedBy,approval.approvedAt,approval.releaseId,approval.siteId,approval.artifactSha256).run() as {meta?:{changes?:number}};
  return result.meta?.changes===1?"approved":"conflict";
