@@ -58,14 +58,28 @@ async function previewToken(env:Env,id:string,revision:number,expires:number){
 function themeOf(value:any){const result:Record<string,string>={};for(const key of Object.keys(value||{})){if(!['background','text','accent'].includes(key)||!/^#[a-fA-F0-9]{6}$/.test(value[key]))throw err('Choose valid theme colours.');result[key]=value[key]}return result}
 export async function adminReleaseRoute(request:Request,env:Env,actor:string){
  const u=new URL(request.url);if(u.pathname==='/api/releases'&&request.method==='GET')return json(await listReleases(env.DB));
- const match=u.pathname.match(/^\/api\/releases\/([a-f0-9-]{36})\/(preview|viewed|settings|approve|check)$/);if(!match||request.method!=='POST')return null;
+ const upload=u.pathname.match(/^\/api\/releases\/([a-f0-9-]{36})\/picture$/);
+ if(upload&&request.method==='PUT'){
+  const row=await release(env.DB,upload[1]);if(row.approved_at||Number(u.searchParams.get('revision'))!==row.revision)throw err('The update changed. Reopen it before uploading.',409);
+  const bytes=await limitedBytes(request,8_000_000),type=request.headers.get('content-type')||'';
+  const sig=Array.from(bytes.slice(0,12)),valid=type==='image/png'?sig.slice(0,8).join(',')==='137,80,78,71,13,10,26,10':type==='image/jpeg'?sig[0]===255&&sig[1]===216&&sig[2]===255:type==='image/gif'?new TextDecoder().decode(bytes.slice(0,6)).match(/^GIF8[79]a$/):type==='image/webp'?new TextDecoder().decode(bytes.slice(0,4))==='RIFF'&&new TextDecoder().decode(bytes.slice(8,12))==='WEBP':false;
+  if(!valid)throw err('Choose a PNG, JPEG, GIF or WebP picture.');
+  const sha=await digest(bytes),extension=type.split('/')[1],path='/cms-pictures/'+sha+'.'+extension,edits=JSON.parse(row.edits);await env.MEDIA.put('releases/blobs/'+sha,bytes,{httpMetadata:{contentType:type},customMetadata:{sha256:sha}});edits[path]={sha256:sha,size:bytes.length,type};
+  const result=await env.DB.prepare('UPDATE cms_releases SET edits=?,revision=revision+1 WHERE id=? AND revision=? AND approved_at IS NULL').bind(JSON.stringify(edits),row.id,row.revision).run();if(!result.meta.changes)throw err('The update changed. Reopen it.',409);return json({path,revision:row.revision+1});
+ }
+ const match=u.pathname.match(/^\/api\/releases\/([a-f0-9-]{36})\/(preview|viewed|settings|approve|check|edit)$/);if(!match||request.method!=='POST')return null;
  const row=await release(env.DB,match[1]),data=await readJson(request);
  if(data.expectedRevision!==row.revision)throw err('The update changed. Preview the latest version.',409);
  if(!row.ready)throw err('Files are still arriving. Preview will open as soon as they are complete.',409);
+ if(match[2]==='edit'){
+  const id=crypto.randomUUID(),manifest={...JSON.parse(row.manifest),...JSON.parse(row.edits)};
+  await env.DB.batch([env.DB.prepare('INSERT INTO cms_releases(id,target,title,source,source_sha,arrived_at,manifest,ready,theme) VALUES(?,?,?,?,?,?,?,?,?)').bind(id,row.target,'Edit · '+row.title.slice(0,145),'control-room',await digest(encoder.encode(id)),new Date().toISOString(),JSON.stringify(manifest),1,row.theme),env.DB.prepare('INSERT INTO cms_audit(actor,action,target) VALUES(?,?,?)').bind(actor,'release-edit',id)]);
+  return json({id,revision:1,target:row.target,title:'Edit · '+row.title,ready:1});
+ }
  if(match[2]==='preview'){
   const expires=Math.floor(Date.now()/1000)+3600,token=await previewToken(env,row.id,row.revision,expires);
   const entryPath=data.path?publicPath(data.path):RELEASE_TARGETS[row.target].entry,asset={...JSON.parse(row.manifest),...JSON.parse(row.edits)}[entryPath],html=asset?.type==='text/html'?await (await env.MEDIA.get('releases/blobs/'+asset.sha256))!.text():null;if(html===null)throw err('Choose an HTML page from this update.');
-  return json({id:row.id,revision:row.revision,theme:JSON.parse(row.theme),html,pages:Object.keys(JSON.parse(row.manifest)).filter(p=>p.endsWith('.html')),entry:entryPath,url:`/api/release-preview/${row.id}/${row.revision}/${expires}/${token}${entryPath}`});
+  return json({id:row.id,revision:row.revision,theme:JSON.parse(row.theme),html,pages:Object.keys({...JSON.parse(row.manifest),...JSON.parse(row.edits)}).filter(p=>p.endsWith('.html')),entry:entryPath,url:`/api/release-preview/${row.id}/${row.revision}/${expires}/${token}${entryPath}`});
  }
  if(match[2]==='viewed'){
   await env.DB.prepare('INSERT INTO cms_release_previews(release_id,actor,revision) VALUES(?,?,?) ON CONFLICT(release_id,actor) DO UPDATE SET revision=excluded.revision').bind(row.id,actor,row.revision).run();return json({ok:true});
@@ -73,7 +87,11 @@ export async function adminReleaseRoute(request:Request,env:Env,actor:string){
  if(match[2]==='settings'){
   if(row.approved_at)throw err('An approved snapshot cannot be edited. Send a new update.',409);
   const theme=themeOf(data.theme),edits=JSON.parse(row.edits),manifest:Manifest=JSON.parse(row.manifest);
-  if(data.html!==undefined){const path=publicPath(data.path||'');if(!path.endsWith('.html')||!manifest[path]||typeof data.html!=='string'||data.html.length>1_000_000)throw err('Choose an HTML page from this update.');const bytes=encoder.encode(data.html),sha=await digest(bytes);await env.MEDIA.put('releases/blobs/'+sha,bytes,{httpMetadata:{contentType:'text/html'},customMetadata:{sha256:sha}});edits[path]={sha256:sha,size:bytes.length,type:'text/html'}}
+  if(data.pages!==undefined){
+   if(!data.pages||typeof data.pages!=='object'||Array.isArray(data.pages)||Object.keys(data.pages).length>150)throw err('Choose up to 150 pages per shared update.');
+   for(const [raw,html] of Object.entries(data.pages)){const path=publicPath(raw);if(!path.endsWith('.html')||(!manifest[path]&&!edits[path])||typeof html!=='string'||html.length>1_000_000||protectedRoute(path))throw err('Choose existing HTML pages for shared menus and footers.');const bytes=encoder.encode(html),sha=await digest(bytes);await env.MEDIA.put('releases/blobs/'+sha,bytes,{httpMetadata:{contentType:'text/html'},customMetadata:{sha256:sha}});edits[path]={sha256:sha,size:bytes.length,type:'text/html'};}
+  }
+  if(data.html!==undefined){const path=publicPath(data.path||'');if(!path.endsWith('.html')||(!manifest[path]&&!edits[path]&&!data.createPage)||protectedRoute(path)||typeof data.html!=='string'||data.html.length>1_000_000)throw err('Choose an HTML page from this update.');const bytes=encoder.encode(data.html),sha=await digest(bytes);await env.MEDIA.put('releases/blobs/'+sha,bytes,{httpMetadata:{contentType:'text/html'},customMetadata:{sha256:sha}});edits[path]={sha256:sha,size:bytes.length,type:'text/html'}}
   const result=await env.DB.prepare('UPDATE cms_releases SET theme=?,edits=?,revision=revision+1 WHERE id=? AND revision=? AND approved_at IS NULL').bind(JSON.stringify(theme),JSON.stringify(edits),row.id,row.revision).run();if(!result.meta.changes)throw err('Another administrator changed this update.',409);return json({ok:true,revision:row.revision+1,status:'new_update'});
  }
  if(match[2]==='approve'){

@@ -17,7 +17,7 @@ jobs:
       - run: npm run check --prefix account4-control-room
       - run: node --experimental-strip-types --test account4-control-room/test/*.mjs portal-router/worker.test.mjs
       - run: npm ci --prefix global-community --ignore-scripts --no-audit --no-fund
-      - run: node --test account4-control-room/test/release-room-dom.cjs bible/tests/commentary-dom.cjs
+      - run: node --test account4-control-room/test/*.cjs bible/tests/commentary-dom.cjs bible/tests/updates.cjs
       - name: Preserve Bible integrity and behavior
         run: |
           node bible/tests/scripture.mjs

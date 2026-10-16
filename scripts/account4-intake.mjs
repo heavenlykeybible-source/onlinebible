@@ -8,7 +8,7 @@ import {RELEASE_TARGETS,publicPath,protectedRoute} from '../account4-control-roo
 const mime={html:'text/html',htm:'text/html',css:'text/css',js:'application/javascript',mjs:'application/javascript',json:'application/json',webmanifest:'application/manifest+json',svg:'image/svg+xml',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',gif:'image/gif',ico:'image/x-icon',woff:'font/woff',woff2:'font/woff2',ttf:'font/ttf',otf:'font/otf',txt:'text/plain',xml:'application/xml',mp3:'audio/mpeg',mp4:'video/mp4',ogg:'audio/ogg',wav:'audio/wav',pdf:'application/pdf'};
 export function changedTargets(paths){
  const targets=new Set();for(const path of paths){
-  if(path.startsWith('shared-cms/')){for(const id of Object.keys(RELEASE_TARGETS))targets.add(id);continue}
+  if(path.startsWith('shared-cms/')){for(const id of Object.keys(RELEASE_TARGETS))if(id!=='talkmoney')targets.add(id);continue}
   if(path.startsWith('bible/public/')||path.startsWith('heavenly-key-website/bible/')){targets.add('account6');continue}
   const app=path.match(/^(?:heavenly-key-website\/pages\/apps|public-apps)\/(bible|community|radio|study|walk)\//);if(app){targets.add('app-'+app[1]);continue}
   if(path==='heavenly-key-website/pages/admin.html'){targets.add('account2');continue}

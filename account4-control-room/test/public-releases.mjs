@@ -33,7 +33,7 @@ test('all six accounts and every app arrive directly, preview then approve indep
   await admin(e,id,'viewed');await assert.rejects(admin(e,id,'approve',1,{},'other-admin'),x=>x.status===409);await admin(e,id,'approve');
   const t=RELEASE_TARGETS[target],live=await publicReleaseRoute(asset(t.host,t.scope),e);assert.equal(live.status,200);assert.equal(live.headers.get('x-hkem-release'),id+':1');
  }
- assert.equal(e.DB.raw.prepare('SELECT count(*) n FROM cms_active_releases').get().n,11);
+ assert.equal(e.DB.raw.prepare('SELECT count(*) n FROM cms_active_releases').get().n,Object.keys(RELEASE_TARGETS).length);
  assert.deepEqual({...e.DB.raw.prepare('SELECT * FROM users').get()},{id:'existing-user',password_hash:'existing-password-hash'});
  assert.equal(e.DB.raw.prepare('SELECT value FROM private_settings').get().value,'private-value');
 });
@@ -94,4 +94,9 @@ test('every approved Bible release changes worker identity even when worker sour
 });
 test('Bible reader links from all public portals resolve to the same approved Bible host',async()=>{
  for(const host of ['heavenlykey.org','global.heavenlykey.org','app.heavenlykey.org','studio.heavenlykey.org']){const r=await route(new Request('https://'+host+'/bible/?chapter=3'),()=>{throw Error('unexpected upstream')});assert.equal(r.status,302);assert.equal(r.headers.get('location'),'https://bible.heavenlykey.org/?chapter=3');}
+});
+test('an approved website can be edited without changing the active version; new pages and pictures require a fresh preview',async()=>{
+ const e=env(),id=await submit(e);await admin(e,id,'viewed');await admin(e,id,'approve');const clone=await (await admin(e,id,'edit')).json();assert.notEqual(clone.id,id);assert.equal((await publicReleaseRoute(asset('heavenlykey.org','/'),e)).headers.get('x-hkem-release'),id+':1');
+ const bytes=new Uint8Array([137,80,78,71,13,10,26,10,0]);let r=await adminReleaseRoute(new Request('https://control.heavenlykey.org/api/releases/'+clone.id+'/picture?revision=1',{method:'PUT',headers:{'content-type':'image/png'},body:bytes}),e,'admin');const picture=await r.json();assert.equal(picture.revision,2);assert.match(picture.path,/cms-pictures/);
+ await admin(e,clone.id,'settings',2,{theme:{},path:'/pages/new.html',html:'<html><head></head><body>New page<img src="'+picture.path+'"></body></html>',createPage:true});const preview=await(await admin(e,clone.id,'preview',3,{path:'/pages/new.html'})).json();assert.ok(preview.pages.includes('/pages/new.html'));await assert.rejects(admin(e,clone.id,'approve',3),x=>x.status===409);await admin(e,clone.id,'viewed',3);await admin(e,clone.id,'approve',3);assert.equal((await publicReleaseRoute(asset('heavenlykey.org',picture.path),e)).status,200);assert.match(await(await publicReleaseRoute(asset('heavenlykey.org','/pages/new.html'),e)).text(),/New page/);
 });

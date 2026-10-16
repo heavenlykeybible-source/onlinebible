@@ -1,5 +1,6 @@
 /** Public presentation releases only. Backend routes and persistent services stay in place. */
 export const RELEASE_TARGETS={
+ talkmoney:{site:"talkmoney",label:"Talk Money · Website, community & apps",host:"talkmoney.africa",scope:"/",source:"talkmoney-public",entry:"/index.html"},
  account1:{site:'account1',label:'Account 1 · Main website',host:'heavenlykey.org',scope:'/',source:'heavenly-key-website',entry:'/index.html'},
  account2:{site:'account2',label:'Account 2 · Studio',host:'studio.heavenlykey.org',scope:'/',source:'heavenly-key-website',entry:'/pages/admin.html'},
  account3:{site:'account3',label:'Account 3 · Community',host:'global.heavenlykey.org',scope:'/',source:'global-community/public',entry:'/index.html'},
@@ -21,6 +22,6 @@ export function publicPath(raw:string){
 }
 export function protectedRoute(path:string){return /^\/(?:api(?:\/|$)|auth(?:\/|$)|oauth(?:\/|$)|health(?:\/|$)|metrics(?:\/|$)|\.well-known(?:\/|$)|cdn-cgi(?:\/|$))/.test(path)}
 export function targetsFor(host:string,path:string){
- host=host==='www.heavenlykey.org'?'heavenlykey.org':host;
+ host=host.startsWith('www.')&&Object.values(RELEASE_TARGETS).some(t=>t.host===host.slice(4))?host.slice(4):host;
  return (Object.entries(RELEASE_TARGETS) as [ReleaseTarget,typeof RELEASE_TARGETS[ReleaseTarget]][]).filter(([,t])=>t.host===host&&(t.scope==='/'||path===t.scope.slice(0,-1)||path.startsWith(t.scope))).sort((a,b)=>b[1].scope.length-a[1].scope.length).map(([id])=>id);
 }
