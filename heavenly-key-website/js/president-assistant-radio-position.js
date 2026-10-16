@@ -3,8 +3,8 @@
 'use strict';
 const style=document.createElement('style');
 style.textContent=`
-.president-photo{position:relative!important;overflow:visible!important}
-.president-photo .hk-president-controls{position:absolute;right:0;top:0;left:auto;bottom:auto;transform:translateY(-100%);display:flex;flex-direction:column;align-items:center;gap:8px;width:min(100%,180px);z-index:30}
+.president-section .president-photo{position:relative!important;overflow:visible!important;box-sizing:border-box!important;display:flex!important;flex-direction:column!important;justify-content:flex-end!important;padding-top:110px!important;padding-bottom:0!important}.president-section .president-photo>img{display:block!important;position:relative!important;align-self:center!important;margin-top:auto!important;margin-bottom:0!important;max-width:100%!important;height:auto!important}
+.president-photo .hk-president-controls{position:absolute;right:6px;top:6px;left:auto;bottom:auto;transform:none;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(100%,180px);z-index:30}
 .president-photo .hk-president-controls #hkem-assistant,.president-photo .hk-president-controls #hk-floating-radio{position:relative!important;inset:auto!important;top:auto!important;bottom:auto!important;left:auto!important;right:auto!important;margin:0!important;width:100%!important;transform:none!important}
 .president-photo .hk-president-controls #hkem-assistant .hkem-launcher,.president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{width:100%!important;max-width:100%!important}
 .president-photo .hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{animation:none!important}
