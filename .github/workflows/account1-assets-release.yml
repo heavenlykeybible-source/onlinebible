@@ -22,3 +22,5 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: node scripts/account1-assets-release.mjs --inspect
+
+# Verify direct Account 1 hostname mapping before publishing.
