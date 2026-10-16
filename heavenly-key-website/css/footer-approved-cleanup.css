@@ -21,3 +21,25 @@
 .site-footer .hk-footer-gallery-autoplay .hk-footer-gallery-track{display:flex;flex-wrap:nowrap;width:max-content;max-width:none;min-width:0;will-change:transform}
 .site-footer .hk-footer-gallery-autoplay .hk-footer-gallery-track img{display:block;flex:0 0 86px;width:86px;max-width:86px;height:78px;object-fit:cover}
 @media(max-width:760px){.site-footer,.site-footer .wrap,.site-footer .hk-footer-column{min-width:0;max-width:100%;box-sizing:border-box}.site-footer .hk-footer-gallery.hk-footer-gallery-autoplay{width:100%!important;max-width:100%!important;overflow:hidden!important}}
+
+/* Permanently keep the footer picture gallery compact on every screen. */
+.site-footer .hk-footer-gallery.hk-footer-gallery-autoplay{
+  width:100%!important;max-width:260px!important;
+  height:100px!important;min-height:100px!important;max-height:100px!important;
+  aspect-ratio:auto!important;overflow:hidden!important;
+  margin-inline:0!important;
+}
+.site-footer .hk-footer-gallery-autoplay .hk-footer-gallery-track{
+  height:100px!important;align-items:center!important;
+}
+.site-footer .hk-footer-gallery-autoplay .hk-footer-gallery-track img{
+  width:86px!important;min-width:86px!important;max-width:86px!important;
+  height:78px!important;min-height:78px!important;max-height:78px!important;
+  object-fit:cover!important;flex:0 0 86px!important;
+}
+@media(max-width:760px){
+ .site-footer .hk-footer-gallery.hk-footer-gallery-autoplay{
+  width:min(260px,100%)!important;max-width:100%!important;
+  height:100px!important;max-height:100px!important;
+ }
+}
