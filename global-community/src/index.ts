@@ -121,7 +121,7 @@ async function route(request:Request,env:Env):Promise<Response>{
 
   {const x=p.match(/^\/api\/profiles\/(\d+)$/);if(x&&m==="GET"){const viewer=await getSession(request,env),profile=await S.publicProfile(env,Number(x[1]),viewer?.userId||null);return profile?json({profile}):error("Profile not found.",404);}}
   {const x=p.match(/^\/api\/global-connect\/(profile|space)\/(\d+)$/);if(x&&m==="POST"){const u=await me(request,env);return json(await S.toggleGlobalConnect(env,u.userId,x[1] as any,Number(x[2])));}}
-  {const x=p.match(/^\/api\/global-connections\/(\d+)$/);if(x&&m==="GET"){const viewer=await getSession(request,env),profile=await S.publicProfile(env,Number(x[1]),viewer?.userId||null);if(!profile)return error("Profile not found.",404);if(profile.globalConnections===null&&viewer?.userId!==Number(x[1]))return error("This member keeps their Global Connections private.",403);return json({items:await S.listConnections(env,Number(x[1]))});}}
+  {const x=p.match(/^\/api\/global-connections\/(\d+)$/);if(x&&m==="GET"){const viewer=await getSession(request,env),profile=await S.publicProfile(env,Number(x[1]),viewer?.userId||null);if(!profile)return error("Profile not found.",404);if(profile.globalConnections===null&&viewer?.userId!==Number(x[1]))return error("This member keeps their Global Connections private.",403);return json({items:await S.listConnections(env,Number(x[1]),viewer?.userId||null)});}}
 
   if(p==="/api/spaces"&&m==="GET"){const u=await getSession(request,env);return json({items:await S.listSpaces(env,url.searchParams.get("category")||undefined,u?.userId||null)});}
   if(p==="/api/spaces"&&m==="POST"){const u=await me(request,env);return json(await S.createSpace(env,u.userId,await body(request)),201);}
@@ -201,4 +201,5 @@ export default {
     catch(e:any){const internal=e instanceof TypeError||e instanceof ReferenceError||e instanceof SyntaxError||/D1_|SQLITE|constraint failed|no such table|binding|TypeError/i.test(String(e?.message))||!(e instanceof Error);return error(internal?"The request could not be completed. Please try again.":e.message,internal?500:Number((e as any)?.status)||400);}
   }
 };
+
 
