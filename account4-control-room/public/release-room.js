@@ -15,6 +15,7 @@
   $('#release-theme-enabled').checked=Object.keys(view.theme).length>0;
   if(!$('#release-dialog').open)$('#release-dialog').showModal();frame=$('#release-frame');frame.src=view.url;$('#release-approve').disabled=true;for(const control of document.querySelectorAll('#simple-editor input,#simple-editor textarea,#simple-editor button,#simple-editor select,#simple-save,#simple-new-page'))control.disabled=!!item.approved_at;
  }catch(error){notice(error.message)}}
+ window.addEventListener('message',event=>{if(!current?.approved_at&&frame&&event.source===frame.contentWindow&&event.origin==='null'&&event.data?.type==='hkem-release-select'&&event.data.id===current?.id&&event.data.revision===current.revision)window.HKSimpleEditor?.select(event.data.selector);});
  window.addEventListener('message',async event=>{
   if(!frame||event.source!==frame.contentWindow||event.origin!=='null'||event.data?.type!=='hkem-release-loaded'||event.data.id!==current?.id||event.data.revision!==current.revision)return;
   try{await api('/'+current.id+'/viewed',{expectedRevision:current.revision});viewed=true;$('#release-approve').disabled=!!current.approved_at||editingDirty||updating;$('#release-editor-status').textContent='Preview loaded. Inspect the pages and settings, then click Approve & install.'}catch(error){$('#release-editor-status').textContent=error.message}
