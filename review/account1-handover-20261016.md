@@ -33,3 +33,21 @@ Imported authored headings, paragraphs, lists, scripture and content links from 
 Reproduce UI checks with Playwright installed: `node scripts/account1-handover-ui.cjs`. Optional: set `HK_CHROMIUM_EXECUTABLE` and `HK_TEST_WIDTHS`. API responses are stubbed for deterministic browser checks; the live service checks above are separate. The test starts its own local server on port 8765 and generates audio in memory.
 
 Production readiness remains subject to owner review/authorization and availability of an actual radio programme. No deployment is included in this change.
+
+## Owner-requested individual page designs
+
+The owner subsequently authorized distinctive designs for each imported content page, with all visible text at least 14px and some bold emphasis.
+
+- About: green introduction, broad story panels and an editorial faith collection.
+- The Ministry: real outreach photography, a wine-red mission panel and a numbered vision.
+- Statement of Faith: individually framed beliefs beneath a wine-red title banner.
+- Meet the President: actual ministry portrait beside an elegant biography panel.
+- Ministries: scripture introduction and a responsive collection of ministry tiles.
+- Partnership: scripture introduction, prominent giving details and service panels.
+- Contact: distinct headquarters, email, telephone, social and partnership cards.
+
+All seven pages use the approved green, wine-red, gold and white palette. The homepage is unchanged. Existing navigation destinations, page wording, assistant, radio and footer remain available. Selective bold emphasis was added without changing any words.
+
+Validation: exact word-token comparison confirmed all imported content remains in order. Desktop (1440px) and mobile (390px) Chromium checks passed for every redesigned page, including an audit of rendered text confirming no visible text below 14px, no horizontal overflow, working dropdowns, assistant/radio regression checks, and visual screenshot review. The shared stylesheet includes responsive layouts and reduced-motion support. Reproduce with `node scripts/account1-page-design-ui.cjs` and the same Playwright setup described above.
+
+These page designs are saved to the draft branch only; they have not been merged or deployed.
