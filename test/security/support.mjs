@@ -1,0 +1,4 @@
+import {DatabaseSync} from 'node:sqlite';
+const origin='https://control.heavenlykey.org';
+export function database(schema){const raw=new DatabaseSync(':memory:');raw.exec(schema);return {raw,prepare(sql){let values=[];const statement={bind(...v){values=v;return statement},async first(){return raw.prepare(sql).get(...values)||null},async all(){return {results:raw.prepare(sql).all(...values)}},async run(){const r=raw.prepare(sql).run(...values);return {meta:{changes:Number(r.changes)}}}};return statement;},async batch(statements){raw.exec('BEGIN');try{const results=[];for(const s of statements){if(s.all)results.push(await s.all());else results.push(await s.run());}raw.exec('COMMIT');return results;}catch(e){raw.exec('ROLLBACK');throw e;}}};}
+export const request=(path,data,headers={})=>new Request(origin+'/api/security'+path,{method:data?'POST':'GET',headers:{'Content-Type':'application/json',Origin:origin,...headers},body:data?JSON.stringify(data):undefined});

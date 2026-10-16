@@ -1,5 +1,7 @@
 export interface Env {
   AI?: {run(model:string, args:{messages:{role:string;content:string}[];max_tokens:number;temperature:number}):Promise<{response?:string}>};
+  RESET_EMAIL?:{send(message:{to:string;from:string;subject:string;text:string}):Promise<unknown>};
+  RESET_EMAIL_FROM?:string;
   DB: D1Database;
   SESSIONS: KVNamespace;
   MEDIA: R2Bucket;
@@ -25,3 +27,4 @@ export interface ModerationResult {
   reasons: string[];
   safeExcerpt: string;
 }
+

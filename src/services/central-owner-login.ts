@@ -1,8 +1,11 @@
+import {verifyPassword} from "./auth-service";
 /** Owner credentials use local salted digests. Existing member credentials and roles are preserved. */
 export async function centralOwnerLogin(env:{DB:D1Database;OWNER_DASHBOARD_PASSWORD_HASH?:string;OWNER_DASHBOARD_PASSWORD_SALT?:string},password:string,_unused?:unknown,report:(stage:string)=>void=()=>{}):Promise<number|null>{
  if(typeof password!=='string'||password.length<14||password.length>200)return null;
  const records=await env.DB.prepare("SELECT u.user_id FROM users u JOIN roles r ON r.role_id=u.role_id WHERE r.role_name='Super Administrator' AND u.status='active' ORDER BY u.user_id LIMIT 2").all<{user_id:number}>();
  if(records.results.length!==1){report('owner-record-count-'+records.results.length);return null}
+ let managed=false;try{managed=!!await env.DB.prepare('SELECT 1 FROM access_security_credentials WHERE user_id=? AND local_password_only=1').bind(records.results[0].user_id).first();}catch{}
+ if(managed){const row=await env.DB.prepare('SELECT password_hash,password_salt FROM auth WHERE user_id=?').bind(records.results[0].user_id).first<{password_hash:string;password_salt:string}>();const pepper=(env as any).PASSWORD_PEPPER;if(!row||!pepper)return null;return await verifyPassword(password,row.password_salt,pepper,row.password_hash)?records.results[0].user_id:null;}
  const salt=env.OWNER_DASHBOARD_PASSWORD_SALT,expected=env.OWNER_DASHBOARD_PASSWORD_HASH;
  if(!salt||!expected||! /^[a-f0-9]{64}$/.test(expected)){report('owner-password-not-configured');return null}
  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveBits']);
@@ -12,3 +15,4 @@ export async function centralOwnerLogin(env:{DB:D1Database;OWNER_DASHBOARD_PASSW
  if(different){report('credentials-not-confirmed');return null}
  return records.results[0].user_id;
 }
+

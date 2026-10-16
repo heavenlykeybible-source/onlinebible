@@ -1,4 +1,7 @@
+import {controlSSO} from "./services/control-sso";
+import {accountAccess} from "./services/account-access";
 import {handleGRDPCPublic,handleGRDPCAdmin} from "./routes/grdpc";
+import {handleWebsiteAiInbox,handleWebsiteAiConversation} from "./routes/website-ai-inbox";
 import {runReminders} from "./services/grdpc-service";
 import {handleCommunityPlayer} from "./routes/community-player";
 /**
@@ -103,6 +106,8 @@ export default {
     if(pathname.startsWith('/api/')&&!['GET','HEAD','OPTIONS'].includes(method)){
       const origin=request.headers.get('Origin');if(origin&&origin!==url.origin)return Response.json({error:{message:'Use the website to perform this action.'}},{status:403});
     }
+    const sso=await controlSSO(request,env);if(sso)return sso;
+    const access=await accountAccess(request,env);if(access)return access;
     if (pathname === "/api/broadcast/community-player" && method === "GET") return handleCommunityPlayer(request);
     if (pathname === "/api/homepage-updates" && method === "GET") return handleHomepageUpdates(request, env);
     if (pathname === "/api/site-content/homepage" && method === "GET") return handlePublicSiteContent(request, env);
@@ -134,6 +139,9 @@ export default {
 
     if (pathname === "/api/grdpc" && method === "GET") return handleGRDPCPublic(request,env);
     if (pathname === "/api/admin/grdpc" && ["GET","POST"].includes(method)) return handleGRDPCAdmin(request,env);
+    // Website AI inbox is separate from actual WhatsApp conversations.
+    if(pathname==="/api/admin/website-ai/conversations"&&["GET","DELETE"].includes(method))return handleWebsiteAiInbox(request,env);
+    {const m=idMatch(/^\/api\/admin\/website-ai\/conversations\/([a-zA-Z0-9_-]{8,100})$/);if(m&&["GET","PATCH"].includes(method))return handleWebsiteAiConversation(request,env,m[1]);}
     // ---------- WhatsApp + Social Management ----------
     if (pathname === "/api/integrations/whatsapp/webhook" && ["GET","POST"].includes(method)) return handleWhatsAppWebhook(request,env);
     if (pathname === "/api/admin/whatsapp/connection" && ["GET","POST"].includes(method)) return handleWhatsAppConnection(request,env);
@@ -366,3 +374,4 @@ export default {
     });
   },
 };
+

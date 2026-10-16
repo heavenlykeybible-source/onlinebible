@@ -1,3 +1,5 @@
+import {communitySSO} from "./control-sso";
+import {accountAccess} from "./account-access";
 import type {Env} from "./types";
 import {passwordError} from "../public/password-policy.js";
 import {hashPassword,verifyPassword,createSession,getSession,destroySession,sessionCookie,clearSessionCookie,requireRole} from "./auth";
@@ -197,8 +199,9 @@ async function route(request:Request,env:Env):Promise<Response>{
 export default {
   async scheduled(_event:ScheduledController,env:Env):Promise<void>{await Calls.cleanup(env);await env.DB.prepare("DELETE FROM social_login_flows WHERE expires_at<?").bind(Date.now()).run();},
   async fetch(request:Request,env:Env):Promise<Response>{
-    try{return await route(request,env);}
+    try{const handoff=await communitySSO(request,env);if(handoff)return handoff;const access=await accountAccess(request,env);if(access)return access;return await route(request,env);}
     catch(e:any){const internal=e instanceof TypeError||e instanceof ReferenceError||e instanceof SyntaxError||/D1_|SQLITE|constraint failed|no such table|binding|TypeError/i.test(String(e?.message))||!(e instanceof Error);return error(internal?"The request could not be completed. Please try again.":e.message,internal?500:Number((e as any)?.status)||400);}
   }
 };
+
 

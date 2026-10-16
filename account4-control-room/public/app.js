@@ -95,3 +95,5 @@
  Promise.all([fetch('/catalog.json').then(r=>r.json()),api('/api/me')]).then(([pagesData,me])=>{catalog=pagesData;$('#identity').textContent='Signed in: '+me.actor;pages();refreshAwaiting()}).catch(error=>{$('#identity').textContent=error.message;status(error.message)});
 })();
 
+
+document.querySelectorAll('[data-control-studio]').forEach(a=>{const url=new URL('https://studio.heavenlykey.org/api/auth/control-start');url.searchParams.set('issuer',location.origin);a.href=url.href;});

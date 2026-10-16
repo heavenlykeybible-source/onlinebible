@@ -8,7 +8,7 @@ import {setOwnerPassword,ownerLogin} from '../src/owner-auth.ts';
 import worker from '../src/index.ts';
 function database(){
  const raw=new DatabaseSync(':memory:');
- for(const name of ['0001_cms.sql','0002_publications.sql','0003_owner_signin.sql','0006_awaiting_room.sql'])raw.exec(readFileSync(new URL('../migrations/'+name,import.meta.url),'utf8'));
+ for(const name of ['0001_cms.sql','0002_publications.sql','0003_owner_signin.sql','0006_awaiting_room.sql','0008_security_identity.sql'])raw.exec(readFileSync(new URL('../migrations/'+name,import.meta.url),'utf8'));
  const db={raw,prepare(sql){let values=[];const statement={bind(...v){values=v;return statement},async first(){return raw.prepare(sql).get(...values)||null},async all(){return {results:raw.prepare(sql).all(...values)}},async run(){const r=raw.prepare(sql).run(...values);return {meta:{changes:Number(r.changes)}}}};return statement},async batch(statements){raw.exec('BEGIN');try{const results=[];for(const stmt of statements)results.push(await stmt.run());raw.exec('COMMIT');return results}catch(e){raw.exec('ROLLBACK');throw e}}};return db;
 }
 const location={site:'account1',kind:'page',key:'home'};

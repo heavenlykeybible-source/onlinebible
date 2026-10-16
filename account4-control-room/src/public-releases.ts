@@ -1,3 +1,4 @@
+import {passwordTools} from "../../shared-security/page.ts";
 import {RELEASE_TARGETS,releaseTarget,publicPath,protectedRoute,targetsFor,type ReleaseTarget} from './release-targets.ts';
 type Env={DB:D1Database;MEDIA:R2Bucket;RELEASE_INGEST_TOKEN?:string};
 type Asset={sha256:string;size:number;type:string};
@@ -120,7 +121,7 @@ function htmlOutput(html:string,prefix:string,row:Release,preview:boolean,path:s
   });
  });
  const tag=`<meta name="hkem-release" content="${row.id}:${row.revision}"><link rel="stylesheet" href="${prefix}__hkem-theme.css">`;
- html=html.replace(/<head([^>]*)>/i,`<head$1>${tag}`);
+ html=html.replace(/<head([^>]*)>/i,`<head$1>${tag}`);html=html.replace(/<\/body>/i,`<script src="${prefix}__hkem-password-tools.js" defer></script></body>`);
  if(preview){html=html.replace(/(<a\b[^>]*?\shref=['"])([^'"]+)(['"])/gi,(_,a,href,z)=>{try{const link=new URL(href,'https://'+RELEASE_TARGETS[row.target].host+path);return a+(link.host===RELEASE_TARGETS[row.target].host?prefix+link.pathname.slice(1)+link.search+link.hash:'#')+z}catch{return a+'#'+z}});html=html.replace(/<\/body>/i,`<script src="${prefix}__hkem-preview.js"></script></body>`)}
  return html;
 }
@@ -129,6 +130,7 @@ function themeCss(row:Release){
 }
 async function serveAsset(request:Request,env:Env,row:Release,path:string,prefix:string,preview:boolean){
  path=publicPath(decodeURIComponent(path));
+ if(path==='/__hkem-password-tools.js')return new Response(request.method==='HEAD'?null:passwordTools,{headers:{'content-type':'application/javascript','cache-control':'no-cache','x-content-type-options':'nosniff'}});
  if(path==='/__hkem-theme.css')return new Response(request.method==='HEAD'?null:themeCss(row),{headers:{'content-type':'text/css','cache-control':preview?'no-store':'no-cache','x-content-type-options':'nosniff','x-hkem-release':`${row.id}:${row.revision}`}});
  if(path==='/__hkem-preview.js'&&preview)return new Response(`(()=>{const id=${JSON.stringify(row.id)},revision=${row.revision};window.parent.postMessage({type:'hkem-release-loaded',id,revision},'*');document.addEventListener('click',event=>{let node=event.target;if(!(node instanceof Element))return;event.preventDefault();event.stopImmediatePropagation();const parts=[];while(node&&node!==document.documentElement){const tag=node.tagName.toLowerCase(),parent=node.parentElement;if(!parent)break;parts.unshift(tag+':nth-of-type('+([...parent.children].filter(e=>e.tagName===node.tagName).indexOf(node)+1)+')');node=parent;}window.parent.postMessage({type:'hkem-release-select',id,revision,selector:parts.join('>')},'*');},true);})();`,{headers:{'content-type':'application/javascript','cache-control':'no-store','x-content-type-options':'nosniff'}});
  const files:Manifest={...JSON.parse(row.manifest),...JSON.parse(row.edits)};let asset=files[path];

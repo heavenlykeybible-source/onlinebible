@@ -1,3 +1,4 @@
+import {verifyCentralProof} from "../../shared-security/central-session";
 import type {Env,SessionUser,Role} from "./types";
 
 const enc=new TextEncoder();
@@ -24,25 +25,28 @@ export async function verifyPassword(password:string,salt:string,expected:string
   if(!/^[a-f0-9]{64}$/.test(digest))return false;
   const got=await derive(password,salt,pepper,version?100000:210000);if(got.length!==digest.length)return false;let diff=0;for(let i=0;i<got.length;i++)diff|=got.charCodeAt(i)^digest.charCodeAt(i);return diff===0;
 }
-export async function createSession(env:Env,user:SessionUser){
-  const id=randomHex(32);await env.SESSIONS.put("session:"+id,JSON.stringify(user),{expirationTtl:60*60*24*30});return id;
+export async function createSession(env:Env,user:SessionUser,ttlSeconds=60*60*24*30){
+  const id=randomHex(32);await env.SESSIONS.put("session:"+id,JSON.stringify({...user,epoch:(await env.SESSIONS.get("auth-epoch:"+user.userId))||""}),{expirationTtl:ttlSeconds});return id;
 }
 export async function getSession(request:Request,env:Env):Promise<SessionUser|null>{
   const id=cookie(request,"gc_session");if(!/^[a-f0-9]{64}$/.test(id))return null;
   const raw=await env.SESSIONS.get("session:"+id);if(!raw)return null;
   try{
-    const s=JSON.parse(raw) as SessionUser;
+    const s=JSON.parse(raw) as SessionUser & {epoch?:string};
+    if((s.epoch||"")!==((await env.SESSIONS.get("auth-epoch:"+s.userId))||""))return null;
+    if(!await verifyCentralProof({SESSIONS_KV:env.SESSIONS},id))return null;
     const current=await env.DB.prepare("SELECT role,status FROM users WHERE user_id=?").bind(s.userId).first<any>();
     if(!current||!["active","restricted"].includes(current.status))return null;
     return {userId:s.userId,role:current.role as Role,status:current.status};
   }catch{return null;}
 }
 export async function destroySession(request:Request,env:Env){const id=cookie(request,"gc_session");if(id)await env.SESSIONS.delete("session:"+id);}
-export const sessionCookie=(id:string)=>"gc_session="+encodeURIComponent(id)+"; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age="+(60*60*24*30);
+export const sessionCookie=(id:string,ttlSeconds=60*60*24*30)=>"gc_session="+encodeURIComponent(id)+"; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age="+ttlSeconds;
 export const clearSessionCookie=()=>"gc_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0";
 
 const levels:Record<Role,number>={member:1,moderator:2,administrator:3,owner:4};
 export async function requireUser(request:Request,env:Env){return getSession(request,env);}
 export async function requireRole(request:Request,env:Env,min:Role){const u=await getSession(request,env);return u&&u.status==="active"&&levels[u.role]>=levels[min]?u:null;}
+
 
 

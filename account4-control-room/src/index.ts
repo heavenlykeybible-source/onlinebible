@@ -1,10 +1,12 @@
+import {identityRoute,sessionIdentity,bootstrapIdentity} from "../../shared-security/identity.ts";
+import {securityUI} from "../../shared-security/page.ts";
 import {ingestAuthorized,intakeRoute,adminReleaseRoute,previewReleaseRoute} from './public-releases.ts';
 import {awaitingRoom,previewUpdate,approveUpdate} from './awaiting-room.ts';
 import {SITES,planDeployment} from './deployment-engine.ts';
 import {AI_MODEL,PUBLIC_CMS_ORIGIN,validateDocument} from './cms-schema.ts';
 import {saveDraft,publishDraft,restoreDraft} from './cms-storage.ts';
 import {ownerSession,ownerLogin,ownerLogout,setOwnerPassword,generatedPassword} from './owner-auth.ts';
-interface Env {DB:D1Database;MEDIA:R2Bucket;AI:Ai;ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUD:string;RELEASE_INGEST_TOKEN?:string}
+interface Env {DB:D1Database;MEDIA:R2Bucket;AI:Ai;ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUD:string;RELEASE_INGEST_TOKEN?:string;RESET_EMAIL?:{send(message:{to:string;from:string;subject:string;text:string}):Promise<unknown>};RESET_EMAIL_FROM?:string}
 const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
 const fail=(message:string,status=400)=>json({error:message},status);
 function b64url(s:string){const p=s.replace(/-/g,"+").replace(/_/g,"/");return Uint8Array.from(atob(p+"=".repeat((4-p.length%4)%4)),c=>c.charCodeAt(0))}
@@ -13,7 +15,7 @@ async function authenticate(request:Request,env:Env):Promise<string|null>{
  const parts=token.split(".");if(parts.length!==3)return null;
  try{
  const header=JSON.parse(new TextDecoder().decode(b64url(parts[0]))),claims=JSON.parse(new TextDecoder().decode(b64url(parts[1])));
- if(header.alg!=="RS256"||!header.kid||!Array.isArray(claims.aud)||!claims.aud.includes(env.ACCESS_AUD)||claims.exp<=Date.now()/1000||(typeof claims.nbf==="number"&&claims.nbf>Date.now()/1000))return null;
+ if(header.alg!=="RS256"||!header.kid||!Array.isArray(claims.aud)||!claims.aud.includes(env.ACCESS_AUD)||!Number.isInteger(claims.exp)||claims.exp<=Date.now()/1000||(typeof claims.nbf==="number"&&claims.nbf>Date.now()/1000))return null;
  const domain=env.ACCESS_TEAM_DOMAIN.replace(/^https?:\/\//,"").replace(/\/$/,"");
  if(!/^[a-z0-9.-]+\.cloudflareaccess\.com$/i.test(domain)||claims.iss!=="https://"+domain)return null;
  const jwks=await fetch("https://"+domain+"/cdn-cgi/access/certs");if(!jwks.ok)return null;
@@ -29,6 +31,7 @@ async function body(request:Request,max=210000){if(!(request.headers.get('conten
 function imageType(b:Uint8Array){if(b.length>=8&&[137,80,78,71,13,10,26,10].every((n,i)=>b[i]===n))return 'image/png';if(b[0]===255&&b[1]===216&&b[2]===255)return 'image/jpeg';if(String.fromCharCode(...b.slice(0,6)).startsWith('GIF8'))return 'image/gif';if(String.fromCharCode(...b.slice(0,4))==='RIFF'&&String.fromCharCode(...b.slice(8,12))==='WEBP')return 'image/webp';return ''}
 export default {async fetch(request:Request,env:Env):Promise<Response>{
  const u=new URL(request.url);
+ const securityPage=securityUI(request);if(securityPage)return securityPage;
  try{
   const preview=await previewReleaseRoute(request,env);if(preview)return preview;
   if(u.pathname.startsWith('/api/releases/')&&await ingestAuthorized(request,env)){
@@ -37,25 +40,30 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
  }catch(error:any){return fail(error.message,error.status||500)}
  const ownerHost=u.hostname==='heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev';
  if(!ownerHost&&!u.pathname.startsWith('/api/'))return env.ASSETS.fetch(request);
+ let managedOwner:any=null;try{managedOwner=await env.DB.prepare("SELECT * FROM security_users WHERE role='owner' AND password_hash IS NOT NULL AND status='active' LIMIT 1").first();}catch{}
  if(ownerHost&&u.pathname==='/api/owner/login'&&request.method==='POST'){
   if(request.headers.get('Origin')!==u.origin)return fail('Invalid sign-in origin.',403);
-  try{const data=await body(request,4096);if(data.username!==undefined&&data.username!=='owner')return fail('Sign-in failed. Check your username and password.',401);const result=await ownerLogin(request,env.DB,data.password);return result.ok?new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json','cache-control':'no-store','set-cookie':result.cookie!}}):fail(result.error!,result.status)}catch{return fail('Sign-in is temporarily unavailable.',503)}
+  try{const data=await body(request,4096);if(managedOwner){const loginRequest=new Request(new URL('/api/security/login',request.url),{method:'POST',headers:request.headers,body:JSON.stringify({email:managedOwner.email,password:data.password})});return (await identityRoute(loginRequest,env,null))!;}if(data.username!==undefined&&data.username!=='owner')return fail('Sign-in failed. Check your username and password.',401);const result=await ownerLogin(request,env.DB,data.password);return result.ok?new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json','cache-control':'no-store','set-cookie':result.cookie!}}):fail(result.error!,result.status)}catch{return fail('Sign-in is temporarily unavailable.',503)}
  }
- const accessActor=ownerHost?null:await authenticate(request,env);
- const actor=accessActor||(ownerHost?await ownerSession(request,env.DB):null);
+ const accessActor=await authenticate(request,env);
+ const existingOwner=ownerHost&&!managedOwner?await ownerSession(request,env.DB):null;
+ let identity=await sessionIdentity(request,env);if(!identity&&(accessActor||existingOwner))identity=await bootstrapIdentity(env,/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(accessActor||existingOwner||'')?(accessActor||existingOwner)!:'emmanuel2026miracle@gmail.com');
+ const securityResponse=await identityRoute(request,env,identity);if(securityResponse)return securityResponse;
+ const actor=identity&&['owner','administrator','editor'].includes(identity.role)?identity.email:null;
  if(!u.pathname.startsWith('/api/')){
   return env.ASSETS.fetch(request);
  }
  if(!actor)return fail('Administrator sign-in required',401);
  if(!['GET','HEAD','OPTIONS'].includes(request.method)&&(request.headers.get('Origin')!==u.origin||request.headers.get('Sec-Fetch-Site')==='cross-site'))return fail('Use the Control Room to make this change.',403);
  try{
+  if(identity?.role==='editor'&&(/\/(?:approve|publish|password|deploy)(?:\/|$)/.test(u.pathname)))return fail('Administrator approval is required.',403);
   const location=()=>keyOf(u);
   const releaseResponse=await adminReleaseRoute(request,env,actor);if(releaseResponse)return releaseResponse;
   if(u.pathname.startsWith('/api/releases/')){const intake=await intakeRoute(request,env,actor);if(intake)return intake;}
 
-  if(u.pathname==='/api/owner/password'&&request.method==='POST'){if(!accessActor&&!ownerHost)return fail('Owner sign-in required.',403);const data=await body(request,4096),password=data.generate===true?generatedPassword():data.password;await setOwnerPassword(env.DB,password,actor);return json({ok:true,password:data.generate===true?password:undefined,signInUrl:'https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/'})}
-  if(u.pathname==='/api/owner/logout'&&request.method==='POST')return new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json','cache-control':'no-store','set-cookie':await ownerLogout(request,env.DB)}});
-  if(u.pathname==='/api/me')return json({actor,role:'administrator'});
+  if(u.pathname==='/api/owner/password'&&request.method==='POST'){if(identity?.role!=='owner')return fail('Owner sign-in required.',403);const data=await body(request,4096),password=data.generate===true?generatedPassword():data.password;const changed=await identityRoute(new Request(new URL('/api/security/owner-password',request.url),{method:'POST',headers:request.headers,body:JSON.stringify({password})}),env,identity);if(!changed?.ok)return changed!;return json({ok:true,password:data.generate===true?password:undefined,signInUrl:new URL('/security',request.url).href})}
+  if(u.pathname==='/api/owner/logout'&&request.method==='POST'){const managed=await identityRoute(new Request(new URL('/api/security/logout',request.url),{method:'POST',headers:request.headers,body:'{}'}),env,identity);const headers=new Headers({'content-type':'application/json','cache-control':'no-store'});headers.append('set-cookie',await ownerLogout(request,env.DB));if(managed?.headers.get('set-cookie'))headers.append('set-cookie',managed.headers.get('set-cookie')!);return new Response(JSON.stringify({ok:true}),{headers});}
+  if(u.pathname==='/api/me')return json({actor,role:identity?.role});
   if(u.pathname==='/api/system/health'&&request.method==='GET'){
    let cms='unavailable',publishing='unavailable';
    try{await env.DB.prepare('SELECT 1 FROM cms_entries LIMIT 1').first();cms='ready';await env.DB.prepare('SELECT 1 FROM cms_publications LIMIT 1').first();publishing='ready'}catch{}

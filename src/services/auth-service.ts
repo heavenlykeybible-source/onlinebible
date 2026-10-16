@@ -1,3 +1,4 @@
+import {verifyCentralSession} from "./control-sso";
 /**
  * Auth Service — all authentication business logic lives here, never in routes.
  * Password hashing: PBKDF2-SHA256 via Web Crypto SubtleCrypto — Workers cannot
@@ -10,6 +11,8 @@ export interface Env {
   RATE_LIMIT_KV: KVNamespace;
   SESSION_SECRET: string;
   PASSWORD_PEPPER: string;
+  RESET_EMAIL?:{send(message:{to:string;from:string;subject:string;text:string}):Promise<unknown>};
+  RESET_EMAIL_FROM?:string;
   MEDIA_R2?: R2Bucket;
   MEDIA_R2_STAGING?: R2Bucket;
   LIVE_STATUS_KV?: KVNamespace;
@@ -137,6 +140,7 @@ export async function getSessionUserId(env: Env, sessionId: string): Promise<num
     await env.SESSIONS_KV.delete(`session:${sessionId}`);
     return null;
   }
+  if(!await verifyCentralSession(env,sessionId))return null;
   return data.userId;
 }
 
@@ -328,4 +332,5 @@ export async function getProfile(env: Env, userId: number): Promise<UserProfile 
     roleName: row.role_name,
   };
 }
+
 

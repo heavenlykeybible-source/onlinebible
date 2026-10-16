@@ -1,3 +1,4 @@
+import {hashPassword as managedHash,equal as managedEqual} from "../../shared-security/identity";
 /** Normal Account 4 administrator login. Independent of Cloudflare Access.
  * Uses high-entropy password provisioned as a Worker secret, HttpOnly signed sessions
  * and KV-backed rate limiting. No credentials appear in the repository or HTML. */
@@ -100,6 +101,8 @@ toggle.addEventListener('click',()=>{
 });
 // Use a native same-origin POST so Safari, iCloud Keychain and other browser password managers can recognize a successful sign-in.\n</script></body></html>`;
 export async function verifyOwnerPassword(password:unknown,env:ControlEnv):Promise<boolean>{
+ try{const managed=await env.DB.prepare("SELECT password_hash,salt FROM security_users WHERE role='owner' AND status='active' AND password_hash IS NOT NULL LIMIT 1").first<{password_hash:string;salt:string}>();if(managed)return typeof password==='string'&&password.length<=200&&managedEqual(await managedHash(password,managed.salt),managed.password_hash);}catch(e){if(!/no such table/i.test(String(e)))return false;}
+
  if(typeof password!=='string'||password.length<12||password.length>256)return false;
  const record=await passwordRecord(env);if(!record)return false;
  if(record.startsWith('hmac-v3$')){
