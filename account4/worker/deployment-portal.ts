@@ -23,6 +23,19 @@ export function createDeploymentRouter(verifyOwner:VerifyOwner){
   let input:unknown;try{input=JSON.parse(raw)}catch{return reply({error:"invalid_body"},400)}
   if(!input||typeof input!=="object"||Array.isArray(input))return reply({error:"invalid_body"},400);
   const b=input as Record<string,unknown>;
+  if(path==="/api/control/deploy/targets"){
+   const label=typeof b.label==="string"?b.label.trim():"";
+   const accountId=typeof b.accountId==="string"?b.accountId.trim():"";
+   const project=typeof b.projectName==="string"?b.projectName.trim():"";
+   const productionUrl=typeof b.productionUrl==="string"?b.productionUrl.trim():"";
+   let urlValue:URL;
+   try{urlValue=new URL(productionUrl)}catch{return reply({error:"invalid_production_url"},400)}
+   if(!label||label.length>120||!["worker","pages"].includes(String(b.kind))||!/^[a-f0-9]{32}$/i.test(accountId)||!/^[a-z0-9_-]{1,63}$/i.test(project)||urlValue.protocol!=="https:"||urlValue.username||urlValue.password||urlValue.search||urlValue.hash||urlValue.pathname!=="/")return reply({error:"invalid_target"},400);
+   const id=crypto.randomUUID();
+   try{await db.prepare("INSERT INTO control_deployment_targets(id,label,target_kind,cloudflare_account_id,cloudflare_project_name,production_url,enabled) VALUES(?,?,?,?,?,?,0)").bind(id,label,b.kind,accountId,project,urlValue.origin).run()}
+   catch{return reply({error:"target_conflict"},409)}
+   return reply({id,status:"disabled",note:"Target must be verified and enabled separately before release jobs can be created"},201);
+  }
   if(path==="/api/control/deploy/jobs"){
    if(typeof b.targetId!=="string"||!uuid.test(b.targetId)||typeof b.sourceRef!=="string"||!/^[a-zA-Z0-9._/-]{1,200}$/.test(b.sourceRef)||typeof b.sha256!=="string"||!sha.test(b.sha256))return reply({error:"invalid_job"},400);
    const target=await db.prepare("SELECT id FROM control_deployment_targets WHERE id=? AND enabled=1").bind(b.targetId).first();
