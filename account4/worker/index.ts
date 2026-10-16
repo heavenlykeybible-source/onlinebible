@@ -4,10 +4,11 @@ import {createStudioSso} from "./studio-sso";
 import {createUserRouter,type UserDb} from "./user-management";
 import {createCmsAiRouter,type CmsDb} from "./cms-ai";
 import {createAiDraftHandler,type AiEnv} from "./ai-generate";
+import {createDeploymentRouter,type DeploymentDb} from "./deployment-portal";
 import {createClientRegistryRouter,type QueryDb} from "./client-registry";
 import {createOwnerVerifier,type IdentityConfig} from "./identity-adapter";
 import type {RegistryDb} from "./release-approval";
-interface Env extends IdentityConfig,AiEnv {DB:RegistryDb & QueryDb & UserDb & CmsDb;STUDIO_ORIGIN?:string;STUDIO_REDEEM_SECRET?:string}
+interface Env extends IdentityConfig,AiEnv {DB:RegistryDb & QueryDb & UserDb & CmsDb & DeploymentDb;STUDIO_ORIGIN?:string;STUDIO_REDEEM_SECRET?:string}
 const secure=(response:Response)=>{
  const headers=new Headers(response.headers);
  headers.set("Cache-Control","no-store");
@@ -21,6 +22,8 @@ export default {
   const url=new URL(request.url);
   if(url.pathname==="/api/control/health"&&request.method==="GET")
    return secure(Response.json({service:"account4-client-registry",status:"integration-pending"}));
+  if(url.pathname==="/api/control/deploy/targets"||url.pathname==="/api/control/deploy/jobs"||/^\/api\/control\/deploy\/jobs\/[0-9a-f-]{36}\/approve$/i.test(url.pathname))
+   return secure(await createDeploymentRouter(createOwnerVerifier(env))(request,env.DB));
   if(url.pathname==="/api/control/ai/generate")
    return secure(await createAiDraftHandler(createOwnerVerifier(env))(request,env));
   if(url.pathname==="/api/control/cms/documents"||/^\/api\/control\/cms\/documents\/[0-9a-f-]{36}(\/save)?$/i.test(url.pathname)||url.pathname==="/api/control/ai/suggestions")
