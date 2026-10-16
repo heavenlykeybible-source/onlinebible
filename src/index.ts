@@ -1,3 +1,4 @@
+import { handleClientAccounts } from "./routes/control-clients";
 import {handleGRDPCPublic,handleGRDPCAdmin} from "./routes/grdpc";
 import {handleWebsiteAiInbox,handleWebsiteAiConversation} from "./routes/website-ai-inbox";
 import {runReminders} from "./services/grdpc-service";
@@ -84,7 +85,7 @@ export default {
     const method = request.method;
     const idMatch = (pattern: RegExp) => pathname.match(pattern);
 
-    if (method === "OPTIONS") {
+    if (pathname === "/api/control/clients" || /^\/api\/control\/clients\/[0-9a-f-]{36}\/sites\/?$/i.test(pathname)) {\n      return handleClientAccounts(request, env);\n    }\n\n    if (method === "OPTIONS") {
       return new Response(null, {
         status: 204,
         headers: {
