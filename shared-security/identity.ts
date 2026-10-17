@@ -3,7 +3,7 @@ export type Identity={id:string;email:string;username?:string;name:string;role:s
 const levels:Record<string,number>={owner:4,administrator:3,editor:2,member:1},enc=new TextEncoder();
 const fail=(m:string,status=400)=>Object.assign(Error(m),{status});
 const json=(d:unknown,status=200)=>Response.json(d,{status,headers:{'cache-control':'no-store','referrer-policy':'no-referrer','x-content-type-options':'nosniff'}});
-export const hex=(b:ArrayBuffer|Uint8Array)=>[...new Uint8Array(b instanceof Uint8Array?b.buffer:b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+export const hex=(b:ArrayBuffer|Uint8Array)=>[...(b instanceof Uint8Array?b:new Uint8Array(b))].map(x=>x.toString(16).padStart(2,'0')).join('');
 export const random=()=>hex(crypto.getRandomValues(new Uint8Array(32)));
 export const sha=async(t:string)=>hex(await crypto.subtle.digest('SHA-256',enc.encode(t)));
 export async function hashPassword(password:string,salt:string){const k=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',salt:enc.encode(salt),iterations:100000,hash:'SHA-256'},k,256));}
