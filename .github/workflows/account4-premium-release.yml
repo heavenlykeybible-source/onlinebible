@@ -1,4 +1,4 @@
-# Owner-requested login feedback hotfix; preserve all passwords and existing data.
+# Connect owner sign-in to the existing verified password route; preserve all credentials.
 name: Repair Account 4 login feedback without changing credentials
 on:
   push:
