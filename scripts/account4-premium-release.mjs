@@ -1,5 +1,5 @@
 import {readFileSync,writeFileSync,mkdirSync,readdirSync} from 'node:fs';
-import {randomBytes,createHash} from 'node:crypto';
+import {randomBytes,createHash,randomUUID,pbkdf2Sync} from 'node:crypto';
 import {DatabaseSync} from 'node:sqlite';
 import {spawnSync} from 'node:child_process';
 const ACCOUNT='404ebf05a781fcccbbed44aeb02cb72b',DB='25536a81-63ed-41e3-85f1-4f17bb977628',BUCKET='heavenlykey-control-room-media';
@@ -8,7 +8,20 @@ const broker='https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.de
 const token=process.env.CLOUDFLARE_API_TOKEN?.trim().replace(/^Bearer /,'');
 async function api(path,method='GET',body){if(!token||process.env.CLOUDFLARE_ACCOUNT_ID!==ACCOUNT)throw Error('Account 4 credential/configuration missing');const r=await fetch('https://api.cloudflare.com/client/v4/accounts/'+ACCOUNT+path,{method,headers:{Authorization:'Bearer '+token,'content-type':'application/json'},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(30000)});const d=await r.json();if(!r.ok||!d.success)throw Error('Cloudflare '+method+' '+path+' failed: HTTP '+r.status);return d.result;}
 function config(name){return readFileSync('account4-control-room/wrangler.toml','utf8').replace('name = "heavenlykey-control-room"','name = "'+name+'"');}
-async function probe(root){for(const path of ['/index.html','/security','/api/me','/premium-control.css']){const r=await fetch(root+path,{redirect:'manual',signal:AbortSignal.timeout(25000)});if(path==='/api/me'){if(r.status!==401)throw Error(root+' exposes a private API or is unavailable: '+r.status);}else{if(r.status!==200)throw Error(root+path+' returned '+r.status);const s=await r.text();if(path==='/index.html'&&!s.includes('Central Control Room'))throw Error('Template marker missing');if(path==='/security'&&!s.includes('Username or email'))throw Error('Managed login missing');if(path.endsWith('.css')&&!s.includes('--forest:#003d29'))throw Error('Premium stylesheet missing');}}}
+async function available(url,options={}){let r;for(let i=0;i<8;i++){r=await fetch(url,{redirect:'manual',signal:AbortSignal.timeout(25000),...options});if(r.status!==404&&r.status<500)return r;if(i<7)await new Promise(resolve=>setTimeout(resolve,3000));}return r;}
+async function query(sql,params=[]){return api('/d1/database/'+DB+'/query','POST',{sql,params});}
+async function probe(root){
+ for(const path of ['/security','/api/me','/premium-control.css']){const r=await available(root+path);if(path==='/api/me'){if(r.status!==401)throw Error(root+' private API denied check failed: '+r.status);}else{if(r.status!==200)throw Error(root+path+' returned '+r.status);const s=await r.text();if(path==='/security'&&!s.includes('Username or email'))throw Error('Managed login missing');if(path.endsWith('.css')&&!s.includes('--forest:#003d29'))throw Error('Premium stylesheet missing');}}
+ const id=randomUUID(),username='qa-'+randomBytes(8).toString('hex'),password=randomBytes(24).toString('hex'),salt=randomBytes(32).toString('hex'),hash=pbkdf2Sync(password,salt,100000,32,'sha256').toString('hex');let created=false;
+ console.log('::add-mask::'+password);
+ try{
+  await query("INSERT INTO security_users(id,email,username,name,role,password_hash,salt,created_by) VALUES(?,?,?,'Synthetic release test','administrator',?,?,'release-smoke-test')",[id,id+'@no-email.invalid',username,hash,salt]);created=true;
+  const login=await available(root+'/api/security/login',{method:'POST',headers:{Origin:root,'content-type':'application/json'},body:JSON.stringify({username,password})});if(login.status!==200)throw Error(root+' synthetic administrator login failed: '+login.status);
+  const cookie=login.headers.get('set-cookie')?.match(/__Host-hkem-identity=[a-f0-9]{64}/)?.[0];if(!cookie)throw Error('Secure sign-in cookie missing');
+  for(const path of ['/','/api/me','/api/releases','/api/awaiting-room','/api/security/users']){const r=await available(root+path,{headers:{cookie}});if(r.status!==200)throw Error(root+path+' authenticated check failed: '+r.status);if(path==='/'&&!(await r.text()).includes('Central Control Room'))throw Error('Authenticated premium template missing');if(path==='/api/me'&&(await r.json()).role!=='administrator')throw Error('Administrator permissions missing');}
+ }finally{if(created){await query('DELETE FROM security_sessions WHERE user_id=?',[id]);await query('DELETE FROM security_tokens WHERE user_id=?',[id]);await query("DELETE FROM security_users WHERE id=? AND created_by='release-smoke-test'",[id]);}}
+ console.log('Verified '+root+': actual synthetic login, premium homepage, queue/user APIs, and unauthenticated denial. Synthetic account cleaned up.');
+}
 const mode=process.argv[2];
 if(mode==='validate'){
  const c=config('heavenlykey-control-room');if(!c.includes(DB)||!c.includes(BUCKET)||!c.includes('run_worker_first = true'))throw Error('Wrong production bindings/routing');

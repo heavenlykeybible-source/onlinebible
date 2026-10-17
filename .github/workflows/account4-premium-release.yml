@@ -1,4 +1,4 @@
-# Account 4 release retry: corrected read-only Worker backup endpoint.
+# Account 4 release retry: verify authenticated homepage with a temporary synthetic user.
 name: Release approved Account 4 premium Control Room
 on:
   push:
