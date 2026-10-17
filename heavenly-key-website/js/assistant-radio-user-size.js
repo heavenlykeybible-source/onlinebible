@@ -1,62 +1,72 @@
-/* Visitor-controlled AI and Radio sizes; changes stay on this device. */
+/* Visitor controls for AI and Radio: approved default position, drag, resize, reset, always on top. */
 (function(){
 'use strict';
 const css=document.createElement('style');
 css.textContent=`
-.hk-president-controls{width:min(100%,var(--hk-controls-width,160px))!important}
-.hk-size-row{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;position:relative;z-index:5}
+.hk-president-controls{width:min(100%,var(--hk-controls-width,160px))!important;z-index:2147483000!important}
+.hk-president-controls .hk-size-group{width:100%;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;z-index:2147483001;touch-action:none}
+.hk-president-controls .hk-size-group.hk-user-moved{position:fixed!important;width:auto!important;margin:0!important;z-index:2147483001!important}
+.hk-size-row{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;position:relative;z-index:2147483002;touch-action:auto}
 .hk-size-row button{font:700 13px/1 Arial,sans-serif;min-width:32px;min-height:32px;border:1px solid #b78a24;border-radius:16px;background:#fff9e9;color:#15432d;cursor:pointer;box-shadow:0 2px 6px #0002}
 .hk-size-row button:focus-visible{outline:3px solid #2865dc;outline-offset:2px}
-.hk-size-row .hk-size-label{font:700 12px Arial,sans-serif;color:#18412c;background:#fff9e9;border-radius:8px;padding:5px}
-.hk-president-controls .hk-size-group{width:100%;display:flex;flex-direction:column;align-items:center;gap:3px}
-.hk-president-controls #hkem-assistant .hkem-launcher,.hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{width:var(--hk-launch-width,100%)!important;max-width:100%!important}
-#hk-floating-radio:not(.hkr-mini):not(.hkr-closed){width:min(var(--hk-radio-player-width,370px),calc(100vw - 16px))!important}
-#hkem-assistant .hkem-iphone-chat{width:min(var(--hk-ai-panel-width,355px),calc(100vw - 14px))!important}
-@media(max-width:600px){.hk-president-controls{width:min(52vw,var(--hk-controls-width,160px))!important}}
+.hk-size-row .hk-size-label{font:700 12px Arial,sans-serif;color:#18412c;background:#fff9e9;border-radius:8px;padding:5px;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none}
+.hk-size-row .hk-size-label:active{cursor:grabbing}
+.hk-president-controls #hkem-assistant,.hk-president-controls #hk-floating-radio{z-index:2147483001!important}
+.hk-president-controls #hkem-assistant .hkem-launcher,.hk-president-controls #hk-floating-radio.hkr-mini .hkr-bubble{width:var(--hk-launch-width,100%)!important;max-width:none!important;position:relative!important;z-index:2147483001!important}
+#hk-floating-radio:not(.hkr-mini):not(.hkr-closed){width:min(var(--hk-radio-player-width,370px),calc(100vw - 16px))!important;z-index:2147483003!important}
+#hkem-assistant .hkem-iphone-chat{width:min(var(--hk-ai-panel-width,355px),calc(100vw - 14px))!important;z-index:2147483003!important}
+@media(max-width:600px){.hk-president-controls{width:min(52vw,var(--hk-controls-width,150px))!important}.hk-size-row button{min-width:30px;min-height:30px}.hk-size-row .hk-size-label{font-size:11px}}
 `;
 document.head.appendChild(css);
-const ranges={ai:[100,130,160,180],radio:[100,130,160,180]};
-function read(key,def){try{const n=Number(localStorage.getItem('hk-size-'+key));return Number.isInteger(n)&&n>=0&&n<4?n:def}catch{return def}}
-function save(key,n){try{localStorage.setItem('hk-size-'+key,String(n))}catch{}}
-function apply(){
- const holder=document.querySelector('.hk-president-controls');
- if(!holder)return;
+const ranges={ai:[90,120,150,180,210],radio:[90,120,150,180,210]};
+function readSize(key,def){try{const n=Number(localStorage.getItem('hk-size-'+key));return Number.isInteger(n)&&n>=0&&n<ranges[key].length?n:def}catch{return def}}
+function saveSize(key,n){try{localStorage.setItem('hk-size-'+key,String(n))}catch{}}
+function readPos(key){try{const v=JSON.parse(localStorage.getItem('hk-pos-'+key)||'null');return v&&Number.isFinite(v.x)&&Number.isFinite(v.y)?v:null}catch{return null}}
+function savePos(key,p){try{if(p)localStorage.setItem('hk-pos-'+key,JSON.stringify(p));else localStorage.removeItem('hk-pos-'+key)}catch{}}
+function clamp(n,min,max){return Math.max(min,Math.min(max,n))}
+function applySize(){
+ const holder=document.querySelector('.hk-president-controls');if(!holder)return;
  for(const key of ['ai','radio']){
-  const root=document.getElementById(key==='ai'?'hkem-assistant':'hk-floating-radio');
-  if(!root)continue;
-  const width=ranges[key][read(key,2)];
-  root.style.setProperty('--hk-launch-width',width+'px');
+  const root=document.getElementById(key==='ai'?'hkem-assistant':'hk-floating-radio');if(!root)continue;
+  const width=ranges[key][readSize(key,2)];root.style.setProperty('--hk-launch-width',width+'px');
   root.style.setProperty(key==='ai'?'--hk-ai-panel-width':'--hk-radio-player-width',(key==='ai'?width+95:width+110)+'px');
  }
- const ai=ranges.ai[read('ai',2)],radio=ranges.radio[read('radio',2)];
- holder.style.setProperty('--hk-controls-width',Math.max(ai,radio)+'px');
+ const ai=ranges.ai[readSize('ai',2)],radio=ranges.radio[readSize('radio',2)];holder.style.setProperty('--hk-controls-width',Math.max(ai,radio)+'px');
+}
+function applyPos(key,group){
+ const p=readPos(key);if(!p){group.classList.remove('hk-user-moved');group.style.left='';group.style.top='';return}
+ group.classList.add('hk-user-moved');
+ requestAnimationFrame(()=>{const r=group.getBoundingClientRect();group.style.left=clamp(p.x,4,Math.max(4,innerWidth-r.width-4))+'px';group.style.top=clamp(p.y,4,Math.max(4,innerHeight-r.height-4))+'px'});
+}
+function bindDrag(key,group,handle){
+ if(handle.dataset.hkDragBound)return;handle.dataset.hkDragBound='1';let drag=null,moved=false;
+ handle.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;const r=group.getBoundingClientRect();drag={dx:e.clientX-r.left,dy:e.clientY-r.top};moved=false;handle.setPointerCapture?.(e.pointerId);e.preventDefault()});
+ handle.addEventListener('pointermove',e=>{if(!drag)return;moved=true;group.classList.add('hk-user-moved');const r=group.getBoundingClientRect();const x=clamp(e.clientX-drag.dx,4,Math.max(4,innerWidth-r.width-4));const y=clamp(e.clientY-drag.dy,4,Math.max(4,innerHeight-r.height-4));group.style.left=x+'px';group.style.top=y+'px';savePos(key,{x,y});e.preventDefault()});
+ const end=e=>{if(!drag)return;drag=null;try{handle.releasePointerCapture?.(e.pointerId)}catch{}if(moved){e.preventDefault();e.stopPropagation()}};
+ handle.addEventListener('pointerup',end);handle.addEventListener('pointercancel',end);
 }
 function add(){
- const holder=document.querySelector('.hk-president-controls');
- if(!holder)return false;
- for(const [key,id,title] of [['ai','hkem-assistant','AI size'],['radio','hk-floating-radio','Radio size']]){
-  const root=document.getElementById(id);
-  if(!root)return false;
+ const holder=document.querySelector('.hk-president-controls');if(!holder)return false;
+ for(const [key,id,title] of [['ai','hkem-assistant','AI'],['radio','hk-floating-radio','Radio']]){
+  const root=document.getElementById(id);if(!root)return false;
   let group=holder.querySelector('.hk-size-group[data-size-for="'+key+'"]');
   if(!group){
-   group=document.createElement('div');group.className='hk-size-group';group.dataset.sizeFor=key;
-   root.before(group);group.appendChild(root);
+   group=document.createElement('div');group.className='hk-size-group';group.dataset.sizeFor=key;root.before(group);group.appendChild(root);
    const row=document.createElement('div');row.className='hk-size-row';
-   const label=document.createElement('span');label.className='hk-size-label';label.textContent=title;
+   const label=document.createElement('span');label.className='hk-size-label';label.textContent=title+' · drag';label.title='Drag to move '+title;
    const minus=document.createElement('button');minus.type='button';minus.textContent='−';minus.setAttribute('aria-label','Make '+title+' smaller');
    const plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.setAttribute('aria-label','Make '+title+' larger');
-   const reset=document.createElement('button');reset.type='button';reset.textContent='↺';reset.setAttribute('aria-label','Reset '+title);
-   const change=delta=>{save(key,Math.max(0,Math.min(3,read(key,2)+delta)));apply()};
-   minus.addEventListener('click',()=>change(-1));plus.addEventListener('click',()=>change(1));
-   reset.addEventListener('click',()=>{save(key,2);apply()});
-   row.append(label,minus,plus,reset);group.append(row);
+   const reset=document.createElement('button');reset.type='button';reset.textContent='↺';reset.setAttribute('aria-label','Reset '+title+' position and size');
+   const change=delta=>{saveSize(key,clamp(readSize(key,2)+delta,0,ranges[key].length-1));applySize()};
+   minus.addEventListener('click',e=>{e.stopPropagation();change(-1)});plus.addEventListener('click',e=>{e.stopPropagation();change(1)});
+   reset.addEventListener('click',e=>{e.stopPropagation();saveSize(key,2);savePos(key,null);applySize();applyPos(key,group)});
+   row.append(label,minus,plus,reset);group.append(row);bindDrag(key,group,label);
   }
+  applyPos(key,group);
  }
- apply();return true;
+ applySize();return true;
 }
-if(!add()){
- const observer=new MutationObserver(()=>{if(add())observer.disconnect()});
- observer.observe(document.documentElement,{childList:true,subtree:true});
- window.addEventListener('load',add,{once:true});
-}
+add();
+const observer=new MutationObserver(()=>add());observer.observe(document.documentElement,{childList:true,subtree:true});
+window.addEventListener('resize',()=>{for(const key of ['ai','radio']){const g=document.querySelector('.hk-size-group[data-size-for="'+key+'"]');if(g)applyPos(key,g)}});
 })();
