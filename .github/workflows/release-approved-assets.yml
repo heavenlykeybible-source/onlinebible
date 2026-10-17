@@ -1,0 +1,59 @@
+name: Release owner-approved AI and radio public assets
+on:
+  push:
+    branches: ['release/account1-approved-assets-20261017']
+    paths: ['.github/workflows/release-approved-assets.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: heavenlykey-account-1-production
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: a160ba9fc74911bd4b3005eac86eefcb
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test the approved public controls
+        env:
+          HK_JSDOM: /tmp/hkem-controls/node_modules/jsdom
+        run: |
+          npm install --prefix /tmp/hkem-controls --ignore-scripts --no-audit --no-fund jsdom@26.1.0
+          node --test scripts/test-approved-radio.cjs
+          node --check scripts/release-approved-assets.mjs
+      - name: Verify asset-only scope and back up the exact existing backend
+        run: node scripts/release-approved-assets.mjs prepare
+      - uses: actions/upload-artifact@v4
+        with:
+          name: private-account1-before-ai-radio
+          path: approved-assets-backup/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload the existing backend with approved assets without deploying routes or schedules
+        run: npx --yes wrangler@4.145.0 versions upload --config .approved-release/wrangler.json --no-bundle --keep-vars --preview-alias approved-ai-radio --message "Owner approved AI and radio assets $GITHUB_SHA"
+      - name: Verify every changed public asset on the uploaded version
+        run: node scripts/release-approved-assets.mjs preview
+      - name: Promote the verified version
+        run: node scripts/release-approved-assets.mjs promote
+      - name: Verify live approved assets and unchanged resource bindings
+        run: node scripts/release-approved-assets.mjs verify
+      - name: Roll back on any failed production verification
+        if: failure()
+        run: node scripts/release-approved-assets.mjs rollback
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: approved-ai-radio-release-results
+          path: |
+            approved-assets-evidence.json
+            approved-assets-candidate.json
+          retention-days: 30
