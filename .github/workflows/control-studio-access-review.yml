@@ -24,7 +24,7 @@ jobs:
   inventory-and-recovery-points:
     environment: media-engine-production
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     env:
       TOKEN2: ${{ secrets.ACCOUNT_2_TOKEN }}
       TOKEN4: ${{ secrets.ACCOUNT_4_TOKEN }}
@@ -41,3 +41,18 @@ jobs:
           name: control-studio-recovery-metadata
           path: access-recovery-metadata.json
           retention-days: 7
+
+      - name: Back up existing Studio source, settings, schema and version
+        run: node scripts/backup-studio-readonly.mjs
+      - name: Export the existing Studio database without changing it
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_2_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: c324d871146f8fcc5e7dcd3da057011c
+        run: npx --yes wrangler@4.145.0 d1 export heavenlykey-media-db --remote --config media-engine/wrangler.toml --output studio-backup/database.sql
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-studio-before-upgrade
+          path: studio-backup/
+          retention-days: 30
+          if-no-files-found: error
