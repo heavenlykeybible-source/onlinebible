@@ -56,3 +56,15 @@ jobs:
           path: studio-backup/
           retention-days: 30
           if-no-files-found: error
+
+      - name: Read and preserve existing Account 1 assets Worker and portal routes
+        env:
+          TOKEN1: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: node scripts/backup-account1-readonly.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-account1-before-approved-assets
+          path: account1-backup/
+          retention-days: 30
+          if-no-files-found: warn
