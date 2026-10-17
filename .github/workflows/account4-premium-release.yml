@@ -1,0 +1,85 @@
+name: Release approved Account 4 premium Control Room
+on:
+  push:
+    branches: ['release/account4-premium-20261017']
+    paths: ['.github/workflows/account4-premium-release.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: account4-control-room
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: '404ebf05a781fcccbbed44aeb02cb72b'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install existing Worker and test dependencies
+        run: |
+          npm ci --prefix account4-control-room --ignore-scripts --no-audit --no-fund
+          npm install --prefix /tmp/hkem-dom --ignore-scripts --no-audit --no-fund jsdom@26.1.0
+      - name: Verify combined backend, template, permissions and additive migrations
+        env:
+          HK_JSDOM: /tmp/hkem-dom/node_modules/jsdom
+        run: |
+          npm run check --prefix account4-control-room
+          node --test account4-control-room/test/*.mjs test/security/identity.mjs test/security/owner-installation.mjs
+          node --test scripts/test-premium-control.cjs
+          node scripts/account4-premium-release.mjs validate
+          cd account4-control-room
+          npx wrangler deploy --dry-run --outdir /tmp/account4-build
+      - name: Preserve deployed Worker versions, source and database before changes
+        run: |
+          node scripts/account4-premium-release.mjs backup
+          cd account4-control-room
+          npx wrangler d1 export heavenlykey-control-room-db --remote --output ../release-backup/control-room.sql
+      - uses: actions/upload-artifact@v4
+        with:
+          name: account4-before-premium-backup
+          path: release-backup
+          retention-days: 7
+          if-no-files-found: error
+      - name: Apply additive migrations to the verified existing Account 4 database
+        working-directory: account4-control-room
+        run: npx wrangler d1 migrations apply heavenlykey-control-room-db --remote
+      - name: Deploy and check isolated template preview
+        run: |
+          node scripts/account4-premium-release.mjs preview-config
+          cd account4-control-room
+          npx wrangler deploy --config wrangler.premium-preview.toml
+          cd ..
+          node scripts/account4-premium-release.mjs preview-check
+      - name: Configure private one-time owner setup
+        run: node scripts/account4-premium-release.mjs setup
+      - uses: actions/upload-artifact@v4
+        with:
+          name: private-owner-password-setup
+          path: owner-handoff
+          retention-days: 1
+          if-no-files-found: error
+      - name: Deploy Account 4 Control Room, owner dashboard and matching public CMS backend
+        id: production
+        run: |
+          cd account4-control-room
+          npx wrangler deploy --config wrangler.toml
+          npx wrangler deploy --config wrangler.owner.toml
+          npx wrangler deploy --config ../cms-public/wrangler.toml
+      - name: Verify live template, login screens, private APIs and deployment identifiers
+        run: node scripts/account4-premium-release.mjs production-check
+      - name: Restore previous Worker versions if production promotion or checks fail
+        if: failure() && (steps.production.outcome == 'failure' || steps.production.outcome == 'success')
+        working-directory: account4-control-room
+        run: node ../scripts/account4-premium-release.mjs rollback
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: account4-premium-release-evidence
+          path: release-evidence.json
+          retention-days: 7

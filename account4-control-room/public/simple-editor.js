@@ -39,3 +39,4 @@
  window.HKSimpleEditor={load,select:selector=>{try{focused=page.querySelector(selector);if(!focused)return;selectedGroup=focused.closest('footer,[role=contentinfo]')?'footer':focused.closest('nav,[role=navigation]')?'menus':focused.closest('svg,i[class],[data-icon]')?'icons':focused.tagName==='IMG'?'pictures':focused.closest('a,button')?'links':'content';render();const target=root.querySelector('[data-selected]')||root;target.scrollIntoView?.({block:'nearest'});}catch{}},upload:async file=>window.HKUploadPicture(file)};
  document.addEventListener('hkem-source-loaded',()=>load());
 })();
+

@@ -1,7 +1,7 @@
 import {publishDraft,type Location} from './cms-storage.ts';
 export async function awaitingRoom(db:D1Database){
  const items=await db.prepare(`SELECT e.site,e.kind,e.entry_key AS key,e.version,e.updated_at AS arrivedAt,
- r.editor AS source,p.revision_version AS approvedVersion,p.published_at AS approvedAt,
+ r.editor AS source,p.revision_version AS approvedVersion,p.published_at AS approvedAt,p.published_by AS approvedBy,
  CASE WHEN p.revision_version=e.version THEN 'approved' ELSE 'new_update' END AS status
  FROM cms_entries e LEFT JOIN cms_revisions r ON r.site=e.site AND r.kind=e.kind AND r.entry_key=e.entry_key AND r.version=e.version
  LEFT JOIN cms_publications p ON p.site=e.site AND p.kind=e.kind AND p.entry_key=e.entry_key
@@ -23,3 +23,4 @@ export async function approveUpdate(db:D1Database,location:Location,version:numb
  if(!preview||preview.version!==version)throw Object.assign(Error('Preview this version before approving it.'),{status:409});
  return publishDraft(db,location,version,actor);
 }
+

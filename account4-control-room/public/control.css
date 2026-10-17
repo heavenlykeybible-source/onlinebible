@@ -8,3 +8,4 @@
 #simple-editor{font-size:16px}#simple-editor details{border:1px solid #bbc9c0;padding:12px;margin:12px 0}#simple-editor summary{cursor:pointer;font-weight:700}#simple-editor label{display:block;margin:12px 0}#simple-editor input,#simple-editor textarea,#simple-editor select{width:100%;font-size:16px;padding:10px}#simple-editor input[type=checkbox]{width:auto}#simple-editor button{font-size:14px;margin:5px;padding:10px}.simple-tabs{display:flex;flex-wrap:wrap}#release-dialog{width:95vw;max-width:1600px}.release-layout{grid-template-columns:minmax(320px,40%) 1fr}
 
 @media(max-width:700px){.release-layout{grid-template-columns:1fr}.release-layout aside{max-height:55vh}}.project-icon{width:28px;height:28px;object-fit:contain;vertical-align:middle;margin-right:8px}
+

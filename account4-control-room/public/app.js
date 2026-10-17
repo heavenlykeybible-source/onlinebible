@@ -48,17 +48,17 @@
   await refreshAwaiting();message('hkem-status',{message:'Approved. Checking the website connection.'});
  }
  const labels={account1:'Account 1 · Main website',account2:'Account 2 · Studio & media',account3:'Account 3 · Community',account4:'Account 4 · Control Room',account5:'Account 5 · Apps',account6:'Account 6 · Bible'};
- function displayDate(value){return value?new Date(value.replace(' ','T')+(value.includes('Z')?'':'Z')).toLocaleString():'—'}
+ function displayDate(value){return value?new Date(/(?:Z|[+-]\d\d:\d\d)$/.test(value)?value:value.replace(' ','T')+'Z').toLocaleString('en-NG',{timeZone:'Africa/Lagos'})+' WAT':'—'}
  async function refreshAwaiting(){try{
   const {items}=await api('/api/awaiting-room'),root=$('#awaiting-rows');root.replaceChildren();
   const add=(row,text)=>{const td=document.createElement('td');td.textContent=text;row.append(td);return td};
   for(const site of Object.keys(labels)){
    const updates=items.filter(i=>i.site===site);
 
-   for(const item of updates){const row=document.createElement('tr');add(row,labels[site]);add(row,item.key+' · '+item.kind+' · v'+item.version);add(row,item.status==='approved'?'Approved':'New update').className=item.status==='approved'?'':'new-update';add(row,displayDate(item.arrivedAt));add(row,item.approvedVersion?'v'+item.approvedVersion+' · '+displayDate(item.approvedAt):'—');
+   for(const item of updates){const row=document.createElement('tr');add(row,labels[site]);add(row,item.key+' · '+item.kind+' · v'+item.version);add(row,item.status==='approved'?'Approved':'New update').className=item.status==='approved'?'':'new-update';add(row,displayDate(item.arrivedAt));add(row,item.status==='approved'?'v'+item.approvedVersion+' · '+displayDate(item.approvedAt)+(item.approvedBy?' · '+item.approvedBy:''):'Pending');
     const working=add(row,item.status==='approved'?'Checking…':'Awaiting approval');
     if(item.status==='approved')verifyWorking(item,working);
-    const actions=add(row,'');const previewButton=document.createElement('button');previewButton.textContent='Preview';previewButton.onclick=()=>selectUpdate(item);const approve=document.createElement('button');approve.textContent='Approve';approve.disabled=item.status==='approved';approve.onclick=async()=>{if(effective()!==item.site||kind!==item.kind||(kind==='page'?pageKey():'site')!==item.key||version!==item.version||previewedVersion!==version){status('Preview this update first.');await selectUpdate(item);return}approve.disabled=true;try{await publish()}catch(e){status(e.message);approve.disabled=false}};actions.append(previewButton,approve);root.append(row);
+    const actions=add(row,'');const previewButton=document.createElement('button');previewButton.textContent='Full-site Preview';previewButton.onclick=()=>selectUpdate(item);const approve=document.createElement('button');approve.textContent='Approve & Publish';approve.disabled=item.status==='approved';approve.onclick=async()=>{if(effective()!==item.site||kind!==item.kind||(kind==='page'?pageKey():'site')!==item.key||version!==item.version||previewedVersion!==version){status('Preview this update first.');await selectUpdate(item);return}approve.disabled=true;try{await publish()}catch(e){status(e.message);approve.disabled=false}};actions.append(previewButton,approve);root.append(row);
    }
   }$('#awaiting-status').textContent=items.length+' updates · Preview, adjust settings, then approve.';
  }catch(error){$('#awaiting-status').textContent=error.message}}
@@ -97,3 +97,4 @@
 
 
 document.querySelectorAll('[data-control-studio]').forEach(a=>{const url=new URL('https://studio.heavenlykey.org/api/auth/control-start');url.searchParams.set('issuer',location.origin);a.href=url.href;});
+
