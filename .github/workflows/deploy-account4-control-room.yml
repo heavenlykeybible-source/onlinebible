@@ -1,18 +1,21 @@
-name: Deploy Account 4 Control Room (manual, guarded)
+name: Deploy Account 4 Control Room (update existing worker only)
+
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
       - 'account4-control-room/**'
-      - 'cms-public/**'
       - 'shared-cms/**'
       - '.github/workflows/deploy-account4-control-room.yml'
+
 permissions:
   contents: read
+
 concurrency:
   group: account4-control-room
   cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -25,132 +28,58 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.ACCOUNT_4_ACCOUNT_ID }}
       ACCOUNT4_D1_ID: ${{ secrets.ACCOUNT4_CONTROL_ROOM_D1_ID }}
       ACCOUNT4_R2_BUCKET: ${{ secrets.ACCOUNT4_CONTROL_ROOM_R2_BUCKET }}
-      ACCESS_TEAM_DOMAIN: ${{ secrets.ACCOUNT4_ACCESS_TEAM_DOMAIN }}
-      ACCESS_AUD: ${{ secrets.ACCOUNT4_ACCESS_AUD }}
+      EXISTING_WORKER: heavenlykey-control-room
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Resolve existing Account 4 resources and Access application
+      - name: Enforce fixed Account 4 production identity
+        shell: bash
         run: |
-          python3 - <<'PY'
-          import json, os, re, urllib.request, urllib.parse, urllib.error
-          expected='404ebf05a781fcccbbed44aeb02cb72b'
-          assert os.environ['CLOUDFLARE_ACCOUNT_ID']==expected, 'Wrong Cloudflare account: abort'
-          values={
-            'ACCOUNT4_D1_ID':os.environ.get('ACCOUNT4_D1_ID') or '25536a81-63ed-41e3-85f1-4f17bb977628',
-            'ACCOUNT4_R2_BUCKET':os.environ.get('ACCOUNT4_R2_BUCKET') or 'heavenlykey-control-room-media'
-          }
-          host='heavenlykey-control-room.emmanuel2026miracle.workers.dev'
-          api='https://api.cloudflare.com/client/v4/accounts/'+expected
-          def get(path):
-              request=urllib.request.Request(api+path,headers={'Authorization':'Bearer '+os.environ['CLOUDFLARE_API_TOKEN']})
-              try:
-                  with urllib.request.urlopen(request,timeout=30) as response: result=json.load(response)
-              except urllib.error.HTTPError as e:
-                  raise RuntimeError('Cloudflare read '+path+' returned HTTP '+str(e.code)) from None
-              assert result.get('success'), 'Cloudflare configuration lookup failed'
-              return result['result']
-          # The token can read Worker settings but may not have Access administration permission.
-          # Read the existing Access login redirect with Node's fetch (no login or policy changes).
-          import subprocess
-          probe=subprocess.run(['node','--input-type=module','-e',"""
-          const host='heavenlykey-control-room.emmanuel2026miracle.workers.dev';
-          const r=await fetch('https://'+host+'/',{redirect:'manual',signal:AbortSignal.timeout(30000)});
-          if(![302,303,307].includes(r.status))throw Error('Expected Access redirect, received '+r.status);
-          const u=new URL(r.headers.get('location'));
-          if(u.protocol!=='https:'||!u.hostname.endsWith('.cloudflareaccess.com')||!u.pathname.startsWith('/cdn-cgi/access/login/'+host))throw Error('Unexpected Access redirect');
-          const meta=JSON.parse(Buffer.from(u.searchParams.get('meta').split('.')[1],'base64url').toString());
-          const audience=u.searchParams.get('kid');
-          if(meta.aud!==audience||meta.hostname!==host)throw Error('Access audience/hostname mismatch');
-          console.log(JSON.stringify({domain:u.hostname,audience}));
-          """],check=True,capture_output=True,text=True)
-          resolved=json.loads(probe.stdout)
-          domain=resolved['domain']
-          audience=resolved['audience']
-          assert re.fullmatch(r'[a-z0-9-]+\.cloudflareaccess\.com',domain), 'Invalid Access team domain'
-          assert re.fullmatch(r'[a-f0-9]{64}',audience), 'Invalid application JWT audience'
-          for name,actual in [('ACCESS_TEAM_DOMAIN',domain),('ACCESS_AUD',audience)]:
-              configured=os.environ.get(name)
-              assert not configured or configured==actual, name+' differs from the live protected application'
-              values[name]=actual
-          with open(os.environ['GITHUB_ENV'],'a') as out:
-              for name,value in values.items():
-                  assert '\n' not in value and '\r' not in value
-                  out.write(name+'='+value+'\n')
-          print('Resolved fixed CMS resources and existing Access application; protection unchanged')
-          PY
-      - name: Validate explicit Account 4 configuration
+          set -euo pipefail
+          test "$CLOUDFLARE_ACCOUNT_ID" = "404ebf05a781fcccbbed44aeb02cb72b" || { echo '::error::Wrong Cloudflare account'; exit 1; }
+          : "${CLOUDFLARE_API_TOKEN:?Missing ACCOUNT_4_TOKEN}"
+          test "$ACCOUNT4_D1_ID" = "25536a81-63ed-41e3-85f1-4f17bb977628" || { echo '::error::Account 4 D1 changed'; exit 1; }
+          test "$ACCOUNT4_R2_BUCKET" = "heavenlykey-control-room-media" || { echo '::error::Account 4 R2 changed'; exit 1; }
+          grep -q '^name = "heavenlykey-control-room"$' wrangler.toml || { echo '::error::Worker name changed'; exit 1; }
+      - name: Prove production Worker already exists
+        shell: bash
         run: |
-          for var in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID ACCOUNT4_D1_ID ACCOUNT4_R2_BUCKET ACCESS_TEAM_DOMAIN ACCESS_AUD; do
-            test -n "${!var}" || { echo "::error::Missing $var"; exit 1; }
-          done
-          [[ "$ACCOUNT4_D1_ID" =~ ^[0-9a-f-]{36}$ ]] || exit 1
-          [[ "$ACCOUNT4_R2_BUCKET" =~ ^[a-z0-9][a-z0-9-]{2,62}$ ]] || exit 1
-          [[ "$ACCESS_TEAM_DOMAIN" =~ ^[a-z0-9.-]+\.cloudflareaccess\.com$ ]] || exit 1
-          test "${#ACCESS_AUD}" -ge 20 || exit 1
-      - name: Install and typecheck
+          set -euo pipefail
+          API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$EXISTING_WORKER"
+          code=$(curl -sS -o /tmp/worker.json -w '%{http_code}' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API")
+          test "$code" = "200" || { echo "::error::$EXISTING_WORKER does not already exist. Refusing to create a new Worker."; exit 1; }
+      - name: Confirm existing D1 and R2 without creating resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID"
+          AUTH="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          curl -fsS -H "$AUTH" "$API/d1/database/$ACCOUNT4_D1_ID" >/tmp/a4-d1.json
+          curl -fsS -H "$AUTH" "$API/r2/buckets" >/tmp/a4-r2.json
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          const d=JSON.parse(readFileSync('/tmp/a4-d1.json','utf8'));
+          const r=JSON.parse(readFileSync('/tmp/a4-r2.json','utf8'));
+          if(d.success===false || (d.result?.uuid||d.result?.id)!=='25536a81-63ed-41e3-85f1-4f17bb977628') throw Error('Account 4 D1 mismatch');
+          const buckets=r.result?.buckets || r.result || [];
+          if(!buckets.some(x=>x.name==='heavenlykey-control-room-media')) throw Error('Account 4 R2 bucket missing');
+          NODE
+      - name: Install, test and dry-run
         run: |
           npm ci --no-audit --no-fund
           npm run check
           node --experimental-strip-types --test test/*.mjs
-      - name: Configure account-specific resources (never print tokens)
-        run: |
-          python3 - <<'PY'
-          import os,pathlib
-          p=pathlib.Path('wrangler.toml')
-          s=p.read_text()
-          for key,var in [('REPLACE_WITH_ACCESS_TEAM_DOMAIN','ACCESS_TEAM_DOMAIN'),('REPLACE_WITH_ACCESS_AUD','ACCESS_AUD')]:
-              value=os.environ[var]
-              assert '"' not in value and '\n' not in value
-              s=s.replace(key,value)
-          assert 'REPLACE_' not in s
-          assert os.environ['CLOUDFLARE_ACCOUNT_ID']=='404ebf05a781fcccbbed44aeb02cb72b', 'Wrong Cloudflare account: abort'
-          assert os.environ['ACCOUNT4_D1_ID']=='25536a81-63ed-41e3-85f1-4f17bb977628', 'Wrong D1 database: abort'
-          assert os.environ['ACCOUNT4_R2_BUCKET']=='heavenlykey-control-room-media', 'Wrong R2 bucket: abort'
-          p.write_text(s)
-          PY
-      - name: Confirm Account 4 resources exist (no creation or deletion)
-        run: |
-          python3 - <<'PY'
-          import json,os,urllib.request
-          account=os.environ['CLOUDFLARE_ACCOUNT_ID']
-          base='https://api.cloudflare.com/client/v4/accounts/'+account
-          def get(path):
-              req=urllib.request.Request(base+path,headers={'Authorization':'Bearer '+os.environ['CLOUDFLARE_API_TOKEN']})
-              with urllib.request.urlopen(req,timeout=30) as r: result=json.load(r)
-              assert result.get('success'), 'Cloudflare lookup failed'
-              return result['result']
-          assert get('/d1/database/'+os.environ['ACCOUNT4_D1_ID'])['uuid']==os.environ['ACCOUNT4_D1_ID']
-          assert any(x['name']==os.environ['ACCOUNT4_R2_BUCKET'] for x in get('/r2/buckets')['buckets'])
-          print('Existing Account 4 D1 and R2 confirmed')
-          PY
-      - name: Apply non-destructive CMS migration
+          npx wrangler deploy --dry-run --config wrangler.toml
+      - name: Apply only existing non-destructive migrations
         run: npx wrangler d1 migrations apply heavenlykey-control-room-db --remote
-      - name: Deploy Account 4 control room
+      - name: Update existing Account 4 Worker
         run: npx wrangler deploy --config wrangler.toml
-
-      - name: Deploy public CMS snapshots and public AI
-        run: npx wrangler deploy --config ../cms-public/wrangler.toml
-      - name: Deploy public owner page with password-protected editing APIs
+      - name: Verify same Worker remains
+        shell: bash
         run: |
-          python3 - <<'PYOWNER'
-          from pathlib import Path
-          s=Path('wrangler.toml').read_text().replace('name = "heavenlykey-control-room"','name = "heavenlykey-owner-dashboard"').replace('run_worker_first = ["/api/*"]','run_worker_first = true')
-          Path('wrangler.owner.toml').write_text(s)
-          PYOWNER
-          npx wrangler deploy --config wrangler.owner.toml
-      - name: Verify live public publishing service, private gate and real AI response
-        run: |
-          node --input-type=module <<'JS'
-          const root='https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev';
-          let health;
-          for(let attempt=0;attempt<5;attempt++){try{const r=await fetch(root+'/health');health=await r.json();if(r.ok&&health.ok)break}catch{}await new Promise(r=>setTimeout(r,2000))}
-          if(!health?.ok)throw Error('Public CMS health failed');console.log('Live CMS database/publication service: ready');
-          const ai=await fetch(root+'/v1/assistant',{method:'POST',headers:{Origin:'https://heavenlykey.org','Content-Type':'application/json'},body:JSON.stringify({message:'Briefly explain John 3:16 and link to the Heavenly Key Bible portal.'})});
-          const answer=await ai.json();if(!ai.ok||!answer.response?.trim())throw Error('Real public AI inference failed: '+(answer.error||ai.status));console.log('Real public AI response verified:',answer.response.slice(0,700));
-          const gate=await fetch('https://heavenlykey-control-room.emmanuel2026miracle.workers.dev/',{redirect:'manual'});if(![302,303,307].includes(gate.status)||!gate.headers.get('location')?.includes('cloudflareaccess.com'))throw Error('Original Access protection failed');
-          const owner=await fetch('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/',{redirect:'manual'});if(owner.status!==200)throw Error('Owner page should open publicly');
-          const denied=await fetch('https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/api/me');if(denied.status!==401)throw Error('Unauthenticated admin API accessible');console.log('Public owner page and protected editing APIs verified');
-          JS
+          set -euo pipefail
+          code=$(curl -sS -o /tmp/after.json -w '%{http_code}' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$EXISTING_WORKER")
+          test "$code" = "200" || exit 1
+          echo "Account 4 updated in place; this workflow creates no extra Worker."
