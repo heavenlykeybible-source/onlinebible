@@ -1,3 +1,4 @@
+# Account 4 release retry: corrected read-only Worker backup endpoint.
 name: Release approved Account 4 premium Control Room
 on:
   push:
