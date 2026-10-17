@@ -1,3 +1,4 @@
+# Retry with CSP-compatible browser waits and deployment-propagation checks.
 name: Diagnose Control Room and contain media credential disclosure
 on:
   push:
@@ -45,6 +46,7 @@ jobs:
           retention-days: 30
           if-no-files-found: error
       - run: npx --yes wrangler@4.145.0 versions upload --config .media-containment/wrangler.json --keep-vars --message "Block public media signing-credential disclosure $GITHUB_SHA"
+      - run: node scripts/contain-media-config.mjs preview
       - run: node scripts/contain-media-config.mjs promote
       - run: node scripts/contain-media-config.mjs verify
       - if: failure()
