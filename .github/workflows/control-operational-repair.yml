@@ -1,0 +1,57 @@
+name: Diagnose Control Room and contain media credential disclosure
+on:
+  push:
+    branches: ['repair/control-operational-20261017']
+    paths: ['.github/workflows/control-operational-repair.yml']
+permissions:
+  contents: read
+jobs:
+  control-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TOKEN4: ${{ secrets.ACCOUNT_4_TOKEN }}
+      NODE_PATH: /tmp/hkem-browser/node_modules
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --prefix /tmp/hkem-browser --ignore-scripts --no-audit --no-fund playwright@1.51.1
+      - run: /tmp/hkem-browser/node_modules/.bin/playwright install --with-deps chromium
+      - run: node scripts/audit-control-live-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: private-control-live-browser-diagnostic
+          path: control-browser-diagnostic.json
+          retention-days: 7
+  media-containment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_2_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: c324d871146f8fcc5e7dcd3da057011c
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node scripts/contain-media-config.mjs prepare
+      - uses: actions/upload-artifact@v4
+        with:
+          name: private-media-before-config-containment
+          path: media-containment-backup/
+          retention-days: 30
+          if-no-files-found: error
+      - run: npx --yes wrangler@4.145.0 versions upload --config .media-containment/wrangler.json --keep-vars --message "Block public media signing-credential disclosure $GITHUB_SHA"
+      - run: node scripts/contain-media-config.mjs promote
+      - run: node scripts/contain-media-config.mjs verify
+      - if: failure()
+        run: node scripts/contain-media-config.mjs rollback
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: media-config-containment-evidence
+          path: media-containment-evidence.json
+          retention-days: 30
