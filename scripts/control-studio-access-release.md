@@ -12,7 +12,7 @@ The one-time setup page receives a random, expiring installation token in its UR
 
 Preserve Account 4 database `heavenlykey-control-room-db`, Account 2 database `heavenlykey-media-db`, media R2 objects, schedules, existing records and KV. No Worker/database/object deletion is included. Existing service-to-service capability protection stays in place; the Studio session adapter creates those credentials on the server. It does not send them to frontend JavaScript.
 
-Account 2's old root redirect led away from its media Worker to the main website admin page. The adapter makes Account 2 its own authenticated Studio entry and exposes existing media-engine operations behind the signed-in session. The server's scheduled handler is preserved.
+The inspected media-engine source redirects its root to the main website admin page. A fresh live check instead finds studio.heavenlykey.org rendering the ministry administration screen at /pages/admin; the custom-domain route and actual deployed source still require Account 2 API verification. The adapter makes Account 2 its own authenticated Studio entry and exposes existing media-engine operations behind the signed-in session. The server's scheduled handler is preserved.
 
 This Studio shell covers library upload/preview, playlist publication/switches, scheduled playout, direct stream sessions and service checks. Existing advanced camera composition/social-streaming interfaces still require integration and browser testing; do not report the entire professional Studio feature set as complete.
 
@@ -42,3 +42,11 @@ The read-only check also confirmed that `ACCOUNT_2_TOKEN` is missing in the exis
 All Account 4 routes now pass through the Worker so `/security`, `/setup`, and root authentication cannot be swallowed by static asset routing. Studio preserves the initiating Control Room origin for sign-on, defaults direct visits to the owner dashboard, and normalizes workers.dev entry before setting host cookies. A repair restores only the configured known owner and revokes their previous sessions and proofs.
 
 Existing DOM checks lacked their jsdom dependency; their workflows now install a pinned test-only version without changing production packages. The verified Access test explicitly configures its fixture owner email to test the new owner allowlist.
+
+## Final source-check checkpoint
+
+Commit `83ed619f7edf862f716c24678562186856b12daf`: owner/Studio unit tests and media-engine typecheck passed (run 39000727267, access-tests job); full protected-access/recovery/bundling/permanence checks passed (39000726593); Account 4 typecheck, awaiting-room, portal, DOM, Bible and app preservation workflow passed (39000726574). The read-only inventory job still fails specifically because Account 2 has no configured deployment token. This is an unresolved deployment prerequisite, not a passed production test.
+
+Fresh read-only public entry checks found Control Room content at control.heavenlykey.org and the owner-dashboard workers.dev address, and the older ministry administrator screen at studio.heavenlykey.org/pages/admin. Public page visibility alone does not verify login, permissions, or playable radio. No owner/admin passwords have been installed in production, and email recovery delivery has not been configured or verified.
+
+Next handoff: connect an Account 2-scoped Cloudflare API credential as the private GitHub Actions secret ACCOUNT_2_TOKEN (repository or media-engine-production environment). Never paste the token into chat or commit it. Re-run inventory, preserve actual bindings and recovery points, stage the matching backend, and privately complete the one-time password setup. Do not retire old login gates until the replacement is verified in a real browser.
