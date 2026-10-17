@@ -1,0 +1,55 @@
+name: Account 4 isolated repair preview
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/account4-preview-deploy-workflow-20261017
+    paths:
+      - account4-control-room/**
+      - .github/workflows/account4-repair-preview.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: account4-isolated-repair-preview
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: account4-control-room
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.ACCOUNT_4_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: account4-control-room/package-lock.json
+      - name: Validate target account and token
+        shell: bash
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Missing ACCOUNT_4_TOKEN"; exit 1; }
+          test "$CLOUDFLARE_ACCOUNT_ID" = "404ebf05a781fcccbbed44aeb02cb72b" || { echo "::error::Wrong or missing ACCOUNT_4_ACCOUNT_ID"; exit 1; }
+      - name: Install and verify code
+        run: |
+          npm ci --no-audit --no-fund
+          npm run check
+          node --experimental-strip-types --test test/*.mjs
+      - name: Publish isolated preview (never overwrite production)
+        run: |
+          npx wrangler deploy --config wrangler.toml --name heavenlykey-control-room-repair-preview
+      - name: Smoke-test preview
+        shell: bash
+        run: |
+          url="https://heavenlykey-control-room-repair-preview.emmanuel2026miracle.workers.dev/"
+          status="$(curl -sS -o /tmp/preview-body -w '%{http_code}' --max-time 30 "$url")"
+          echo "Preview HTTP status: $status"
+          case "$status" in 200|301|302|303|307|308|401|403) ;; *) echo "::error::Preview endpoint unhealthy ($status)"; exit 1;; esac
+          echo "Preview reachable. Owner login and Studio SSO still require authenticated browser verification before production promotion."
