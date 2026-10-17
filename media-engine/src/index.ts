@@ -1,3 +1,5 @@
+import {studioAccess} from './studio-access';
+import {studioUI} from './studio-ui';
 import { multipartUpload, MAX_MEDIA_BYTES } from './uploads';
 import { LiveKitConnectionError, resolveLiveKitConfig, validateCloudConnection, checkLiveKitConnection, saveLiveKitConnection, liveKitConnectionStatus, recordLiveKitVerification, resetLiveKitConnection } from './livekit-config';
 import { publicProgramme, serveBroadcastMedia, isPlaybackURL } from "./public-broadcast";
@@ -25,7 +27,7 @@ function audit(env:Env, cap:Capability, action:string, type:string, id?:string){
 async function requireJson(request:Request){ try{return await request.json() as Record<string,unknown>}catch{return null;} }
 function expiryHours(hours=48){return new Date(Date.now()+hours*3600000).toISOString();}
 
-export default {
+const mediaEngine = {
  async fetch(request:Request,env:Env):Promise<Response>{
   const url=new URL(request.url);
   if(url.pathname==='/'&&['GET','HEAD'].includes(request.method))return Response.redirect('https://heavenlykey.org/pages/admin#studio',302);
@@ -393,3 +395,13 @@ export default {
  }
 };
 
+
+
+export default {
+ ...mediaEngine,
+ async fetch(request:Request,env:Env):Promise<Response>{
+  if(new URL(request.url).pathname==='/studio/ui.js')return studioUI(request)!;
+  const studio=await studioAccess(request,env,r=>mediaEngine.fetch(r,env),()=>studioUI(request)!);
+  return studio||mediaEngine.fetch(request,env);
+ }
+};

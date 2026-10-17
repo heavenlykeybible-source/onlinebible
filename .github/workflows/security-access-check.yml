@@ -27,6 +27,8 @@ jobs:
           node-version: '24'
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm ci --prefix global-community --ignore-scripts --no-audit --no-fund
+      - name: Install pinned DOM test dependency
+        run: npm install --prefix global-community --no-save --package-lock=false --ignore-scripts --no-audit --no-fund jsdom@26.1.0
       - name: Test identity, handoff, privilege boundaries, password recovery and forms
         run: node test/security/run.mjs
       - name: Bundle all affected Workers without deployment
@@ -35,3 +37,4 @@ jobs:
         run: |
           node scripts/account1-auth-permanence-gate.mjs
           node scripts/account4-core-lock-gate.mjs
+
