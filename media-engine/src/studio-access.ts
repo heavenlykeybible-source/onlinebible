@@ -16,12 +16,15 @@ export async function studioAccess(req:Request,env:StudioEnv,engine:(req:Request
  const u=new URL(req.url),path=u.pathname;
  if(!['studio.heavenlykey.org','heavenlykey-media.faithofourfatherstv.workers.dev'].includes(u.hostname))return null;
  const page=path==='/'||path==='/studio'||/^\/pages\/admin(?:\.html)?$/.test(path),api=path.startsWith('/studio/api/');
+ if(path==='/account-security'&&req.method==='GET')return redirect(BROKER+'/security');
  if(path==='/api/auth/control-start'&&req.method==='GET'){
-  const state=random(),verifier=random(),flow={state,verifier,created:Date.now()},link=new URL('/security',CONTROL);link.searchParams.set('state',state);link.searchParams.set('challenge',await sha(verifier));link.searchParams.set('audience','studio');
+  if(u.origin!==STUDIO)return redirect(STUDIO+u.pathname+u.search);
+  const requested=u.searchParams.get('issuer'),issuer=[CONTROL,BROKER].includes(requested||'')?requested!:BROKER;
+  const state=random(),verifier=random(),flow={state,verifier,issuer,created:Date.now()},link=new URL('/security',issuer);link.searchParams.set('state',state);link.searchParams.set('challenge',await sha(verifier));link.searchParams.set('audience','studio');
   return redirect(link.href,{'set-cookie':cookie('__Host-hk-studio-flow',encodeURIComponent(JSON.stringify(flow)),600)});
  }
  if(path==='/api/auth/control-callback'&&req.method==='GET'){
-  try{const flow=JSON.parse(decodeURIComponent(value(req,'__Host-hk-studio-flow')));if(!/^[a-f0-9]{64}$/.test(flow.state)||flow.state!==u.searchParams.get('state')||!Number.isFinite(flow.created)||flow.created>Date.now()||Date.now()-flow.created>600000||!['https://control.heavenlykey.org',BROKER].includes(u.searchParams.get('issuer')||''))return json({error:'This Studio sign-in expired. Open Studio again.'},401);
+  try{const flow=JSON.parse(decodeURIComponent(value(req,'__Host-hk-studio-flow')));if(!/^[a-f0-9]{64}$/.test(flow.state)||flow.state!==u.searchParams.get('state')||!Number.isFinite(flow.created)||flow.created>Date.now()||Date.now()-flow.created>600000||![CONTROL,BROKER].includes(flow.issuer)||flow.issuer!==u.searchParams.get('issuer'))return json({error:'This Studio sign-in expired. Open Studio again.'},401);
    const grant=await central('exchange',{code:u.searchParams.get('code'),verifier:flow.verifier,audience:'studio'},request);if(grant.audience!=='studio'||!['owner','administrator'].includes(grant.identity?.role)||!/^[a-f0-9]{64}$/.test(grant.proof||''))return json({error:'Owner or administrator access is required.'},403);
    const token=random(),now=Math.floor(Date.now()/1000);const user:Actor={id:grant.identity.id,email:grant.identity.email,name:grant.identity.name,role:grant.identity.role};await env.LIVE_STATUS_KV.put('studio-access:'+await sha(token),JSON.stringify({proof:grant.proof,actor:user,expires:now+3500}),{expirationTtl:3600});
    const headers=new Headers({location:STUDIO+'/','cache-control':'no-store','referrer-policy':'no-referrer'});headers.append('set-cookie',cookie('__Host-hk-studio',token,3500));headers.append('set-cookie',cookie('__Host-hk-studio-flow','',0));return new Response(null,{status:302,headers});

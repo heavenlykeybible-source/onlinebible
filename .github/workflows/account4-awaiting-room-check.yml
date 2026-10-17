@@ -17,6 +17,8 @@ jobs:
       - run: npm run check --prefix account4-control-room
       - run: node --experimental-strip-types --test account4-control-room/test/*.mjs portal-router/worker.test.mjs
       - run: npm ci --prefix global-community --ignore-scripts --no-audit --no-fund
+      - name: Install pinned DOM test dependency
+        run: npm install --prefix global-community --no-save --package-lock=false --ignore-scripts --no-audit --no-fund jsdom@26.1.0
       - run: node --test account4-control-room/test/*.cjs bible/tests/commentary-dom.cjs bible/tests/updates.cjs
       - name: Preserve Bible integrity and behavior
         run: |
@@ -28,3 +30,4 @@ jobs:
           node bible/tests/worker.mjs
       - name: Preserve app private and offline data
         run: node --test heavenly-key-app/test/offline-preservation.test.mjs heavenly-key-app/test/offline-learning.test.mjs
+

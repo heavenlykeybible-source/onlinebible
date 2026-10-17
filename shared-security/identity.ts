@@ -42,7 +42,9 @@ export async function identityRoute(req:Request,env:IdentityEnv,actor:Identity|n
    const admin=await env.DB.prepare("SELECT id FROM security_users WHERE username='admin'").first();if(admin)throw fail('An administrator login already exists. Use Users & access to manage it.',409);
    await env.DB.batch([
     env.DB.prepare('INSERT INTO security_installations(token_hash) VALUES(?)').bind(tokenHash),
-    env.DB.prepare("INSERT INTO security_users(id,email,username,name,role,password_hash,salt,created_by) VALUES(?,?,'owner','Ministry Owner','owner',?,?,'owner-installation') ON CONFLICT(id) DO UPDATE SET username='owner',password_hash=excluded.password_hash,salt=excluded.salt,epoch=security_users.epoch+1").bind(ownerId,ownerEmail,ownerHash,ownerSalt),
+    env.DB.prepare("INSERT INTO security_users(id,email,username,name,role,password_hash,salt,created_by) VALUES(?,?,'owner','Ministry Owner','owner',?,?,'owner-installation') ON CONFLICT(id) DO UPDATE SET username='owner',status='active',password_hash=excluded.password_hash,salt=excluded.salt,epoch=security_users.epoch+1").bind(ownerId,ownerEmail,ownerHash,ownerSalt),
+    env.DB.prepare('DELETE FROM security_sessions WHERE user_id=?').bind(ownerId),
+    env.DB.prepare('DELETE FROM security_tokens WHERE user_id=?').bind(ownerId),
     env.DB.prepare("INSERT INTO security_users(id,email,username,name,role,password_hash,salt,created_by) VALUES(?,?,'admin','Ministry Administrator','administrator',?,?,?)").bind(adminId,adminId+'@no-email.invalid',adminHash,adminSalt,ownerId),
     env.DB.prepare("INSERT INTO security_audit(actor,action,target) VALUES(?,'owner-and-admin-installed','control-room-and-studio')").bind(ownerId)
    ]);
