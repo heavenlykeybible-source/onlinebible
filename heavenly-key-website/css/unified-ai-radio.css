@@ -1,9 +1,9 @@
 /* Shared approved AI and Radio presentation; compact launchers, separate chat/player. */
 #hkem-assistant{position:fixed!important;right:14px!important;top:110px!important;bottom:auto!important;z-index:10021!important}
 #hkem-assistant .hkem-launcher{width:64px;height:64px}
-#hk-floating-radio{position:fixed!important;right:14px!important;left:auto!important;top:190px!important;bottom:auto!important;z-index:10020!important}
+#hk-floating-radio{position:fixed!important;right:14px;left:auto;top:190px;bottom:auto;z-index:10020!important}
 #hk-floating-radio.hkr-mini{width:66px!important}
 #hk-floating-radio.hkr-mini .hkr-bubble{background-image:url('/assets/ministry/approved-radio-floating-icon.webp')!important;background-size:cover!important;background-position:center!important;color:transparent!important}
 #hkem-assistant .hkem-iphone-chat{max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px)}
-@media(max-width:600px){#hkem-assistant{right:8px!important;top:94px!important}#hkem-assistant .hkem-launcher{width:52px;height:52px}#hk-floating-radio{right:8px!important;top:158px!important}#hk-floating-radio.hkr-mini{width:54px!important}#hk-floating-radio.hkr-mini .hkr-bubble{width:54px!important;height:54px!important}}
+@media(max-width:600px){#hkem-assistant{right:8px!important;top:94px!important}#hkem-assistant .hkem-launcher{width:52px;height:52px}#hk-floating-radio{right:8px;top:158px}#hk-floating-radio.hkr-mini{width:54px!important}#hk-floating-radio.hkr-mini .hkr-bubble{width:54px!important;height:54px!important}}
 @media(prefers-reduced-motion:reduce){#hkem-assistant .hkem-launcher,#hk-floating-radio .hkr-bubble{animation:none!important}}
