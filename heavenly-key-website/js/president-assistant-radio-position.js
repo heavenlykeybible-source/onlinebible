@@ -1,1 +1,1 @@
-/* Homepage-specific AI/Radio visual override retired. The public-site master now uses the same approved AI and Radio system on every main-site page. */
+/* Retired intentionally. AI and Radio are now supplied only by /js/approved-widget-system.js so the homepage and inner pages use the same approved implementation. */
