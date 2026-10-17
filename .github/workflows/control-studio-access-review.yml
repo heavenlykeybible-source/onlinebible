@@ -22,6 +22,7 @@ jobs:
         working-directory: media-engine
         run: npm run check
   inventory-and-recovery-points:
+    environment: media-engine-production
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:

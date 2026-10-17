@@ -30,3 +30,7 @@ The branch is based on `fix/account4-awaiting-room-20261016`, which supplies pre
 Rollback: restore the previous Account 2/4 Worker versions. Retain additive tables and user data. Use the verified D1 recovery bookmark only if a database rollback is needed, with owner review of changes since the bookmark. No production rollback or deletion was performed while preparing this branch.
 
 Local tests: 15 tests passed covering identity roles, password reset/revocation, one-time setup, usernames, shared sign-on, direct Studio entry, CSRF, replay rejection and backend capability isolation. Production credential creation and real browser tests remain pending.
+
+## Verified inspection checkpoint (17 October 2026, 03:52 UTC)
+
+GitHub run 39000447341 confirmed the Account 4 D1 ID and R2 bucket, and recorded its recovery bookmark in the private `control-studio-recovery-metadata` artifact. The managed identity tables are not yet installed. Current Worker version IDs: control-room `28a8ae0e-96e2-4b9d-98b0-33f8e3b431a4`; CMS public `ff354579-39fc-4bf2-a839-c2a2a17dfe98`. Read the artifact for the owner-dashboard version and bookmark. Account 2's API token was unavailable at repository scope; the follow-up check uses the same `media-engine-production` environment as its existing deployment workflow. Unit tests and Account 2 TypeScript checks passed in GitHub Actions. No production changes were made.
