@@ -23,7 +23,11 @@ async function probe(root){
  console.log('Verified '+root+': actual synthetic login, premium homepage, queue/user APIs, and unauthenticated denial. Synthetic account cleaned up.');
 }
 const mode=process.argv[2];
-if(mode==='validate'){
+if(mode==='access-state'){
+ const result=await query("SELECT COUNT(*) AS access_accounts, SUM(CASE WHEN role='owner' AND status='active' AND password_hash IS NOT NULL THEN 1 ELSE 0 END) AS active_owner_passwords, SUM(CASE WHEN username='owner' AND status='active' AND password_hash IS NOT NULL THEN 1 ELSE 0 END) AS owner_username_ready, SUM(CASE WHEN username='admin' AND status='active' AND password_hash IS NOT NULL THEN 1 ELSE 0 END) AS admin_username_ready FROM security_users");
+ const legacy=await query('SELECT COUNT(*) AS configured FROM cms_owner_password WHERE id=1');
+ console.log(JSON.stringify({ownerActivation:result[0]?.results?.[0],legacyOwnerPasswordConfigured:legacy[0]?.results?.[0]?.configured===1}));
+}else if(mode==='validate'){
  const c=config('heavenlykey-control-room');if(!c.includes(DB)||!c.includes(BUCKET)||!c.includes('run_worker_first = true'))throw Error('Wrong production bindings/routing');
  const db=new DatabaseSync(':memory:');for(const name of readdirSync('account4-control-room/migrations').filter(n=>n.endsWith('.sql')).sort()){const sql=readFileSync('account4-control-room/migrations/'+name,'utf8');if(/\b(?:DROP|DELETE)\b/i.test(sql.replace(/--.*$/gm,'')))throw Error('Destructive migration rejected: '+name);db.exec(sql);}if(!db.prepare("PRAGMA table_info(security_users)").all().some(c=>c.name==='username'))throw Error('Username migration missing');db.close();console.log('Exact Account 4 resources and additive migration sequence verified.');
 }else if(mode==='backup'){

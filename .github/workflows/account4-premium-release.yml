@@ -1,5 +1,5 @@
-# Account 4 release retry: verify authenticated homepage with a temporary synthetic user.
-name: Release approved Account 4 premium Control Room
+# Owner-requested login feedback hotfix; preserve all passwords and existing data.
+name: Repair Account 4 login feedback without changing credentials
 on:
   push:
     branches: ['release/account4-premium-20261017']
@@ -33,9 +33,12 @@ jobs:
           npm run check --prefix account4-control-room
           node --test account4-control-room/test/*.mjs test/security/identity.mjs test/security/owner-installation.mjs
           node --test scripts/test-premium-control.cjs
+          node --test test/security/login-ui.mjs
           node scripts/account4-premium-release.mjs validate
           cd account4-control-room
           npx wrangler deploy --dry-run --outdir /tmp/account4-build
+      - name: Read aggregate owner activation state without revealing credentials
+        run: node scripts/account4-premium-release.mjs access-state
       - name: Preserve deployed Worker versions, source and database before changes
         run: |
           node scripts/account4-premium-release.mjs backup
@@ -47,9 +50,6 @@ jobs:
           path: release-backup
           retention-days: 7
           if-no-files-found: error
-      - name: Apply additive migrations to the verified existing Account 4 database
-        working-directory: account4-control-room
-        run: npx wrangler d1 migrations apply heavenlykey-control-room-db --remote
       - name: Deploy and check isolated template preview
         run: |
           node scripts/account4-premium-release.mjs preview-config
@@ -57,21 +57,12 @@ jobs:
           npx wrangler deploy --config wrangler.premium-preview.toml
           cd ..
           node scripts/account4-premium-release.mjs preview-check
-      - name: Configure private one-time owner setup
-        run: node scripts/account4-premium-release.mjs setup
-      - uses: actions/upload-artifact@v4
-        with:
-          name: private-owner-password-setup
-          path: owner-handoff
-          retention-days: 1
-          if-no-files-found: error
-      - name: Deploy Account 4 Control Room, owner dashboard and matching public CMS backend
+      - name: Deploy only the Control Room and owner dashboard login hotfix
         id: production
         run: |
           cd account4-control-room
           npx wrangler deploy --config wrangler.toml
           npx wrangler deploy --config wrangler.owner.toml
-          npx wrangler deploy --config ../cms-public/wrangler.toml
       - name: Verify live template, login screens, private APIs and deployment identifiers
         run: node scripts/account4-premium-release.mjs production-check
       - name: Restore previous Worker versions if production promotion or checks fail
