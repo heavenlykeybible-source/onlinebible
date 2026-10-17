@@ -20,8 +20,9 @@ export function releaseTarget(value:unknown):ReleaseTarget{
 export function publicPath(raw:string){
  if(raw.length>600||!raw.startsWith('/')||/[\u0000-\u001f\\?#%<>:"'`|*]/.test(raw)||raw.includes('//')||raw.split('/').some(p=>p==='.'||p==='..'||p.startsWith('.'))||/\.(?:sql|sqlite|db|toml|ya?ml|map|ts|tsx|pem|key|env)$/i.test(raw)||/(?:^|\/)(?:AGENTS\.md|node_modules|migrations|secrets?|credentials?)(?:\/|$)/i.test(raw))throw Object.assign(Error('Only public website assets may be submitted.'),{status:400});return raw;
 }
-export function protectedRoute(path:string){return /^\/(?:security(?:\/|$)|account-security(?:\/|$)|api(?:\/|$)|auth(?:\/|$)|oauth(?:\/|$)|health(?:\/|$)|metrics(?:\/|$)|\.well-known(?:\/|$)|cdn-cgi(?:\/|$))/.test(path)}
+export function protectedRoute(path:string){return /^\/(?:setup(?:\/|$)|security(?:\/|$)|account-security(?:\/|$)|api(?:\/|$)|auth(?:\/|$)|oauth(?:\/|$)|health(?:\/|$)|metrics(?:\/|$)|\.well-known(?:\/|$)|cdn-cgi(?:\/|$))/.test(path)}
 export function targetsFor(host:string,path:string){
  host=host.startsWith('www.')&&Object.values(RELEASE_TARGETS).some(t=>t.host===host.slice(4))?host.slice(4):host;
  return (Object.entries(RELEASE_TARGETS) as [ReleaseTarget,typeof RELEASE_TARGETS[ReleaseTarget]][]).filter(([,t])=>t.host===host&&(t.scope==='/'||path===t.scope.slice(0,-1)||path.startsWith(t.scope))).sort((a,b)=>b[1].scope.length-a[1].scope.length).map(([id])=>id);
 }
+

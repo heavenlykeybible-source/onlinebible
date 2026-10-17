@@ -6,7 +6,7 @@ import {SITES,planDeployment} from './deployment-engine.ts';
 import {AI_MODEL,PUBLIC_CMS_ORIGIN,validateDocument} from './cms-schema.ts';
 import {saveDraft,publishDraft,restoreDraft} from './cms-storage.ts';
 import {ownerSession,ownerLogin,ownerLogout,setOwnerPassword,generatedPassword} from './owner-auth.ts';
-interface Env {DB:D1Database;MEDIA:R2Bucket;AI:Ai;ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUD:string;RELEASE_INGEST_TOKEN?:string;RESET_EMAIL?:{send(message:{to:string;from:string;subject:string;text:string}):Promise<unknown>};RESET_EMAIL_FROM?:string}
+interface Env {DB:D1Database;MEDIA:R2Bucket;AI:Ai;ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUD:string;RELEASE_INGEST_TOKEN?:string;RESET_EMAIL?:{send(message:{to:string;from:string;subject:string;text:string}):Promise<unknown>};RESET_EMAIL_FROM?:string;OWNER_INSTALL_TOKEN_HASH?:string;OWNER_INSTALL_EXPIRES?:string;OWNER_EMAIL?:string}
 const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
 const fail=(message:string,status=400)=>json({error:message},status);
 function b64url(s:string){const p=s.replace(/-/g,"+").replace(/_/g,"/");return Uint8Array.from(atob(p+"=".repeat((4-p.length%4)%4)),c=>c.charCodeAt(0))}
@@ -39,18 +39,19 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
   }
  }catch(error:any){return fail(error.message,error.status||500)}
  const ownerHost=u.hostname==='heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev';
- if(!ownerHost&&!u.pathname.startsWith('/api/'))return env.ASSETS.fetch(request);
+
  let managedOwner:any=null;try{managedOwner=await env.DB.prepare("SELECT * FROM security_users WHERE role='owner' AND password_hash IS NOT NULL AND status='active' LIMIT 1").first();}catch{}
  if(ownerHost&&u.pathname==='/api/owner/login'&&request.method==='POST'){
   if(request.headers.get('Origin')!==u.origin)return fail('Invalid sign-in origin.',403);
   try{const data=await body(request,4096);if(managedOwner){const loginRequest=new Request(new URL('/api/security/login',request.url),{method:'POST',headers:request.headers,body:JSON.stringify({email:managedOwner.email,password:data.password})});return (await identityRoute(loginRequest,env,null))!;}if(data.username!==undefined&&data.username!=='owner')return fail('Sign-in failed. Check your username and password.',401);const result=await ownerLogin(request,env.DB,data.password);return result.ok?new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json','cache-control':'no-store','set-cookie':result.cookie!}}):fail(result.error!,result.status)}catch{return fail('Sign-in is temporarily unavailable.',503)}
  }
- const accessActor=await authenticate(request,env);
+ const verifiedAccess=await authenticate(request,env);const accessActor=verifiedAccess?.trim().toLowerCase()===(env.OWNER_EMAIL||'emmanuel2026miracle@gmail.com').toLowerCase()?verifiedAccess:null;
  const existingOwner=ownerHost&&!managedOwner?await ownerSession(request,env.DB):null;
  let identity=await sessionIdentity(request,env);if(!identity&&(accessActor||existingOwner))identity=await bootstrapIdentity(env,/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(accessActor||existingOwner||'')?(accessActor||existingOwner)!:'emmanuel2026miracle@gmail.com');
  const securityResponse=await identityRoute(request,env,identity);if(securityResponse)return securityResponse;
  const actor=identity&&['owner','administrator','editor'].includes(identity.role)?identity.email:null;
  if(!u.pathname.startsWith('/api/')){
+  if(u.pathname==='/login.html'||u.pathname==='/'&&!actor)return Response.redirect(new URL('/security',u.origin).href,302);
   return env.ASSETS.fetch(request);
  }
  if(!actor)return fail('Administrator sign-in required',401);
@@ -129,5 +130,6 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
   return fail('Route not found.',404);
  }catch(error:any){console.error('Control Room request failed',error?.message);return fail(error?.status?error.message:'The request could not be completed. Please reload and try again.',error?.status||500)}
 }} satisfies ExportedHandler<Env>;
+
 
 

@@ -1,0 +1,32 @@
+# Owner access repair: Accounts 4 and 2
+
+Prepared code, not a production completion report.
+
+## Resulting access
+
+One central account system, with the owner login `owner` and a separate administrator login `admin`. Both can enter Account 2 Studio from Account 4 without another password. Direct Studio visits use the same central login and return automatically to Studio. Passwords and users are managed through the Control Room interface. The owner remains the ownership authority; the administrator receives full broadcasting permissions without a hidden authentication bypass.
+
+The one-time setup page receives a random, expiring installation token in its URL fragment. Only its SHA-256 hash is configured as a Cloudflare secret. The owner enters two different private passwords in the setup page. Passwords are hashed, never included in GitHub source or reports. Installation cannot be replayed.
+
+## Resources and release scope
+
+Preserve Account 4 database `heavenlykey-control-room-db`, Account 2 database `heavenlykey-media-db`, media R2 objects, schedules, existing records and KV. No Worker/database/object deletion is included. Existing service-to-service capability protection stays in place; the Studio session adapter creates those credentials on the server. It does not send them to frontend JavaScript.
+
+Account 2's old root redirect led away from its media Worker to the main website admin page. The adapter makes Account 2 its own authenticated Studio entry and exposes existing media-engine operations behind the signed-in session. The server's scheduled handler is preserved.
+
+This Studio shell covers library upload/preview, playlist publication/switches, scheduled playout, direct stream sessions and service checks. Existing advanced camera composition/social-streaming interfaces still require integration and browser testing; do not report the entire professional Studio feature set as complete.
+
+The branch is based on `fix/account4-awaiting-room-20261016`, which supplies prerequisite central identity APIs. These changes must not be installed as standalone assets against the older main backend.
+
+## Pre-release work
+
+1. Run the read-only inventory workflow. Use Cloudflare API results to resolve conflicting UI observations. Capture current Worker deployment IDs and D1 recovery bookmarks. A bookmark is a recovery point, not an independent off-site backup.
+2. Compare Account 2's bound D1/KV identities against source config and protected-state policy. Previous inspection found different IDs; do not overwrite bindings or bypass a failed policy check.
+3. Review prerequisite migrations and apply only to the verified existing Account 4 D1. Migration 0009 adds usernames and one-time installation metadata; it does not remove records.
+4. Configure `OWNER_INSTALL_TOKEN_HASH`, `OWNER_INSTALL_EXPIRES` (Unix seconds), and `OWNER_EMAIL` in Account 4; installation must be limited to a short window. Keep the raw random token private and out of logs.
+5. Deploy to an isolated preview, test the two accounts and SSO end to end, then promote under the owner's release instruction. Verify direct Studio entry, Control Room entry, logout/revocation, uploads and schedules.
+6. Only after both logins work should redundant Cloudflare Access gates or old login entry points be retired. No removal of effective authentication is required.
+
+Rollback: restore the previous Account 2/4 Worker versions. Retain additive tables and user data. Use the verified D1 recovery bookmark only if a database rollback is needed, with owner review of changes since the bookmark. No production rollback or deletion was performed while preparing this branch.
+
+Local tests: 15 tests passed covering identity roles, password reset/revocation, one-time setup, usernames, shared sign-on, direct Studio entry, CSRF, replay rejection and backend capability isolation. Production credential creation and real browser tests remain pending.
