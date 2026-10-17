@@ -1,0 +1,35 @@
+name: Verify approved homepage controls and current Account 4
+on:
+  push:
+    branches: ['fix/account1-approved-controls-20261017']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned DOM test dependency
+        run: npm install --prefix /tmp/hkem-controls --ignore-scripts --no-audit --no-fund jsdom@26.1.0
+      - name: Check approved controls and playback-driven indicators
+        env:
+          HK_JSDOM: /tmp/hkem-controls/node_modules/jsdom
+        run: |
+          node --test scripts/test-approved-radio.cjs
+          node --check heavenly-key-website/js/online-assistant.js
+          node --check heavenly-key-website/js/president-assistant-radio-position.js
+      - name: Measure real public AI response times and read Account 4 setup state
+        env:
+          ACCOUNT4_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
+        run: node scripts/verify-live-ai-and-account4.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-ai-and-account4-results
+          path: live-ai-and-account4-results.json
+          retention-days: 7

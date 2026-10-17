@@ -47,3 +47,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 const observer=new MutationObserver(()=>mount());
 observer.observe(document.documentElement,{subtree:true,childList:true});
 })();
+
