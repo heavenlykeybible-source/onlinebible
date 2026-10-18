@@ -297,7 +297,8 @@
     const history=document.createElement("button");history.type="button";history.className="cms-exit";history.textContent="Restore Version";
     const editLinks=document.createElement("button");editLinks.type="button";editLinks.className="cms-exit";
     editLinks.textContent="Edit Menus & Links";editLinks.addEventListener("click",()=>openLinkPanel(descriptors.links));
-    toolbar.append(title,save,publish,editLinks,history,reset,exit,status);
+    /* Public-site CMS can submit drafts only. Publishing and restoring require separate owner approval in Control Room. */
+    toolbar.append(title,save,editLinks,reset,exit,status);
     document.body.append(toolbar);
 
     exit.addEventListener("click", cleanExit);
@@ -307,7 +308,8 @@
       if(!response.ok)throw Error((await response.json()).error||"Unable to discard draft");location.reload();
       }catch(error){status.textContent=error.message;}
     });
-    history.addEventListener("click",async()=>{
+    /* Direct restore is disabled in the public editor. */
+    /* history.addEventListener("click",async()=>{
       try{const response=await fetch(apiUrl(true)+"&history=1",{credentials:"include"});
       if(!response.ok)throw Error("Unable to load versions");const data=await response.json();
       const versions=data.versions||[];if(!versions.length){status.textContent="No previous versions yet.";return;}
@@ -317,8 +319,9 @@
       if(!restored.ok)throw Error((await restored.json()).error||"Restore failed");location.reload();
       }catch(error){status.textContent=error.message;}
     });
+    */
     async function saveDraft(publishNow=false) {
-      save.disabled=true;publish.disabled=true;status.textContent="Saving draft…";
+      save.disabled=true;status.textContent="Saving draft…";
       const changes=liveText.map(item=>({key:item.key,type:"text",value:item.span.textContent||""}));
       descriptors.images.forEach(item=>{
         changes.push({key:item.srcKey,type:"image",value:item.img.getAttribute("src")||""});
@@ -332,15 +335,11 @@
         const response=await fetch(apiUrl(true),{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"save-draft",changes})});
         if(!response.ok)throw Error((await response.json()).error||"Unable to save draft");
         status.textContent="Draft saved. The public page is unchanged.";
-        if(publishNow){
-          const published=await fetch(apiUrl(true),{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"publish"})});
-          if(!published.ok)throw Error((await published.json()).error||"Unable to publish");
-          status.textContent="Page published successfully; no GitHub deployment needed.";
-        }
-      }catch(error){status.textContent=error.message;}finally{save.disabled=false;publish.disabled=false;}
+        status.textContent="Draft submitted for owner review. No public changes have been published.";
+      }catch(error){status.textContent=error.message;}finally{save.disabled=false;}
     }
     save.addEventListener("click",()=>saveDraft(false));
-    publish.onclick=()=>{if(confirm("Publish these changes to the public website?"))saveDraft(true);};
+    /* No direct publish control or request from the public editor. */
   }
 
   async function start() {
