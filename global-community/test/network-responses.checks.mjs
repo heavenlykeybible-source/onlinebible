@@ -4,6 +4,13 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
 const apiSource=source.slice(source.indexOf('async function api('),source.indexOf('const dateTime='));
+test('Each post has a distinct, encoded address',()=>{
+ const start=source.indexOf('const postLink='),end=source.indexOf('function renderPost(',start);
+ const postLink=vm.runInNewContext(source.slice(start,end)+'\npostLink;');
+ assert.equal(postLink(12),'index.html?post=12');
+ assert.notEqual(postLink(12),postLink(13));
+ assert.equal(new URL(postLink('12&saved=1'),'https://community.example').searchParams.get('saved'),null);
+});
 test('Network responses cannot falsely report a successful save; writes are not retried',async()=>{
  let response,calls=0;
  const api=vm.runInNewContext(apiSource+'\napi;',{

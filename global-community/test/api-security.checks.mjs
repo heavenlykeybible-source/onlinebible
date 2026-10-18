@@ -72,6 +72,19 @@ test('API security: privacy, reporting, independent appeals, blocking and reques
  assert.equal((await req('/api/media/1')).status,404);
 
 
+ // Calling stays disabled even if old relay secrets remain configured.
+ env.CALL_TURN_URLS='turn:relay.example.invalid';env.CALL_TURN_SECRET='disposable-test-secret';
+ assert.equal((await req('/api/calls/config')).status,401);
+ const callConfig=await req('/api/calls/config',null,a.cookie);
+ assert.equal(callConfig.status,200);assert.equal(callConfig.data.enabled,false);
+ assert.equal(callConfig.data.iceServers,undefined);
+ assert.deepEqual((await req('/api/calls',null,a.cookie)).data.items,[]);
+ assert.equal((await req('/api/calls',{conversationId:1,mode:'voice',offer:'v=0 m=audio'},a.cookie)).status,410);
+ assert.equal((await req('/api/calls/11111111-1111-1111-1111-111111111111',null,a.cookie)).status,410);
+ assert.equal((await req('/api/calls/11111111-1111-1111-1111-111111111111',{action:'accept',answer:'v=0 m=audio'},a.cookie)).status,410);
+ assert.equal(db.prepare('SELECT COUNT(*) n FROM network_calls').get().n,0);
+ const health=await worker.fetch(new Request('https://example.invalid/api/health'),env);
+ assert.match(health.headers.get('Permissions-Policy'),/camera=\(\), microphone=\(\)/);
  // International Space names must remain reachable through their encoded links.
  for(const name of ['基督徒团契','مجتمع المؤمنين','विश्वास संगति']){
   const created=await req('/api/spaces',{name,category:'ministry',description:'Christian fellowship across the nations.'},a.cookie);

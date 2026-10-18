@@ -702,3 +702,17 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #a7
  .hk-family-promo{margin:12px auto;padding:14px;}
  .hk-family-promo nav a{max-width:100%;overflow-wrap:anywhere;}
 }
+
+
+/* Selected action links: compact ministry accents with visible keyboard focus. */
+a.action-link,.bottom-nav>a.btn,.feed-empty>a.btn{
+ display:inline-flex;align-items:center;justify-content:center;gap:8px;
+ min-height:44px;padding:10px 16px;border:1px solid #c795a8;border-radius:12px;
+ background:linear-gradient(135deg,#fff8fb,#f5e7ee);color:#701d3d;
+ font-weight:750;line-height:1.35;text-decoration:none;overflow-wrap:anywhere;
+ box-shadow:0 3px 9px #701d3d12;transition:background .15s,box-shadow .15s;
+}
+a.action-link::after,.bottom-nav>a.btn::after,.feed-empty>a.btn::after{content:'›';font-size:1.2em;line-height:1;flex-shrink:0;}
+a.action-link:hover,.bottom-nav>a.btn:hover,.feed-empty>a.btn:hover{background:#f0dce6;box-shadow:0 4px 12px #701d3d20;}
+a.action-link:focus-visible,.bottom-nav>a.btn:focus-visible,.feed-empty>a.btn:focus-visible{outline:3px solid #2769a8;outline-offset:3px;}
+@media(prefers-reduced-motion:reduce){a.action-link,.bottom-nav>a.btn,.feed-empty>a.btn{transition:none;}}

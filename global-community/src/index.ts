@@ -13,7 +13,7 @@ import {communityAiDraft,validateAiDraftRequest} from "./heavenly-key-ai";
 
 const security=(headers=new Headers())=>{
   headers.set("X-Content-Type-Options","nosniff");headers.set("X-Frame-Options","DENY");headers.set("Referrer-Policy","strict-origin-when-cross-origin");
-  headers.set("Permissions-Policy","camera=(self), microphone=(self), geolocation=()");
+  headers.set("Permissions-Policy","camera=(), microphone=(), geolocation=()");
   return headers;
 };
 const json=(data:unknown,status=200,extra?:Record<string,string>)=>{const h=security(new Headers({"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store",...(extra||{})}));return new Response(JSON.stringify(data),{status,headers:h});};
@@ -141,10 +141,13 @@ async function route(request:Request,env:Env):Promise<Response>{
 
   {const x=p.match(/^\/api\/groups\/(\d+)\/requests$/);if(x&&m==='GET'){const u=await me(request,env);return json({items:await S.groupRequests(env,u.userId,Number(x[1]))});}}
   {const x=p.match(/^\/api\/groups\/(\d+)\/requests\/(\d+)$/);if(x&&m==='POST'){const u=await me(request,env),b=await body(request);if(!['accept','decline'].includes(b.decision))return error('Choose accept or decline.');return json(await S.decideGroupRequest(env,u.userId,Number(x[1]),Number(x[2]),b.decision==='accept'));}}
-  if(p==='/api/calls/config'&&m==='GET'){const u=await me(request,env);return json(await Calls.config(env,u.userId));}
-  if(p==='/api/calls'&&m==='GET'){const u=await me(request,env);return json({items:await Calls.incoming(env,u.userId)});}
-  if(p==='/api/calls'&&m==='POST'){const u=await me(request,env);if(!await rate(env,'call:'+u.userId,10,3600))return error('Please wait before making another call.',429);return json(await Calls.start(env,u.userId,await body(request)),201);}
-  {const x=p.match(/^\/api\/calls\/([a-f0-9-]{36})$/);if(x&&m==='GET'){const u=await me(request,env);return json(await Calls.read(env,u.userId,x[1]));}if(x&&m==='POST'){const u=await me(request,env);return json(await Calls.update(env,u.userId,x[1],await body(request)));}}
+  // Text-only community: relay secrets cannot reactivate calling.
+  if(p==='/api/calls'||p.startsWith('/api/calls/')){
+    await me(request,env);
+    if(p==='/api/calls/config'&&m==='GET')return json({enabled:false,message:'Text messaging only. Voice and video calls are unavailable.'});
+    if(p==='/api/calls'&&m==='GET')return json({items:[]});
+    return error('Text messaging only. Voice and video calls are unavailable.',410);
+  }
 
   if(p==="/api/messages"&&m==="GET"){const u=await me(request,env);return json({items:await S.inbox(env,u.userId)});}
   if(p==="/api/messages/requests"&&m==="POST"){const u=await me(request,env),b=await body(request);return json(await S.requestConversation(env,u.userId,Number(b.recipientUserId)),201);}

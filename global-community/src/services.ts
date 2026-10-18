@@ -213,7 +213,7 @@ export async function editPost(env:Env,user:SessionUser,id:number,input:any){
 }
 export async function feed(env:Env,userId:number|null,limit=20,options:any={}){
   const take=Math.min(Math.max(Number(limit)||20,1),50),before=Number(options.before)||Number.MAX_SAFE_INTEGER;
-  const r=await env.DB.prepare(`SELECT po.*,p.display_name profile_name,s.name space_name,g.name group_name,
+  const r=await env.DB.prepare(`SELECT po.*,p.display_name profile_name,s.name space_name,s.slug space_slug,g.name group_name,
     (SELECT COUNT(*) FROM comments WHERE post_id=po.post_id AND status='active') comment_count,
     EXISTS(SELECT 1 FROM saved_posts WHERE post_id=po.post_id AND user_id=?) saved
     FROM posts po JOIN profiles p ON p.user_id=po.author_user_id JOIN users u ON u.user_id=p.user_id
@@ -510,4 +510,5 @@ export async function savePost(env:Env,userId:number,postId:number){
   if(old)await env.DB.prepare('DELETE FROM saved_posts WHERE user_id=? AND post_id=?').bind(userId,postId).run();
   else await env.DB.prepare('INSERT OR IGNORE INTO saved_posts(user_id,post_id) VALUES(?,?)').bind(userId,postId).run();return {saved:!old};
 }
+
 
