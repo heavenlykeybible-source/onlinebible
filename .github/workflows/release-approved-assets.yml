@@ -1,4 +1,4 @@
-name: Verify and lock approved Account 1 public shell
+name: Publish approved Account 1 chat above content and locked shell
 on:
   push:
     branches: ['release/account1-approved-assets-20261017']

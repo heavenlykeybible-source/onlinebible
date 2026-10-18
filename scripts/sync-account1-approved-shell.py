@@ -82,10 +82,10 @@ for page in [*sorted((ROOT/'pages').glob('*.html')), ROOT/'live/index.html']:
     text = re.sub(r'<script\b[^>]*src="[^"]*(?:hk-standard-footer|site-footer|approved-global-footer|floating-radio|public-site-master|approved-widget-system|online-assistant|home-renewal)\.js[^"]*"[^>]*>\s*</script>','',text)
     text = re.sub(r'<link\b[^>]*href="[^"]*approved-home-shell\.css[^"]*"[^>]*>','',text)
     text = re.sub(r'<script id="hk-share-to-bless-script"[^>]*>.*?</script>','',text,flags=re.S)
-    text = text.replace('</head>','<link rel="stylesheet" href="/css/approved-home-shell.css?v=20261018"></head>')
+    text = text.replace('</head>','<link rel="stylesheet" href="/css/approved-home-shell.css?v=20261018b"></head>')
     if page.name in ['radio.html','terms.html','privacy.html','i-said-yes.html','grdpc.html'] and 'src="/js/cms-runtime-20261015.js' not in text:
-        text = text.replace('</body>','<link rel="stylesheet" href="/js/cms-runtime-20261015.css"><script defer src="/js/cms-runtime-20261015.js?v=20261018"></script></body>')
-    text = text.replace('</body>',sharing+'<script defer src="/js/public-site-master.js?v=20261018"></script></body>')
+        text = text.replace('</body>','<link rel="stylesheet" href="/js/cms-runtime-20261015.css"><script defer src="/js/cms-runtime-20261015.js?v=20261018b"></script></body>')
+    text = text.replace('</body>',sharing+'<script defer src="/js/public-site-master.js?v=20261018b"></script></body>')
     save(page,text)
 if changed and '--check' in sys.argv: print('Approved shell drift: '+', '.join(changed));sys.exit(1)
 print('Approved homepage menu/footer: '+('consistent' if not changed else str(len(changed))+' files synchronized'))

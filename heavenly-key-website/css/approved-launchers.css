@@ -6,3 +6,7 @@
 #hkem-assistant .hkem-launcher::before,#hkem-assistant .hkem-launcher::after,#hk-floating-radio.hkr-mini .hkr-bubble::before,#hk-floating-radio.hkr-mini .hkr-bubble::after{display:none!important;content:none!important}
 #hkem-assistant .hkem-launcher[hidden]{display:none!important}
 @media(max-width:600px){#hkem-assistant .hkem-launcher,#hk-floating-radio.hkr-mini .hkr-bubble{width:min(45vw,190px)!important;max-width:min(45vw,190px)!important}}
+
+/* The open approved chat always sits above website text, content and overlays. */
+#hkem-assistant:has(.hkem-iphone-chat:not([hidden])){z-index:2147483647!important}
+#hkem-assistant .hkem-iphone-chat{z-index:2147483647!important}
