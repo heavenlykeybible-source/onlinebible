@@ -30,12 +30,14 @@ export async function createSession(env:Env,user:SessionUser){
 export async function getSession(request:Request,env:Env):Promise<SessionUser|null>{
   const id=cookie(request,"gc_session");if(!/^[a-f0-9]{64}$/.test(id))return null;
   const raw=await env.SESSIONS.get("session:"+id);if(!raw)return null;
+  let s:SessionUser;
+  try{s=JSON.parse(raw) as SessionUser;}catch{return null;}
+  if(!s||!Number.isSafeInteger(s.userId)||s.userId<1)return null;
   try{
-    const s=JSON.parse(raw) as SessionUser;
     const current=await env.DB.prepare("SELECT role,status FROM users WHERE user_id=?").bind(s.userId).first<any>();
     if(!current||!["active","restricted"].includes(current.status))return null;
     return {userId:s.userId,role:current.role as Role,status:current.status};
-  }catch{return null;}
+  }catch{throw Object.assign(new Error("Sign-in verification is temporarily unavailable. Please try again."),{status:503});}
 }
 export async function destroySession(request:Request,env:Env){const id=cookie(request,"gc_session");if(id)await env.SESSIONS.delete("session:"+id);}
 export const sessionCookie=(id:string)=>"gc_session="+encodeURIComponent(id)+"; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age="+(60*60*24*30);
@@ -44,5 +46,6 @@ export const clearSessionCookie=()=>"gc_session=; Path=/; HttpOnly; Secure; Same
 const levels:Record<Role,number>={member:1,moderator:2,administrator:3,owner:4};
 export async function requireUser(request:Request,env:Env){return getSession(request,env);}
 export async function requireRole(request:Request,env:Env,min:Role){const u=await getSession(request,env);return u&&u.status==="active"&&levels[u.role]>=levels[min]?u:null;}
+
 
 

@@ -21,10 +21,18 @@ Status: tested source repairs, awaiting production approval and deployment.
 - Selected action links use compact wine/pink button accents, 44px targets, visible focus and reduced-motion support.
 - Old ministry worker links on public HTML navigation point to the official ministry website.
 
+## Reliability and audience follow-up
+
+- Unsupported post audiences (including `private`, which the current post schema does not support) are rejected rather than silently published publicly. Supported personal-post audiences remain Public and Global Connections; Group posts require Group context.
+- Late chat refresh responses cannot overwrite a more recent response or a different conversation.
+- Network/service failures during sign-in verification show a retry message. Database verification outages return a safe 503 rather than a misleading 401.
+- Identity changes and expiry clear private drafts, cached message history, retry identifiers and polling. Successful sign-out also cancels pending verification results.
+- Profile connect, message-request, block and report actions expose errors in an accessible status message and recover their buttons.
+
 ## Verification
 
 - All 18 public JavaScript files passed syntax checks. The canonical text-only messaging contract and the additional live-chat quality gate passed.
-- `npm run buildcheck`: passed, including TypeScript, frontend syntax, configuration preflight and 34 test cases.
+- `npm run buildcheck`: passed, including TypeScript, frontend syntax, configuration preflight and 37 test cases.
 - `npm audit --omit=dev`: zero reported production dependency vulnerabilities. This is not a full application security assessment.
 - API security tests execute the actual Worker routes against an isolated SQLite database with the application migrations and KV test adapter. Privacy defaults, private posts, messages, reporting, independent appeals, account restrictions, CSRF rejection and oversized requests passed.
 - Chinese, Arabic and Devanagari Space creation and URL lookup passed; malformed Space links and overlong emails were rejected.

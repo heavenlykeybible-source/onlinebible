@@ -72,6 +72,19 @@ test('API security: privacy, reporting, independent appeals, blocking and reques
  assert.equal((await req('/api/media/1')).status,404);
 
 
+ // A database outage is not a bad password or an expired session.
+ const unavailable=await worker.fetch(new Request('https://example.invalid/api/me',{headers:{Cookie:a.cookie}}),{
+  ...env,DB:{...env.DB,prepare(query){if(query.startsWith('SELECT role,status FROM users'))throw Error('D1 private internal marker');return env.DB.prepare(query);}}
+ });
+ assert.equal(unavailable.status,503);assert.ok(!(await unavailable.text()).includes('private internal marker'));
+ assert.equal((await req('/api/me',null,a.cookie)).status,200);
+ // Unsupported privacy values must never be silently published publicly.
+ const postCount=db.prepare('SELECT COUNT(*) n FROM posts').get().n;
+ for(const visibility of ['private','typo','group']){
+  const denied=await req('/api/posts',{postFormat:'design_card',body:'A message intended to stay private.',visibility},a.cookie);
+  assert.equal(denied.status,400,JSON.stringify(denied));
+ }
+ assert.equal(db.prepare('SELECT COUNT(*) n FROM posts').get().n,postCount);
  // Calling stays disabled even if old relay secrets remain configured.
  env.CALL_TURN_URLS='turn:relay.example.invalid';env.CALL_TURN_SECRET='disposable-test-secret';
  assert.equal((await req('/api/calls/config')).status,401);

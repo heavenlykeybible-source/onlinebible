@@ -181,6 +181,8 @@ export async function leaveGroup(env:Env,userId:number,id:number){
 }
 
 export async function createPost(env:Env,user:SessionUser,input:any){
+  const audiences=input.groupId?["public","connections","group"]:["public","connections"];
+  if(input.visibility!==undefined&&!audiences.includes(input.visibility))throw new Error("Choose Public or Global Connections for a post. Group posts require a Group.");
   const presentation=validatePostPresentation({...input,postFormat:input.postFormat||(input.title?"article":"design_card")});
   const {body,title,scripture}=presentation;
   const mod=moderateText(title+"\n"+body+"\n"+scripture,"post");
