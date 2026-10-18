@@ -46,7 +46,8 @@ def scoped(css):
         start = end
     return output
 cssfiles = ['home-renewal.css','premium-navigation-upgrade.css','resources-dropdown-fix.css','footer-five-columns.css','footer-approved-cleanup.css']
-css = '/* Generated only from the approved homepage. Do not hand-edit. */\n' + ''.join(scoped((ROOT/'css'/p).read_text()) for p in cssfiles) + ''.join(scoped(s) for s in styles)
+font_import = re.search(r'@import[^;]*;', (ROOT/'css/home-renewal.css').read_text()).group()
+css = font_import + '\n/* Generated only from the approved homepage. Do not hand-edit. */\n' + ''.join(scoped((ROOT/'css'/p).read_text()) for p in cssfiles) + ''.join(scoped(s) for s in styles)
 css = css.replace("url('../assets/", "url('/assets/")
 css += '\n'+scope+'{font:18px/1.45 Roboto Condensed,Arial,sans-serif;color:#111}\n'
 changed=[]
