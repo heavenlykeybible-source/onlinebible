@@ -10,3 +10,4 @@
 /* The open approved chat always sits above website text, content and overlays. */
 #hkem-assistant:has(.hkem-iphone-chat:not([hidden])){z-index:2147483647!important}
 #hkem-assistant .hkem-iphone-chat{z-index:2147483647!important}
+#hk-floating-radio:not(.hkr-mini):not(.hkr-page){z-index:2147483647!important}
