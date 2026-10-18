@@ -81,6 +81,7 @@ export async function handleCmsPage(req:Request,env:CMS):Promise<Response>{
  if(req.method!=="POST"||!originOK(req))return reply({error:"Invalid request origin"},403);
  const input=await jsonBody(req);if(!input)return reply({error:"Invalid JSON"},400);
  const action=input.action||"save-draft";
+ if(action==="publish"||action==="restore")return reply({error:"Publishing and restoration are locked pending explicit owner review in Control Room."},403);
  if(action==="save-draft"){
   if(!validFields(input.changes))return reply({error:"Invalid page fields"},400);
   const content=JSON.stringify(convert(input.changes as Field[]));
@@ -127,6 +128,7 @@ export async function handleCmsSlider(req:Request,env:CMS,isAdmin:boolean):Promi
  if(!isAdmin||req.method!=="POST"||!originOK(req))return reply({error:"Invalid request"},403);
  const body=await jsonBody(req);if(!body)return reply({error:"Invalid JSON"},400);
  const action=body.action||"save-draft";
+ if(action==="publish"||action==="restore")return reply({error:"Publishing and restoration require owner approval through the Control Room review workflow."},403);
  if(action==="save-draft"){
   if(!validSlides(body.slides))return reply({error:"Slider must contain at most 12 pictures, each with valid details"},400);
   await env.DB.prepare("INSERT INTO site_cms_slider_state(slider_key,draft_json) VALUES('home',?) ON CONFLICT(slider_key) DO UPDATE SET draft_json=excluded.draft_json,updated_at=CURRENT_TIMESTAMP").bind(JSON.stringify(body.slides)).run();
@@ -228,6 +230,7 @@ export async function handleCmsLayout(req:Request,env:CMS,protectedRoute:boolean
  if(!protectedRoute||req.method!=="POST"||!originOK(req))return reply({error:"Invalid layout request"},403);
  const body=await jsonBody(req);if(!body)return reply({error:"Invalid JSON"},400);
  const action=body.action||"save-draft";
+ if(action==="publish"||action==="restore")return reply({error:"Publishing and restoration require owner approval through the Control Room review workflow."},403);
  if(action==="save-draft"){
   if(!validSections(body.sections))return reply({error:"The homepage needs exactly three valid editable sections"},400);
   await env.DB.prepare("INSERT INTO site_cms_layout(page_key,draft_json,updated_by) VALUES('home',?,?) ON CONFLICT(page_key) DO UPDATE SET draft_json=excluded.draft_json,updated_by=excluded.updated_by,updated_at=CURRENT_TIMESTAMP")
