@@ -39,3 +39,12 @@ test('Forms detect text direction and announce status messages accessibly',()=>{
  status(node,'Saved.');assert.equal(node.textContent,'Saved.');
  assert.equal(attributes.role,'status');assert.equal(attributes['aria-live'],'polite');
 });
+
+test('Arabic, Hebrew and mixed-language post text determines its own direction safely',()=>{
+ const start=source.indexOf('function expandableText('),end=source.indexOf('function videoPost(',start);
+ const el=(tag,text)=>({tag,textContent:text,children:[],append(...items){this.children.push(...items);},setAttribute(){},addEventListener(){}});
+ const expand=vm.runInNewContext(source.slice(start,end)+'\nexpandableText;',{el});
+ for(const text of ['مرحبا بالعالم','שלום עולם','Fellowship · שלום · 敬拜','<img src=x onerror=alert(1)>']){
+  const rendered=expand(text).children[0];assert.equal(rendered.dir,'auto');assert.equal(rendered.textContent,text);
+ }
+});

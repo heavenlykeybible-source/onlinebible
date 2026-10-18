@@ -48,6 +48,14 @@ Status: tested source repairs, awaiting production approval and deployment.
 - Fixed the Account 4 embedded dashboard string and extra script brace; 49 dashboard, login, recovery, approval, upload and integration tests pass, with its six-migration preservation check.
 - Local verification: 163 platform tests, 76 Node tests, 38 community tests and 11 policy/regression tests pass. Syntax, TypeScript, preflight, architecture, API contracts and the 19-page link audit pass. GitHub must confirm the new commit independently before promotion.
 
+## Continued messaging and shortcut verification
+
+- Inbox reads now reject responses after sign-out, account changes, replaced inbox views or newer inbox requests. Thread reads also verify the current identity and view.
+- Late send completions cannot erase another account’s drafts or a newer send retry key. Deferred-response regressions reproduce these races and pass after the fix.
+- Rendered post and message text uses automatic text direction for Arabic, Hebrew and mixed-language content, while retaining text-only rendering. This does not translate the interface.
+- Retired Bible, TV, study, calculator and app shortcut destinations now point to the existing independent services or source pages. A cross-service shortcut check validates community links against the actual checked-out website/app files and Worker endpoints. The shared footer app promotion also opens the independent app.
+- The local HTTP audit was retried with the patched CLI; this host still blocks network-interface enumeration (`uv_interface_addresses`). GitHub’s isolated Wrangler audit passed on the preceding commit and is rerun for this change.
+
 ## Verification
 
 - All 18 public JavaScript files passed syntax checks. The canonical text-only messaging contract and the additional live-chat quality gate passed.
