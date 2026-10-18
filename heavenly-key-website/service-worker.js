@@ -24,7 +24,7 @@
  * is tracked as a known limitation in KNOWN-ISSUES.md.
  */
 const ASSET_VERSION = "1.2.5";
-const CACHE_VERSION = "hk-v12";
+const CACHE_VERSION = "hk-v13-approved-media";
 const APP_SHELL_CACHE = CACHE_VERSION + "-shell";
 const PAGES_CACHE = CACHE_VERSION + "-pages";
 
@@ -95,16 +95,13 @@ self.addEventListener("fetch", (event) => {
     url.pathname.startsWith("/assets/")
   ) {
     event.respondWith(
-      caches.match(req).then((cached) => {
-        if (cached) return cached;
-        return fetch(req).then((res) => {
-          if (res.ok) {
-            const resClone = res.clone();
-            caches.open(APP_SHELL_CACHE).then((cache) => cache.put(req, resClone));
-          }
-          return res;
-        });
-      })
+      fetch(req, {cache: 'no-cache'}).then(res => {
+        if(res.ok && res.type === 'basic' && !/private|no-store/i.test(res.headers.get('cache-control') || '')) {
+          const clone=res.clone();
+          event.waitUntil(caches.open(APP_SHELL_CACHE).then(cache=>cache.put(req,clone)));
+        }
+        return res;
+      }).catch(async()=>await caches.match(req)||Response.error())
     );
     return;
   }
