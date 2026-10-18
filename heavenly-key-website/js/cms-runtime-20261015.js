@@ -28,6 +28,7 @@
   }
  }
  function apply(fields){for(const f of fields||[]){const d=descriptors.get(f.key);if(!d||d.type!==f.type)continue;const el=d.element;
+  if(!editing && el.closest('header,footer,.site-footer,.main-nav,.navwrap,.navlinks,#hkem-assistant,#hk-floating-radio'))continue;
   if(f.type==='text'&&typeof f.value==='string')d.node.nodeValue=f.value;
   if(f.type==='alt'&&typeof f.value==='string')el.alt=f.value;
   if(f.type==='image'&&safe(f.value,true)){if(f.value){el.src=f.value;el.hidden=false}else{el.removeAttribute('src');el.hidden=true}}
@@ -74,7 +75,7 @@
  /* Retired legacy CMS AI widget permanently. Official AI is owned by public-site-master.js. */
 
  /* Standalone share strip permanently retired: approved footer remains authoritative. */
- async function start(){if(/^\/pages\/radio(?:\.html)?\/?$/.test(path)){document.documentElement.dataset.hkemRadioPage='true';document.getElementById('hk-radio-compact')?.remove();}collect();try{const response=await fetch(PUBLIC+'/v1/content?site='+site+'&page='+encodeURIComponent(key),{credentials:'omit',cache:'no-store'});if(response.ok){const data=await response.json();apply(data.content?.fields);applyMenu(data.menu);applyFooter(data.footer)}}catch{}
+ async function start(){if(/^\/pages\/radio(?:\.html)?\/?$/.test(path)){document.documentElement.dataset.hkemRadioPage='true';document.getElementById('hk-radio-compact')?.remove();}collect();try{const response=await fetch(PUBLIC+'/v1/content?site='+site+'&page='+encodeURIComponent(key),{credentials:'omit',cache:'no-store'});if(response.ok){const data=await response.json();apply(data.content?.fields);/* Approved menu/footer are not overwritten by remote CMS layout. */}}catch{}
   if(editing)editor(); /* Legacy assistant removed: official unified assistant is loaded separately. */
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(start,450),{once:true});else setTimeout(start,450);
