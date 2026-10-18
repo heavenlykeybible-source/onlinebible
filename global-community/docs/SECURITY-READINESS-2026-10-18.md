@@ -44,7 +44,8 @@ Status: tested source repairs, awaiting production approval and deployment.
 - Fixed the CMS image-validator syntax error and tested safe/unsafe URLs. Link checking now resolves versioned assets correctly and validates actual Worker endpoints; broken navigation destinations and obsolete fragments were repaired without changing the approved homepage shell.
 - Root test discovery now gives Node .mjs suites to Node and Vitest .ts suites to Vitest. Historical layout assertions were updated to the approved shell, whose consistency check still passes.
 - Added PNG installation icons rendered from the existing app SVGs; all offline preservation and app tests pass. No device data keys or download caches were reset.
-- Updated the platform and community build tooling; npm audits report zero known dependency vulnerabilities in these two packages.
+- Updated the platform, community, Media Engine, Control Room and app build tooling. The app now has a reproducible lockfile; audits report zero known dependency vulnerabilities across all five packages, including development tooling.
+- Fixed the Account 4 embedded dashboard string and extra script brace; 49 dashboard, login, recovery, approval, upload and integration tests pass, with its six-migration preservation check.
 - Local verification: 163 platform tests, 76 Node tests, 38 community tests and 11 policy/regression tests pass. Syntax, TypeScript, preflight, architecture, API contracts and the 19-page link audit pass. GitHub must confirm the new commit independently before promotion.
 
 ## Verification
