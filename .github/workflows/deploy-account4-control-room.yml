@@ -1,13 +1,8 @@
 name: Deploy Account 4 Control Room (update existing worker only)
 
+# Retired direct production bypass: changes must use a reviewed preview and owner approval.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'account4-control-room/**'
-      - 'shared-cms/**'
-      - '.github/workflows/deploy-account4-control-room.yml'
 
 permissions:
   contents: read
@@ -18,6 +13,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ false }} # Deliberately disabled; no push or app can publish through this legacy route.
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:

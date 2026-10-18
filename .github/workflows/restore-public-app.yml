@@ -1,9 +1,8 @@
 name: Restore approved public app while Account 5 connection is pending
+# Retired direct production bypass: changes must use a reviewed preview and owner approval.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/restore-public-app.yml', 'heavenly-key-app/**']
+
 permissions:
   contents: read
 concurrency:
@@ -11,6 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   restore:
+    if: ${{ false }} # Deliberately disabled; no push or app can publish through this legacy route.
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
