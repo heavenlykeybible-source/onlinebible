@@ -895,3 +895,15 @@ body.social-page .premium-design-gallery{gap:13px}
  .social-page .feed{gap:16px}
  .social-page .post .actions>*{flex:1 1 auto}
 }
+
+/* Owner-requested ministry app directory; no changes to approved artwork. */
+.social-page .ministry-app-hub{margin:18px 0 22px;padding:16px 12px;border:2px solid #fff;border-radius:18px;background:#d9f8d9;box-shadow:0 4px 18px #17451d20;display:grid;gap:9px;color:#153e25;min-width:0}
+.social-page .ministry-app-hub h2{font-size:1rem;line-height:1.35;margin:0;font-weight:850;color:#123f25}
+.social-page .ministry-app-hub p{font-size:.78rem;line-height:1.5;margin:0 0 5px;color:#365943}
+.social-page .ministry-app-link{display:flex;align-items:center;gap:9px;padding:10px 8px;border-radius:12px;background:#ffffffb8;color:#17442c;text-decoration:none;font-size:.85rem;font-weight:720;line-height:1.35;overflow-wrap:anywhere;min-width:0;border:1px solid #fff}
+.social-page .ministry-app-link:hover,.social-page .ministry-app-link:focus-visible{background:#fff;outline:2px solid #338553;outline-offset:1px}
+.social-page .ministry-app-icon{font-size:1.25rem;flex:0 0 26px;text-align:center}
+.social-page .ministry-app-actions{display:grid;gap:8px;margin-top:6px}
+.social-page .ministry-app-action{display:block;box-sizing:border-box;width:100%;text-align:center;border:1px solid #fff;border-radius:11px;padding:10px 8px;background:#17613b;color:white;font:inherit;font-size:.8rem;font-weight:750;cursor:pointer;text-decoration:none}
+.social-page .ministry-app-action:hover{background:#0e492b}
+@media(max-width:760px){.social-page .social-rail:has(.ministry-app-hub){display:block;position:static;margin-top:20px}.social-page .social-rail>.rail-link,.social-page .social-rail>.rail-brand,.social-page .social-rail>small,.social-page .social-rail>.rail-ministry-link,.social-page .social-rail>.community-rules{display:none}.social-page .ministry-app-hub{margin:8px 0 18px}}
