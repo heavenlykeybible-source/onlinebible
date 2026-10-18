@@ -27,3 +27,9 @@
 #hkem-assistant .hkem-launcher{width:clamp(160px,20vw,260px)!important;height:auto!important;aspect-ratio:3/1!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
 #hkem-assistant .hkem-launcher img{width:100%!important;height:100%!important;object-fit:contain!important;border-radius:0!important}
 @media(max-width:600px){#hkem-assistant .hkem-launcher{width:clamp(145px,40vw,195px)!important}}
+
+/* Active window rises above the other widget and site overlays; inactive launcher stays below. */
+#hkem-assistant,#hk-floating-radio{z-index:2147483000!important}
+body:has(#hkem-assistant .hkem-iphone-chat:not([hidden])) #hkem-assistant{z-index:2147483646!important}
+body:has(#hk-floating-radio .hkr-panel:not([hidden])) #hk-floating-radio{z-index:2147483646!important}
+body:has(#hkem-assistant .hkem-iphone-chat:not([hidden])):has(#hk-floating-radio .hkr-panel:not([hidden])) #hkem-assistant{z-index:2147483647!important}
