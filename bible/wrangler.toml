@@ -6,7 +6,7 @@ workers_dev = true
 # Deploy only within the owner's verified Bible Cloudflare account.
 # No member databases, credentials, or protected resources are copied.
 [assets]
-directory = "../heavenly-key-website/bible"
+directory = "./public"
 binding = "ASSETS"
 run_worker_first = ["/api/*", "/health"]
 

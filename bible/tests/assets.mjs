@@ -1,6 +1,6 @@
 import { readFile, stat } from "node:fs/promises";
 import assert from "node:assert/strict";
-const root=new URL("../../heavenly-key-website/bible/",import.meta.url);
+const root=new URL("../public/",import.meta.url);
 const html=await readFile(new URL("index.html",root),"utf8"),js=await readFile(new URL("app.js",root),"utf8");
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(new Set(ids).size,ids.length,"Duplicate HTML IDs");
 for(const [,id] of js.matchAll(/el\("([^"]+)"\)/g))assert(ids.includes(id),"Missing UI element "+id);

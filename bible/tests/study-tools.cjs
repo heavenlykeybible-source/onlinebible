@@ -1,5 +1,5 @@
 const fs=require("node:fs"),vm=require("node:vm"),assert=require("node:assert/strict");
-const context={URL};vm.runInNewContext(fs.readFileSync("heavenly-key-website/bible/study-tools.js","utf8"),context);
+const context={URL};vm.runInNewContext(fs.readFileSync("bible/public/study-tools.js","utf8"),context);
 const tools=context.HKStudyTools;
 const annual=tools.plans.find(p=>p.id==="whole-bible"),chapters=annual.days.flat();
 assert.equal(annual.days.length,365);assert.equal(chapters.length,1189);

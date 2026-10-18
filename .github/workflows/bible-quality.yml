@@ -3,12 +3,12 @@ on:
   push:
     paths:
       - 'bible/**'
-      - 'heavenly-key-website/bible/**'
+      - 'bible/public/**'
       - '.github/workflows/bible-quality.yml'
   pull_request:
     paths:
       - 'bible/**'
-      - 'heavenly-key-website/bible/**'
+      - 'bible/public/**'
       - '.github/workflows/bible-quality.yml'
   workflow_dispatch:
 permissions:
@@ -24,9 +24,9 @@ jobs:
           node-version: '22'
       - name: Validate Bible scripts and worker
         run: |
-          node --check heavenly-key-website/bible/app.js
-          node --check heavenly-key-website/bible/study-tools.js
-          node --check heavenly-key-website/bible/sw.js
+          node --check bible/public/app.js
+          node --check bible/public/study-tools.js
+          node --check bible/public/sw.js
           node --check bible/worker.js
       - name: Verify all scripture checksums and book totals
         run: node bible/tests/scripture.mjs

@@ -8,7 +8,7 @@ TAKING CHRIST TO THE NATIONS OF THE WORLD.
 
 ## Source and deployment
 
-This project lives inside the main Heavenly Key repository. Website assets: `heavenly-key-website/bible/`. Dedicated Bible Worker: `bible/worker.js`, configured by `bible/wrangler.toml`, Worker name `heavenly-key-bible`. Deploy only to the owner's verified Bible account, not another ministry account. The latest account map assigns the Bible to Account 6 (heavenlykeybible@gmail.com), with Account 4 coordinating administration. Verify that Cloudflare account identity and the existing Worker before deployment.
+This project lives inside the main Heavenly Key repository. Website assets: `bible/public/`. Dedicated Bible Worker: `bible/worker.js`, configured by `bible/wrangler.toml`, Worker name `heavenly-key-bible`. Deploy only to the owner's verified Bible account, not another ministry account. The latest account map assigns the Bible to Account 6 (heavenlykeybible@gmail.com), with Account 4 coordinating administration. Verify that Cloudflare account identity and the existing Worker before deployment.
 
 The reader ships its own validated KJV text. Its public media proxy reuses approved hymns, Bible audio and gospel-music APIs from the existing ministry service. It forwards no cookies, authorization headers or administrator routes and does not bind or change ministry databases.
 
@@ -27,7 +27,7 @@ The reader ships its own validated KJV text. Its public media proxy reuses appro
 
 ## Verification
 
-Run `node --check heavenly-key-website/bible/app.js`, `node --check heavenly-key-website/bible/sw.js`, `node --check bible/worker.js`, and each test in `bible/tests/`. These checks passed locally. Wrangler 4.145.0 deploy --dry-run also passed and recognized all 79 static assets and the ASSETS binding. The Actions workflow `bible-quality.yml` runs the same checks without package installation or secrets.
+Run `node --check bible/public/app.js`, `node --check bible/public/sw.js`, `node --check bible/worker.js`, and each test in `bible/tests/`. These checks passed locally. Wrangler 4.145.0 deploy --dry-run also passed and recognized all 79 static assets and the ASSETS binding. The Actions workflow `bible-quality.yml` runs the same checks without package installation or secrets.
 
 See `SOURCE.md` for scripture provenance and reproducible import instructions. Notes are stored in this browser and do not sync across devices. Browser storage must remain available for saved notes and offline assets.
 
@@ -44,3 +44,7 @@ Follow KJV-POLICY.md. The owner does not authorize alternative Bible translation
 All six local test suites passed again, including all KJV file checksums. Worker requests now reject writes consistently, health HEAD returns no body, and MINISTRY_PUBLIC_API_ORIGIN accepts only an HTTPS origin without credentials, paths or queries. The default public media service is unchanged; the setting supports future central-account migration. No Cloudflare credentials or verified live Bible URL were available in this session, so live deployment, media availability, device checks and global launch readiness remain unverified.
 
 Offline recovery fixes: full-Bible downloads now time out stalled network reads, reject duplicate book manifests and permit retry after failure. Offline initialization has a bounded wait. Saved chapter numbers are normalized to whole numbers. Individual verses can be copied with their KJV reference. All six local suites pass, including failure/retry and verse-copy checks. The offline shell cache was incremented for this release.
+
+## 18 October 2026 repair checkpoint
+
+Recovered the dedicated Bible assets from the last repository snapshot before bundled Account 1 apps were removed, with every recovered source blob verified. Canonical app assets now live under bible/public rather than the main website. Repair and deployment verification are ongoing; no new Bible deployment is claimed.

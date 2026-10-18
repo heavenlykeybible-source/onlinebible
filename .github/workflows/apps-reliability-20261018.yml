@@ -1,0 +1,75 @@
+name: Verify dedicated Bible app repairs and existing deployment access
+on:
+  push:
+    branches: ['repair/apps-reliability-20261018']
+    paths: ['bible/**','scripts/test-bible-browser.cjs','.github/workflows/apps-reliability-20261018.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bible:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HK_PLAYWRIGHT: /tmp/hk-app-tools/node_modules/playwright
+      BIBLE_TOKEN: ${{ secrets.BIBLE_CLOUDFLARE_API_TOKEN || secrets.ACCOUNT_6_TOKEN || secrets.CF_ACCOUNT6_API_TOKEN }}
+      EXISTING_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify Scripture, notes, offline preservation and public API boundaries
+        run: |
+          node --check bible/public/app.js
+          node --check bible/public/sw.js
+          node bible/tests/scripture.mjs
+          node bible/tests/reader.cjs
+          node bible/tests/offline.cjs
+          node bible/tests/worker.mjs
+          node bible/tests/assets.mjs
+          node bible/tests/study-tools.cjs
+      - name: Install pinned Chromium and WebKit test engines
+        run: |
+          npm install --prefix /tmp/hk-app-tools --ignore-scripts --no-audit --no-fund playwright@1.56.1
+          /tmp/hk-app-tools/node_modules/.bin/playwright install --with-deps chromium webkit
+      - name: Test desktop tablet and phone layouts without changing production
+        env:
+          HK_BIBLE_ENGINES: chromium,webkit
+        run: node scripts/test-bible-browser.cjs
+      - name: Back up public live Bible files and inspect existing deployment access only
+        run: |
+          node --input-type=module <<'JS'
+          import {mkdirSync,writeFileSync} from 'node:fs';
+          import {createHash} from 'node:crypto';
+          const root='https://bible.heavenlykey.org',files=['index.html','app.js','study-tools.js','style.css','sw.js','manifest.webmanifest','hk-page-script-index-1.js'];
+          mkdirSync('bible-live-snapshot',{recursive:true});
+          const inventory=[];
+          for(const file of files){
+            const response=await fetch(root+'/'+(file==='index.html'?'':file)+'?app-audit='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(20000)});
+            if(!response.ok)throw Error('Cannot back up public Bible asset '+file+' HTTP '+response.status);
+            const bytes=Buffer.from(await response.arrayBuffer());if(bytes.length>500000)throw Error('Unexpected public asset size');
+            writeFileSync('bible-live-snapshot/'+file,bytes);
+            inventory.push({file,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),gitBlob:createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex')});
+          }
+          writeFileSync('bible-live-snapshot/inventory.json',JSON.stringify(inventory,null,2));
+          console.log(JSON.stringify({kind:'public-bible-backup',inventory}));
+          const account='8532b1db24dc074ff1e09cc513915825';let connected=false;
+          for(const [kind,raw] of [['dedicated',process.env.BIBLE_TOKEN],['existing',process.env.EXISTING_TOKEN]]){
+            const token=raw?.trim().replace(/^Bearer\s+/i,'');if(!token){console.log(JSON.stringify({kind:'bible-deployment-access',credential:kind,configured:false}));continue}
+            const response=await fetch('https://api.cloudflare.com/client/v4/accounts/'+account+'/workers/scripts/onlinebible/settings',{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(20000)});
+            const data=await response.json();connected=response.ok&&data.success;
+            console.log(JSON.stringify({kind:'bible-deployment-access',credential:kind,configured:true,http:response.status,existingWorkerVerified:connected,bindings:connected?data.result.bindings?.map(b=>({name:b.name,type:b.type})):undefined,errorCodes:data.errors?.map(e=>e.code)}));
+            if(connected)break;
+          }
+          writeFileSync('bible-live-snapshot/access.json',JSON.stringify({existingWorkerVerified:connected,account,worker:'onlinebible',productionChanged:false},null,2));
+          console.log('Read-only inspection complete. No Worker, route, database, setting or deployment was changed.');
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bible-repair-device-checks-and-live-backup
+          path: |
+            bible-device-screenshots/
+            bible-live-snapshot/
+          retention-days: 30
