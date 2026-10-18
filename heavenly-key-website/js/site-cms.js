@@ -106,17 +106,21 @@
   }
 
   function applyOverrides(descriptors, content) {
+    const protectedArea = element => element && element.closest('header,footer,.site-footer,.main-nav,.navwrap,.navlinks,#hkem-assistant,#hk-floating-radio');
     descriptors.text.forEach((item) => {
+      if (protectedArea(item.node.parentElement)) return;
       const saved = content[item.key];
       if (saved && saved.type === "text") item.node.nodeValue = saved.value;
     });
     descriptors.images.forEach((item) => {
+      if (protectedArea(item.img)) return;
       const src = content[item.srcKey];
       const alt = content[item.altKey];
       if (src && src.type === "image") { if(src.value && safeImage(src.value)){item.img.setAttribute("src", src.value);item.img.hidden=false;}else{item.img.removeAttribute("src");item.img.hidden=true;} }
       if (alt && alt.type === "alt") item.img.setAttribute("alt", alt.value);
     });
     descriptors.links.forEach(item=>{
+      if (protectedArea(item.link)) return;
       const saved=content[item.key];
       if(saved && saved.type==="text" && safeLink(saved.value))
         item.link.setAttribute("href",saved.value);
