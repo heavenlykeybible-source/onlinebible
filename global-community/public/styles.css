@@ -913,3 +913,11 @@ body.social-page .premium-design-gallery{gap:13px}
 .social-page .ministry-app-item .ministry-app-link{background:#fff;border:0}
 .social-page .ministry-app-item-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
 .social-page .ministry-app-item-actions .ministry-app-action{min-width:0;padding:8px 4px;font-size:.68rem;line-height:1.3;white-space:normal}
+
+/* Approved posting invitation: gently attract attention without changing its words. */
+body.social-page .composer-prompt{background:linear-gradient(105deg,#effaf0,#f8f5ff,#fff8e9);background-size:220% 220%;border:2px solid #acd8b5;box-shadow:0 0 0 1px #ffffffcc,0 5px 18px #1d6b3920;animation:hk-composer-soft-glow 7s ease-in-out infinite;transition:transform .2s ease,box-shadow .2s ease}
+body.social-page .composer-prompt:hover,body.social-page .composer-prompt:focus-visible{transform:translateY(-1px);border-color:#4b9c6a;box-shadow:0 0 0 3px #70c98c30,0 7px 22px #174c3527}
+body.social-page .composer-prompt-spark{color:#bf8a25;filter:drop-shadow(0 0 4px #ffd77e80)}
+body.social-page .composer-prompt-text{color:#1f4b3c;font-weight:750}
+@keyframes hk-composer-soft-glow{0%,100%{background-position:0% 50%;box-shadow:0 0 0 1px #ffffffcc,0 5px 18px #1d6b3920}50%{background-position:100% 50%;box-shadow:0 0 0 2px #a7dbb04a,0 6px 24px #33844c32}}
+@media(prefers-reduced-motion:reduce){body.social-page .composer-prompt{animation:none!important;transition:none!important}}
