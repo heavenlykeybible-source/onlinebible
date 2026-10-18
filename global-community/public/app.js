@@ -48,7 +48,51 @@ for(const [symbol,name,url] of ministryApps){
  actions.append(download,share);item.append(a,actions);apps.append(item);
 }
 nav.append(apps);const heading=el("header",null,"stream-heading");heading.append(el("span","FAITH · FELLOWSHIP · PURPOSE","stream-eyebrow"),el("h1",title));if(description)heading.append(el("p",description));stream.append(heading);aside.append(encouragementCard(),card("Our shared responsibility","Community health is everyone’s responsibility. Report anything against our Christ-centered values immediately and respectfully."),communityRules());layout.append(nav,stream,aside);root.append(layout);mountAdverts(stream,aside);return {stream,aside};}
-async function commentThread(post,host){let box=host.querySelector("[data-comments]");if(box){box.remove();return;}box=el("div",null,"card");box.dataset.comments="1";const d=await api("/api/posts/"+post.post_id+"/comments");for(const x of d.items||[]){const p=el("p");p.append(el("strong",(x.display_name||"Member")+": "),document.createTextNode(x.body));const report=el('button','Report reply','btn secondary');report.type='button';report.addEventListener('click',()=>reportPost({post_id:x.comment_id,reportTargetType:'comment'},box));box.append(p,report);}if(session){const f=el("form",null,"stack"),ta=field(f,"Reply","body","textarea",{required:true}),b=el("button","Reply","btn secondary"),st=el("p","", "status");b.type="submit";f.append(b,st);f.addEventListener("submit",async e=>{e.preventDefault();try{await api("/api/posts/"+post.post_id+"/comments","POST",{body:ta.value});ta.value="";box.remove();await commentThread(post,host);}catch(err){status(st,err.message);}});box.append(f);}host.append(box);}
+async function commentThread(post,host){
+ let box=host.querySelector("[data-comments]");if(box){box.remove();return;}
+ box=el("section",null,"card community-comment-panel");box.dataset.comments="1";
+ box.style.cssText="background:#e9ffe9;border:2px solid #8745c7;border-radius:18px;padding:14px";
+ const heading=el("h3","Comments","comment-heading");heading.style.color="#57278e";box.append(heading);
+ const list=el("div",null,"community-comment-list");box.append(list);
+ const d=await api("/api/posts/"+post.post_id+"/comments");
+ for(const x of d.items||[]){
+  const p=el("p",null,"community-comment-item");
+  p.append(el("strong",(x.display_name||"Member")+": "),document.createTextNode(x.body));
+  const report=el("button","Report reply","btn secondary");report.type="button";
+  report.addEventListener("click",()=>reportPost({post_id:x.comment_id,reportTargetType:"comment"},box));
+  list.append(p,report);
+ }
+ if(session){
+  const form=el("form",null,"stack"),textarea=el("textarea",null,"community-comment-text");
+  textarea.name="body";textarea.rows=3;textarea.placeholder="Write your comment…";textarea.maxLength=4000;
+  textarea.setAttribute("aria-label","Write your comment");
+  textarea.style.cssText="width:100%;box-sizing:border-box;border:1px solid #8745c7;border-radius:12px;background:#fff;padding:12px";
+  const send=el("button","Post comment","btn secondary"),st=el("p","","status");
+  send.type="submit";form.append(textarea,send,st);
+  async function submitComment(body,button){
+   if(!body.trim())return;
+   button.disabled=true;
+   try{
+    await api("/api/posts/"+post.post_id+"/comments","POST",{body:body.trim()});
+    box.remove();await commentThread(post,host);
+   }catch(err){status(st,err.message);button.disabled=false;}
+  }
+  form.addEventListener("submit",e=>{e.preventDefault();submitComment(textarea.value,send);});
+  box.append(form);
+  const reactionRow=el("div",null,"community-comment-reactions");
+  reactionRow.style.cssText="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px";
+  reactionRow.setAttribute("aria-label","Quick Christian reactions");
+  const choices=[["🙏","Thank You Jesus"],["🔥","Amen"],["🙌","Hallelujah"],["❤️","God Is Good"],["💯","Glory To God"]];
+  for(const [icon,label] of choices){
+   const button=el("button",icon+" "+label,"btn secondary");button.type="button";
+   button.style.cssText="background:#fff;border:1px solid #8745c7;border-radius:12px;color:#57278e";
+   button.addEventListener("click",()=>submitComment(icon+" "+label+(textarea.value.trim()?" — "+textarea.value.trim():""),button));
+   reactionRow.append(button);
+  }
+  box.append(reactionRow);
+ }
+ host.append(box);
+}
 function communityRules(){const rules=el("details",null,"community-rules");rules.append(el("summary","Community rules"));const list=el("ul");for(const rule of DC.COMMUNITY_RULES)list.append(el("li",rule));rules.append(list);return rules;}
 function designCard(title,body,scripture,raw,category){let settings;try{settings=DC.normalizeDesign(raw);}catch{settings=DC.normalizeDesign();}const t=DC.templateAt(settings.templateId),n=el("section",null,"design-card dc-layout-"+t.layout[0]+" dc-pattern-"+t.pattern[0]+" dc-font-"+settings.fontSize+" dc-size-"+settings.size+" dc-decoration-"+settings.decoration+(t.premium?" dc-premium dc-premium-"+(t.themeIndex-DC.PREMIUM_START):""));n.style.setProperty("--dc-a",t.palette[1]);n.style.setProperty("--dc-b",t.palette[2]);n.style.setProperty("--dc-text",t.palette[3]);n.style.setProperty("--dc-accent",t.palette[4]);n.style.textAlign=settings.alignment;const inner=el("div",null,"dc-inner");if(category)inner.append(el("small",DC.CATEGORIES.find(([id])=>id===category)?.[1]||"Faith","dc-category"));if(title)inner.append(el("h3",title));if(body)inner.append(expandableText(body,1400,"Read full card"));if(scripture)inner.append(el("p",scripture,"dc-scripture"));n.append(inner);return n;}
 function expandableText(text,limit=700,label="Read more"){const wrap=el("div",null,"post-text"),p=el("p",text.length>limit?text.slice(0,limit)+"…":text);wrap.append(p);if(text.length>limit){const b=el("button",label,"read-more");b.type="button";b.setAttribute("aria-expanded","false");b.addEventListener("click",()=>{const open=b.getAttribute("aria-expanded")==="true";p.textContent=open?text.slice(0,limit)+"…":text;b.textContent=open?label:"Show less";b.setAttribute("aria-expanded",String(!open));});wrap.append(b);}return wrap;}
