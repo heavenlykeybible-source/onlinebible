@@ -52,3 +52,22 @@ test('central Heavenly Key AI policy is shared and does not possess database or 
 });
 
 test('premium Facebook and social card shapes are validated and saveable',()=>{assert.equal(normalizeDesign({templateId:'card-1151',size:'facebook'}).size,'facebook');assert.equal(normalizeDesign({templateId:'card-576',size:'social'}).size,'social');assert.throws(()=>normalizeDesign({size:'10px;color:red'}));});
+
+test('Premium Text Studio is separate from original Design Cards',()=>{
+ const content='[theme=1]\n[bold]Faith[/bold] [color=#173D7A]endures[/color]';
+ const premium=validatePostPresentation({postFormat:'premium_text',body:content});
+ assert.equal(premium.format,'premium_text');assert.equal(premium.design,null);
+ assert.equal(validatePostPresentation({postFormat:'design_card',body:'Original',design:{templateId:'card-0'}}).design.templateId,'card-0');
+});
+test('Premium Text Studio rejects malformed colours and attachments',()=>{
+ assert.throws(()=>validatePostPresentation({postFormat:'premium_text',body:'[color=red]Text[/color]'}));
+ assert.throws(()=>validatePostPresentation({postFormat:'premium_text',body:'Hello',mediaIds:[2]}));
+});
+
+test('Video URLs reject invalid schemes, fake hosts and unsupported paths',()=>{
+ for(const url of ['https://youtube.com.evil.example/watch?v=abcdefghijk','http://youtu.be/abcdefghijk','https://example.com/watch?v=abcdefghijk','https://www.youtube.com/watch?v=bad','https://www.facebook.com/people/test']){
+  assert.throws(()=>parseVideoLink(url),url);
+ }
+ assert.equal(parseVideoLink('https://youtu.be/abcdefghijk').provider,'youtube');
+ assert.equal(parseVideoLink('https://www.facebook.com/watch/?v=123456789').provider,'facebook');
+});

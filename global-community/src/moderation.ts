@@ -21,6 +21,13 @@ const scam=[
   /\bpay\s+(?:a\s+)?fee.{0,30}(?:receive|claim|unlock).{0,25}(?:prayer|blessing|miracle|grant)/i,
   /\bseed\s+of\s+faith.{0,40}(?:account|transfer|send|pay)/i
 ];
+// Reject clear unsolicited commercial promotions in member posts, while preserving
+// legitimate ministry announcements and ordinary discussion of work or business.
+const commercialPromotion=[
+  /\b(?:buy now|shop now|order now|limited time offer|flash sale|discount code|use promo code|add to cart)\b/i,
+  /\b(?:whatsapp|dm|inbox|call)\s+(?:me|us|now|to order|for prices?|for purchase)\b/i,
+  /\b(?:betting tips?|casino bonus|sportsbook|guaranteed winnings?)\b/i
+];
 const hateOrSlur=[
   /\b(?:all|every)\s+(?:members?|people)\s+of\s+.{1,35}\s+(?:are|should be)\s+(?:killed|destroyed|hated|animals?|vermin)\b/i,
   /\b(?:race|tribe|ethnic(?:ity)?|nationality).{0,30}\b(?:inferior|subhuman|vermin)\b/i
@@ -43,6 +50,9 @@ export function moderateText(raw:string,surface:"post"|"message"|"profile"|"spac
   for(const [category,rules] of immediate)if(rules.some(r=>r.test(text))){
     if(category==="explicit_pornography"&&/\b(?:recover(?:y|ing)|overcome|overcame|delivered|addiction|avoid|against|repent|freedom from)\b/.test(text)&&!/\b(?:watch|buy|download|send|sell|link|join)\b/.test(text))return {decision:"hold",category:"sensitive_testimony_review",reasons:["Sensitive testimony needs context review."],safeExcerpt:excerpt(raw)};
     return {decision:"block",category,reasons:[category],safeExcerpt:excerpt(raw)};
+  }
+  if(surface==="post"&&commercialPromotion.some(rule=>rule.test(text))){
+    return {decision:"block",category:"commercial_advertising",reasons:["Commercial advertisements are not permitted in the community member feed."],safeExcerpt:excerpt(raw)};
   }
   if(nonChristianTerms.test(text)&&promoteOrDebate.test(text)&&!allowedChristianContext.test(text)){
     return {decision:"hold",category:"non_christian_religious_promotion_or_debate",reasons:["This Christian community does not host promotion of non-Christian worship or inter-religious debate."],safeExcerpt:excerpt(raw)};

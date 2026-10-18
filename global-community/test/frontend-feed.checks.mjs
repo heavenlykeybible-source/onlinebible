@@ -72,13 +72,21 @@ test('Believer discovery retains the latest search and recovers after a failed r
  const retry=discover(host,'retry');requests[3].resolve({items:[]});await retry;assert.match(host.querySelector('.list').children[0].textContent,/No matching members/);
 });
 
- test('Welcome illustration is guest-only and is never created for signed-in members',()=>{
+ test('Approved official welcome banner is guest-only, uncropped and absent after sign-in',()=>{
  const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8'),start=source.indexOf('function communityWelcome('),end=source.indexOf('function socialFeedLayout(',start),created=[];
- const shortcuts=new Node('section');shortcuts.className='community-shortcuts';const context={session:null,communityShortcuts:()=>shortcuts,el:(tag,text,cls)=>{const n=new Node(tag,text);n.className=cls;created.push(n);return n;}};
+ const shortcuts=new Node('section');shortcuts.className='community-shortcuts';
+ const context={session:null,communityShortcuts:()=>shortcuts,el:(tag,text,cls)=>{const n=new Node(tag,text);n.className=cls;created.push(n);return n;}};
  const welcome=vm.runInNewContext(source.slice(start,end)+'\ncommunityWelcome;',context);
- const guest=welcome();assert.equal(guest.className,'community-welcome');assert.equal(guest.children[2],shortcuts,'The real action panel appears underneath the welcome artwork');assert.equal(created.filter(n=>n.tag==='img').length,3);const art=guest.children[1];assert.equal(art.children[1].src,'assets/community-network.svg');assert.match(readFileSync(new URL('../public/'+art.children[1].src,import.meta.url),'utf8'),/^<svg/,'Actual welcome illustration asset must exist');assert.equal(art.children[0].children[0].children.length,2);assert.ok(art.children[0].children[0].children.every(n=>n.src==='assets/rotating-world-land.svg'),'Only the map layers belong to the rotating track');
- context.session={user:{user_id:1}};created.length=0;assert.equal(welcome(),null);assert.equal(created.length,0,'No welcome image request or banner for a signed-in member');
- });
+ const guest=welcome();assert.equal(guest.className,'community-welcome');
+ assert.equal(guest.children[2],shortcuts,'Real community action panel follows the official banner');
+ const art=guest.children[0];assert.equal(art.tag,'img');
+ assert.equal(art.src,'assets/70F8EC1C-065B-4893-8ADD-6F21949C73D2.png');
+ assert.equal(art.width,1536);assert.equal(art.height,614);
+ assert.equal(art.className,'community-official-network-image');
+ assert.equal(created.filter(n=>n.tag==='img').length,1,'No unapproved additional banner artwork');
+ context.session={user:{user_id:1}};created.length=0;
+ assert.equal(welcome(),null);assert.equal(created.length,0,'Signed-in members never request the large welcome image');
+});
 
 test('Manual feed refresh keeps the selected filter and recovers its button',async()=>{
  const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8'),start=source.indexOf('function feedTabs('),end=source.indexOf('function composeCard(',start),host=new Node('section'),requests=[];

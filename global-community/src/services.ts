@@ -180,11 +180,28 @@ export async function leaveGroup(env:Env,userId:number,id:number){
  await env.DB.prepare("DELETE FROM group_members WHERE group_id=? AND user_id=? AND join_status IN ('approved','pending')").bind(id,userId).run();return {ok:true};
 }
 
+// Provider metadata is untrusted; unverified links remain held for human review.
+async function inspectVideoLink(video:{provider:string,url:string}|null){
+ if(!video)return {decision:"allow" as const};
+ const endpoint=video.provider==="youtube"?"https://www.youtube.com/oembed?format=json&url="+encodeURIComponent(video.url):video.provider==="facebook"?"https://www.facebook.com/plugins/video/oembed.json/?url="+encodeURIComponent(video.url):"";
+ if(!endpoint)return {decision:"hold" as const};
+ try{
+  const response=await fetch(endpoint,{headers:{"Accept":"application/json"},signal:AbortSignal.timeout(4500)});
+  if(!response.ok)return {decision:"hold" as const};
+  const data=await response.json() as {title?:unknown,author_name?:unknown};
+  const title=String(data.title||"").slice(0,240),author=String(data.author_name||"").slice(0,120);
+  if(!title&&!author)return {decision:"hold" as const};
+  const result=moderateText(title+" "+author,"post");
+  return {decision:result.decision==="block"?"block" as const:result.decision==="hold"?"hold" as const:"allow" as const};
+ }catch{return {decision:"hold" as const};}
+}
 export async function createPost(env:Env,user:SessionUser,input:any){
   const presentation=validatePostPresentation({...input,postFormat:input.postFormat||(input.title?"article":"design_card")});
   const {body,title,scripture}=presentation;
-  const mod=moderateText(title+"\n"+body+"\n"+scripture,"post");
+  const videoCheck=await inspectVideoLink(presentation.video);
+  const mod=moderateText(title+"\n"+body+"\n"+scripture+"\n"+(presentation.video?.url||""),"post");
   if(mod.decision==="block"){await recordModeration(env,user.userId,"post",null,mod);throw new Error("This post cannot be published because it violates the Christian Community Standards.");}
+  if(videoCheck.decision==="block")throw new Error("The linked video violates community standards.");
   let authorSpaceId:number|null=null;
   if(input.authorSpaceId){const can=await env.DB.prepare("SELECT 1 FROM space_members sm JOIN spaces s ON s.space_id=sm.space_id WHERE sm.space_id=? AND sm.user_id=? AND s.status='active'").bind(Number(input.authorSpaceId),user.userId).first();if(!can)throw new Error("You do not manage this Space.");authorSpaceId=Number(input.authorSpaceId);}
   let groupId:number|null=null;
@@ -192,7 +209,9 @@ export async function createPost(env:Env,user:SessionUser,input:any){
   const types=["fellowship","prayer","testimony","bible_question","bible_answer","encouragement","mission","salvation","announcement"];
   const type=types.includes(input.postType)?input.postType:"fellowship";
   const visibility=groupId?"group":input.visibility==="connections"?"connections":"public";
-  const state=mod.decision==="hold"?"held":mod.decision==="warn"?"warned":"allowed",status=mod.decision==="hold"?"held":"active";
+  // Provider metadata cannot establish that video frames/audio are safe. Require review.
+  const held=mod.decision==="hold"||Boolean(presentation.video)||videoCheck.decision==="hold";
+  const state=held?"held":mod.decision==="warn"?"warned":"allowed",status=held?"held":"active";
   const row=await env.DB.prepare("INSERT INTO posts(author_user_id,author_space_id,group_id,post_type,title,body,visibility,status,moderation_state,post_format,design_category,design_settings,scripture,video_url,video_provider) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING post_id")
     .bind(user.userId,authorSpaceId,groupId,type,title||null,body,visibility,status,state,presentation.format,presentation.category,presentation.design?JSON.stringify(presentation.design):null,scripture||null,presentation.video?.url||null,presentation.video?.provider||null).first<any>();
   if(!row)throw new Error("Post could not be created.");
@@ -202,9 +221,12 @@ export async function createPost(env:Env,user:SessionUser,input:any){
 export async function editPost(env:Env,user:SessionUser,id:number,input:any){
   const existing=await env.DB.prepare("SELECT post_id FROM posts WHERE post_id=? AND author_user_id=? AND status IN ('active','held')").bind(id,user.userId).first();
   if(!existing)throw Object.assign(new Error("You can edit only your own available posts."),{status:403});
-  const p=validatePostPresentation(input),mod=moderateText(p.title+"\n"+p.body+"\n"+p.scripture,"post");
+  const p=validatePostPresentation(input),videoCheck=await inspectVideoLink(p.video),mod=moderateText(p.title+"\n"+p.body+"\n"+p.scripture+"\n"+(p.video?.url||""),"post");
   if(mod.decision==="block"){await recordModeration(env,user.userId,"post",id,mod);throw new Error("This edit violates the Christian Community Standards.");}
-  const state=mod.decision==="hold"?"held":mod.decision==="warn"?"warned":"allowed",status=mod.decision==="hold"?"held":"active";
+  if(videoCheck.decision==="block")throw new Error("The linked video violates community standards.");
+  // Provider metadata cannot establish that video frames/audio are safe. Require review.
+  const held=mod.decision==="hold"||Boolean(p.video)||videoCheck.decision==="hold";
+  const state=held?"held":mod.decision==="warn"?"warned":"allowed",status=held?"held":"active";
   const changed=await env.DB.prepare("UPDATE posts SET title=?,body=?,post_format=?,design_category=?,design_settings=?,scripture=?,video_url=?,video_provider=?,background_style=NULL,status=?,moderation_state=?,updated_at=datetime('now') WHERE post_id=? AND author_user_id=? AND status IN ('active','held')")
     .bind(p.title||null,p.body,p.format,p.category,p.design?JSON.stringify(p.design):null,p.scripture||null,p.video?.url||null,p.video?.provider||null,status,state,id,user.userId).run();
   if(!changed.meta.changes)throw new Error("Post is no longer available for editing.");
@@ -345,6 +367,22 @@ export async function readNotifications(env:Env,userId:number,ids:any){
  if(!Array.isArray(ids)||ids.length>100||ids.some(x=>!Number.isSafeInteger(x)||x<1))throw new Error("Choose valid notifications.");
  const unique=[...new Set(ids)];if(unique.length)await env.DB.prepare("UPDATE notifications SET read_at=datetime('now') WHERE user_id=? AND read_at IS NULL AND notification_id IN ("+unique.map(()=>'?').join(',')+")").bind(userId,...unique).run();
  return {unreadCount:await unreadNotificationCount(env,userId)};
+}
+export async function pendingVideoPosts(env:Env){
+ const rows=await env.DB.prepare("SELECT po.post_id,po.title,po.body,po.video_url,po.video_provider,po.created_at,p.display_name FROM posts po JOIN profiles p ON p.user_id=po.author_user_id WHERE po.post_format='video_link' AND po.status='held' ORDER BY po.post_id DESC LIMIT 100").all();
+ return rows.results;
+}
+export async function reviewVideoPost(env:Env,moderator:SessionUser,id:number,input:any){
+ if(!["moderator","administrator","owner"].includes(moderator.role))throw Object.assign(new Error("Moderator access required."),{status:403});
+ const action=input.action,note=clamp(input.note,500);
+ if(!["approve","reject"].includes(action)||note.length<10)throw new Error("Choose approve or reject and explain the decision in at least 10 characters.");
+ const row=await env.DB.prepare("SELECT post_id FROM posts WHERE post_id=? AND post_format='video_link' AND status='held'").bind(id).first();
+ if(!row)throw new Error("Pending video post unavailable.");
+ await env.DB.batch([
+  env.DB.prepare("UPDATE posts SET status=?,moderation_state=?,updated_at=datetime('now') WHERE post_id=? AND post_format='video_link' AND status='held'").bind(action==="approve"?"active":"removed",action==="approve"?"allowed":"blocked",id),
+  env.DB.prepare("INSERT INTO safety_audit(actor_user_id,action,target_type,target_id,reason) VALUES(?,?,?,?,?)").bind(moderator.userId,action==="approve"?"video_approve":"video_reject","post",id,note)
+ ]);
+ return {status:action==="approve"?"active":"removed"};
 }
 export async function moderationQueue(env:Env){
   const r=await env.DB.prepare("SELECT * FROM moderation_events WHERE decision IN ('hold','block') ORDER BY moderation_event_id DESC LIMIT 200").all<any>();return r.results;

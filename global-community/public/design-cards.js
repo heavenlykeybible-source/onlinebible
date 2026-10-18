@@ -99,7 +99,7 @@ export function parseVideoLink(value) {
 }
 export function validatePostPresentation(input) {
   const format=input.postFormat||'article';
-  if(!['design_card','article','video_link'].includes(format))throw Error('Choose Design Card, Article or Video Link.');
+  if(!['design_card','article','video_link','premium_text'].includes(format))throw Error('Choose Design Card, Premium Text Studio, Article or Video Link.');
   const category=input.designCategory||'faith';
   if(!CATEGORIES.some(([id])=>id===category))throw Error('Choose a valid category.');
   const title=String(input.title??'').trim(),body=String(input.body??'').trim(),scripture=String(input.scripture??'').trim();
@@ -107,7 +107,13 @@ export function validatePostPresentation(input) {
   if(body.length<2||body.length>(format==='article'?30000:10000))throw Error(format==='article'?'Write between 2 and 30,000 characters.':'Write between 2 and 10,000 characters.');
   if(format==='article'&&!title)throw Error('Give your article a title for its Design Card cover.');
   if(Array.isArray(input.mediaIds)&&input.mediaIds.length)throw Error('File attachments are disabled. Choose a Design Card or a video link.');
-  const design=format==='video_link'?null:normalizeDesign(input.design);
+  const design=format==='video_link'||format==='premium_text'?null:normalizeDesign(input.design);
+  if(format==='premium_text'){
+    if(/^\[theme=/.test(body)&&!/^\[theme=[0-5]\](?:\n|$)/.test(body))throw Error('Choose a supported Premium Text Studio theme.');
+    const tags=body.match(/\[(?:\/)?(?:bold|italic|color(?:=#[0-9a-fA-F]{6})?)\]/g)||[];
+    if(tags.length>150)throw Error('Too many text style changes.');
+    if(/\[(?:color|\/color|bold|\/bold|italic|\/italic)[^\]]*\]/i.test(body.replace(/\[(?:\/)?(?:bold|italic|color(?:=#[0-9a-fA-F]{6})?)\]/g,'')))throw Error('Use a supported text colour or style.');
+  }
   const video=format==='video_link'?parseVideoLink(input.videoUrl):null;
   return {format,category,title,body,scripture,design,video};
 }

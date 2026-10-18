@@ -50,3 +50,22 @@ test('Dual report routing, separate group review, flag decisions and administrat
  assert.equal(db.prepare("SELECT COUNT(*) n FROM safety_audit WHERE action IN ('account_lock','account_unlock')").get().n,2);
  }finally{db.close();rmSync(dir,{recursive:true,force:true});}
 });
+
+test('Moderation blocks commercial promotions while allowing ordinary ministry messages',async()=>{
+ const {stripTypeScriptTypes}=await import('node:module');
+ const {readFileSync}=await import('node:fs');
+ const {mkdtempSync,writeFileSync,rmSync}=await import('node:fs');
+ const {tmpdir}=await import('node:os');
+ const {pathToFileURL}=await import('node:url');
+ const {join}=await import('node:path');
+ const dir=mkdtempSync(join(tmpdir(),'hkem-moderation-'));
+ try{
+  const source=readFileSync(new URL('../src/moderation.ts',import.meta.url),'utf8');
+  writeFileSync(join(dir,'moderation.mjs'),stripTypeScriptTypes(source));
+  const {moderateText}=await import(pathToFileURL(join(dir,'moderation.mjs')).href);
+  assert.equal(moderateText('Buy now, limited time offer!','post').decision,'block');
+  assert.equal(moderateText('DM me for investment profit','post').decision,'block');
+  assert.equal(moderateText('Please pray for our Christian outreach','post').decision,'allow');
+  assert.equal(moderateText('We pray for people struggling with pornography addiction','post').decision,'hold');
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});

@@ -1,9 +1,7 @@
 name: Publish authorized official community posts
+# Owner-initiated only: repository pushes must never publish content.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['deployments/heavenly-key-editorial-2880.zip', '.github/workflows/publish-authorized-community.yml']
 permissions:
   contents: read
 concurrency:

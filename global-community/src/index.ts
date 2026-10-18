@@ -12,6 +12,7 @@ import {communityAiDraft,validateAiDraftRequest} from "./heavenly-key-ai";
 
 const security=(headers=new Headers())=>{
   headers.set("X-Content-Type-Options","nosniff");headers.set("X-Frame-Options","DENY");headers.set("Referrer-Policy","strict-origin-when-cross-origin");
+  headers.set("Strict-Transport-Security","max-age=31536000");
   headers.set("Permissions-Policy","camera=(self), microphone=(self), geolocation=()");
   return headers;
 };
@@ -187,6 +188,8 @@ async function route(request:Request,env:Env):Promise<Response>{
    if(x&&m==="GET"){const media=await S.publicMedia(env,Number(x[1]));if(!media)return error("Media unavailable.",404);const h=security(new Headers({"Content-Type":media.mimeType,"Cache-Control":"public, max-age=300"}));if(media.etag)h.set("ETag",media.etag);return new Response(media.body,{status:200,headers:h});}}
   if(p==="/api/moderation/media"&&m==="GET"){const admin=await requireRole(request,env,"moderator");if(!admin)return error("Moderator access required.",403);return json({items:await S.pendingMedia(env)});}
   {const x=p.match(/^\/api\/moderation\/media\/(\d+)\/(approve|reject)$/);if(x&&m==="POST"){const admin=await requireRole(request,env,"moderator");if(!admin)return error("Moderator access required.",403);const b=await body(request);return json(await S.reviewMedia(env,Number(x[1]),x[2]==="approve",String(b.reason||"")));}}
+  if(p==="/api/moderation/videos"&&m==="GET"){const u=await requireRole(request,env,"moderator");if(!u)return error("Moderator access required.",403);return json({items:await S.pendingVideoPosts(env)});}
+  {const match=p.match(/^\/api\/moderation\/videos\/(\d+)\/review$/);if(match&&m==="POST"){const u=await requireRole(request,env,"moderator");if(!u)return error("Moderator access required.",403);return json(await S.reviewVideoPost(env,u,Number(match[1]),await body(request)));}}
   if(p==="/api/moderation/queue"&&m==="GET"){const admin=await requireRole(request,env,"moderator");if(!admin)return error("Moderator access required.",403);return json({items:await S.moderationQueue(env)});}
   {const x=p.match(/^\/api\/moderation\/reports\/(\d+)\/review$/);if(x&&m==="POST"){const admin=await requireRole(request,env,"moderator");if(!admin)return error("Moderator access required.",403);return json(await S.reviewPostReport(env,admin,Number(x[1]),await body(request)));}}
   if(p==="/api/moderation/reports"&&m==="GET"){const admin=await requireRole(request,env,"moderator");if(!admin)return error("Moderator access required.",403);return json({items:await S.reportQueue(env)});}
