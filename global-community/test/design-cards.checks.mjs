@@ -63,3 +63,11 @@ test('Premium Text Studio rejects malformed colours and attachments',()=>{
  assert.throws(()=>validatePostPresentation({postFormat:'premium_text',body:'[color=red]Text[/color]'}));
  assert.throws(()=>validatePostPresentation({postFormat:'premium_text',body:'Hello',mediaIds:[2]}));
 });
+
+test('Video URLs reject invalid schemes, fake hosts and unsupported paths',()=>{
+ for(const url of ['https://youtube.com.evil.example/watch?v=abcdefghijk','http://youtu.be/abcdefghijk','https://example.com/watch?v=abcdefghijk','https://www.youtube.com/watch?v=bad','https://www.facebook.com/people/test']){
+  assert.throws(()=>parseVideoLink(url),url);
+ }
+ assert.equal(parseVideoLink('https://youtu.be/abcdefghijk').provider,'youtube');
+ assert.equal(parseVideoLink('https://www.facebook.com/watch/?v=123456789').provider,'facebook');
+});
