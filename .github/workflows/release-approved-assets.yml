@@ -1,4 +1,4 @@
-name: Release Account 1 silent loading and listener radio volume
+name: Release original Radio page and strict approved launcher pages
 on:
   push:
     branches: ['release/account1-approved-assets-20261017']
