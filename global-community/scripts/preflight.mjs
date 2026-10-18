@@ -27,3 +27,4 @@ if (release) {
 } else {
   console.log('GLOBAL COMMUNITY DEVELOPMENT PREFLIGHT PASSED — ' + [...new Set(placeholders)].length + ' resource placeholders; deployment readiness NOT certified.');
 }
+

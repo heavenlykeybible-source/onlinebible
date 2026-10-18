@@ -1,4 +1,5 @@
 import type {Env} from "./types";
+import {rate} from "./rate-limit";
 import {passwordError} from "../public/password-policy.js";
 import {hashPassword,verifyPassword,createSession,getSession,destroySession,sessionCookie,clearSessionCookie,requireRole} from "./auth";
 import * as S from "./services";
@@ -29,9 +30,6 @@ async function sourceKey(request:Request){const address=request.headers.get("CF-
 const cleanEmail=(v:any)=>String(v||"").trim().toLowerCase().slice(0,160);
 const validEmail=(v:string)=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
-async function rate(env:Env,key:string,max:number,seconds:number){
-  const k="rate:"+key,raw=await env.SESSIONS.get(k),state=raw?JSON.parse(raw):{n:0};if(state.n>=max)return false;state.n++;await env.SESSIONS.put(k,JSON.stringify(state),{expirationTtl:seconds});return true;
-}
 async function me(request:Request,env:Env){const u=await getSession(request,env);if(!u)throw Object.assign(new Error("Please sign in."),{status:401});return u;}
 
 async function route(request:Request,env:Env):Promise<Response>{
@@ -201,4 +199,5 @@ export default {
     catch(e:any){const internal=e instanceof TypeError||e instanceof ReferenceError||e instanceof SyntaxError||/D1_|SQLITE|constraint failed|no such table|binding|TypeError/i.test(String(e?.message))||!(e instanceof Error);return error(internal?"The request could not be completed. Please try again.":e.message,internal?500:Number((e as any)?.status)||400);}
   }
 };
+
 
