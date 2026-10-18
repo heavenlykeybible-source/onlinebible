@@ -39,7 +39,7 @@ def scoped(css):
         if selector.startswith(('@media', '@supports')): output += selector+'{'+scoped(body)+'}'
         elif selector.startswith('@keyframes'): output += selector+'{'+body+'}'
         elif selector == ':root': output += scope+'{'+body+'}'
-        elif selector == 'body': output += scope+':is(header.site-header,footer.site-footer,.hk-share-bless){'+body+'}'
+        elif selector == 'body': output += scope+'{'+body+'}'
         elif not selector.startswith('@'):
             selectors = re.split(r',(?=(?:[^()]*\([^()]*\))*[^()]*$)', selector)
             selectors = [s for s in selectors if re.match(r'^(?:[*.]|h[1-6]\b|p\b|a\b|button\b|summary\b|img\b|figure\b|blockquote\b)', s.strip()) and (not s.strip().startswith('.') or re.match(r'^\.(?:wrap|site-header|header-inner|header-swoosh|brand|main-nav|dropdown|nav-toggle|site-footer|hk-footer|copyright|social|hk-community|hk-share)',s.strip()))]
@@ -57,6 +57,7 @@ font_import = re.search(r'@import\s+url\([^)]*\)\s*;', (ROOT/'css/home-renewal.c
 css = font_import + '\n/* Generated only from the approved homepage. Do not hand-edit. */\n' + ''.join(scoped((ROOT/'css'/p).read_text()) for p in cssfiles) + ''.join(scoped(s) for s in styles)
 css = css.replace("url('../assets/", "url('/assets/")
 
+css += '\nheader.site-header.site-header{color:var(--ink,#111)}\n'
 changed=[]
 def save(path, text):
     previous = path.read_text() if path.exists() else ''
