@@ -1,4 +1,4 @@
-name: Preview phone artwork and public CMS lock
+name: Preview consistent phone artwork and public CMS lock
 on:
   push:
     branches: ['release/account1-approved-assets-20261017']
