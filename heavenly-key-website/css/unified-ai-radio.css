@@ -3,7 +3,7 @@
 #hkem-assistant .hkem-launcher{width:64px;height:64px}
 #hk-floating-radio{position:fixed!important;right:14px;left:auto;top:190px;bottom:auto;z-index:10020!important}
 #hk-floating-radio.hkr-mini{width:66px!important}
-#hk-floating-radio.hkr-mini .hkr-bubble{background-image:url('/assets/ministry/approved-radio-floating-icon.webp')!important;background-size:cover!important;background-position:center!important;color:transparent!important}
+#hk-floating-radio.hkr-mini .hkr-bubble{background-image:url('/assets/ministry/01A5E47D-9FDB-4854-BB09-28BF72159ADC.png')!important;background-size:cover!important;background-position:center!important;color:transparent!important}
 #hkem-assistant .hkem-iphone-chat{max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px)}
 @media(max-width:600px){#hkem-assistant{right:8px!important;top:94px!important}#hkem-assistant .hkem-launcher{width:52px;height:52px}#hk-floating-radio{right:8px;top:158px}#hk-floating-radio.hkr-mini{width:54px!important}#hk-floating-radio.hkr-mini .hkr-bubble{width:54px!important;height:54px!important}}
 @media(prefers-reduced-motion:reduce){#hkem-assistant .hkem-launcher,#hk-floating-radio .hkr-bubble{animation:none!important}}
@@ -19,8 +19,11 @@
 @media(max-width:600px){#hkem-assistant .hkem-invitation-title{font-size:14px}#hkem-assistant .hkem-invitation-detail{font-size:14px}}
 @media(prefers-reduced-motion:reduce){#hkem-assistant .hkem-invitation-title{animation:none}}
 
-/* Approved Heavenly Key Radio horizontal banner. Existing icon remains a fallback
-   until the transparent approved-radio-banner.png is uploaded to the assets folder. */
+/* Permanent official Radio artwork lock. The original PNG is never redrawn. */
 #hk-floating-radio.hkr-mini{width:clamp(180px,23vw,275px)!important;max-width:calc(100vw - 20px)}
-#hk-floating-radio.hkr-mini .hkr-bubble{width:100%!important;height:auto!important;aspect-ratio:3/1!important;border:0!important;border-radius:0!important;background-color:transparent!important;background-image:url('/assets/ministry/approved-radio-banner.png'),url('/assets/ministry/approved-radio-floating-icon.webp')!important;background-size:contain!important;background-repeat:no-repeat!important;background-position:center!important;box-shadow:none!important;color:transparent!important;font-size:0!important}
+#hk-floating-radio.hkr-mini .hkr-bubble{width:100%!important;height:auto!important;aspect-ratio:3/1!important;border:0!important;border-radius:0!important;background-color:transparent!important;background-image:url('/assets/ministry/01A5E47D-9FDB-4854-BB09-28BF72159ADC.png')!important;background-size:contain!important;background-repeat:no-repeat!important;background-position:center!important;box-shadow:none!important;color:transparent!important;font-size:0!important}
 @media(max-width:600px){#hk-floating-radio.hkr-mini{width:clamp(145px,40vw,195px)!important}#hk-floating-radio.hkr-mini .hkr-bubble{width:100%!important;height:auto!important}}
+/* Preserve the official transparent AI launcher without a circular crop. */
+#hkem-assistant .hkem-launcher{width:clamp(160px,20vw,260px)!important;height:auto!important;aspect-ratio:3/1!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+#hkem-assistant .hkem-launcher img{width:100%!important;height:100%!important;object-fit:contain!important;border-radius:0!important}
+@media(max-width:600px){#hkem-assistant .hkem-launcher{width:clamp(145px,40vw,195px)!important}}
