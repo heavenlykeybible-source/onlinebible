@@ -1,8 +1,5 @@
 name: Preview AI and Radio only
 on:
-  push:
-    branches: [release/account1-approved-assets-20261017]
-    paths: [.github/workflows/release-ai-radio-only.yml]
   workflow_dispatch:
     inputs:
       expected_version:
@@ -22,7 +19,7 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: a160ba9fc74911bd4b3005eac86eefcb
       HK_WIDGET_ONLY: '1'
-      HK_WIDGET_BASE: 6dc945721bda2a6a69d9e963af1a473c5f251e0b
+      HK_WIDGET_BASE: 7359a3cfd8bf1d28135987bdc10d3dc2d6e736fd
       HK_EXPECTED_VERSION: ${{ inputs.expected_version || 'bb9f254f-1ea6-4604-939c-82ed972b47a9' }}
       HK_JSDOM: /tmp/hkem-controls/node_modules/jsdom
       HK_PLAYWRIGHT: /tmp/hkem-controls/node_modules/playwright
@@ -55,7 +52,7 @@ jobs:
           retention-days: 30
           if-no-files-found: error
       - name: Upload a version to the existing Worker without changing production traffic
-        run: npx --yes wrangler@4.145.0 versions upload --config .approved-release/wrangler.json --no-bundle --keep-vars --preview-alias approved-ai-radio --message "Owner approved Account 1 shell assets $GITHUB_SHA; website=6dc945721bda2a6a69d9e963af1a473c5f251e0b"
+        run: npx --yes wrangler@4.145.0 versions upload --config .approved-release/wrangler.json --no-bundle --keep-vars --preview-alias approved-ai-radio --message "Owner approved Account 1 shell assets $GITHUB_SHA; website=7359a3cfd8bf1d28135987bdc10d3dc2d6e736fd"
       - name: Verify every changed preview asset
         id: preview
         run: node scripts/release-approved-assets.mjs preview
