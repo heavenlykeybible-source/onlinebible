@@ -1,5 +1,5 @@
 /* Heavenly Key: offline public-shell cache. Never cache private or authenticated responses. */
-const CACHE='hk-public-shell-v11-widget-release';
+const CACHE='hk-public-shell-v12-reviewed-content';
 const SHELL=['/','/index.html','/css/home-renewal.css','/js/home-renewal.js','/assets/ministry/logo.png','/offline.html'];
 const PUBLIC_PAGES=new Set(['/','/index.html','/offline.html','/pages/about.html','/pages/ministries.html','/pages/contact.html','/pages/resources.html','/pages/radio.html']);
 const MAX_ENTRIES=90;

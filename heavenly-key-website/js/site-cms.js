@@ -90,10 +90,9 @@
   }
 
   function safeImage(value) {
-    if (typeof value !== "string" || !value || value.length > 2048 || /[\\u0000-\\u001f<>\"'\\\\]/.test(value)) return false;
-    if (value.startsWith("/") && !value.startsWith("//")) return true;
-    if (/^(?:\\.\\/|\\.\\.\\/)?[a-zA-Z0-9_-]/.test(value) && !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(value)) return !value.includes("..\\");
-    try { return new URL(value).protocol === "https:"; } catch { return false; }
+    if (typeof value !== "string" || !value || value.length > 2048 || /[\u0000-\u001f<>"'\\]/.test(value)) return false;
+    if (value.startsWith("//") || value.split(/[?#]/)[0].split("/").includes("..")) return false;
+    try { const url = new URL(value, location.href); return url.protocol === "https:" || url.origin === location.origin; } catch { return false; }
   }
 
   function safeLink(value) {
@@ -357,8 +356,7 @@
         const content=await readOverrides(true);applyOverrides(descriptors,content);
         const banner=document.createElement("div");banner.textContent="PRIVATE DRAFT PREVIEW · No changes published";banner.style.cssText="position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#132958;color:#fff;text-align:center;padding:9px";banner.setAttribute("data-cms-ignore","");document.body.append(banner);
       } else {
-        const content = await readOverrides(false);
-        applyOverrides(descriptors, content);
+        return; // Public production pages use reviewed static content only.
       }
     } catch (error) {
       if (editing) {
@@ -374,3 +372,4 @@
     start();
   }
 })();
+

@@ -24,3 +24,5 @@
 #hk-approved-launcher-stack #hkem-assistant .hkem-pulse,#hk-approved-launcher-stack #hk-floating-radio .hk-launch-signal{left:calc(var(--hk-picture-width,55%) - 8px)!important;right:auto!important;top:0!important;margin-top:0!important;width:8px!important;height:8px!important;box-sizing:border-box}
 
 #hk-approved-launcher-stack .hkem-pulse::after,#hk-approved-launcher-stack .hk-launch-signal::after{content:"LIVE";position:absolute;right:12px;top:-3px;font:700 10px/1.2 Arial,sans-serif;color:#111;white-space:nowrap}
+
+@media(max-width:600px){#hk-approved-launcher-stack{flex-direction:column;align-items:stretch;gap:18px}#hk-approved-launcher-stack>#hkem-assistant,#hk-approved-launcher-stack>#hk-floating-radio.hkr-mini{width:100%!important;flex:none}#hk-approved-launcher-stack .hkem-launcher,#hk-approved-launcher-stack .hkr-bubble{grid-template-columns:minmax(0,var(--hk-picture-width,58%)) minmax(0,1fr);column-gap:10px!important}}

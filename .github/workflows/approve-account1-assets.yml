@@ -1,0 +1,84 @@
+name: Manually approve tested Account 1 assets
+on:
+  workflow_dispatch:
+    inputs:
+      preview_run:
+        description: Successful Account 1 asset preview run ID
+        required: true
+        type: string
+      target_sha:
+        description: Exact 40-character source SHA personally reviewed in preview
+        required: true
+        type: string
+      approval_note:
+        description: Owner approval note after reviewing the preview
+        required: true
+        type: string
+      confirm_publish:
+        description: I have reviewed this exact preview and approve publication
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: heavenlykey-account-1-production
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: ${{ inputs.confirm_publish && github.actor == 'heavenlykeybible-source' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: a160ba9fc74911bd4b3005eac86eefcb
+      HK_OWNER_APPROVED_SHA: ${{ inputs.target_sha }}
+      HK_JSDOM: /tmp/hkem-controls/node_modules/jsdom
+      HK_PLAYWRIGHT: /tmp/hkem-controls/node_modules/playwright
+      PREVIEW_RUN: ${{ inputs.preview_run }}
+      TARGET_SHA: ${{ inputs.target_sha }}
+    steps:
+      - name: Verify a successful exact-source preview before checkout
+        run: |
+          [[ "$PREVIEW_RUN" =~ ^[0-9]+$ ]] && [[ "$TARGET_SHA" =~ ^[a-f0-9]{40}$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$PREVIEW_RUN" > /tmp/reviewed-run.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('/tmp/reviewed-run.json'));
+          if(r.conclusion!=='success'||r.head_sha!==process.env.TARGET_SHA||!['.github/workflows/release-approved-assets.yml','.github/workflows/release-ai-radio-only.yml'].includes(r.path))throw Error('Exact successful asset preview required');
+          JS
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_sha }}
+          fetch-depth: 0
+      - name: Restore exact preview recovery records
+        run: |
+          gh run download "$PREVIEW_RUN" --repo "$GITHUB_REPOSITORY" --name approved-account1-shell-release-results --dir .
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const r=JSON.parse(fs.readFileSync('approved-assets-backup/recovery.json'));
+          if(r.sourceSha!==process.env.TARGET_SHA)throw Error('Recovery record source mismatch');
+          if(r.widgetOnly)fs.appendFileSync(process.env.GITHUB_ENV,'HK_WIDGET_ONLY=1\n');
+          JS
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned live verification tools
+        run: |
+          npm install --prefix /tmp/hkem-controls --ignore-scripts --no-audit --no-fund jsdom@26.1.0 playwright@1.56.1
+          /tmp/hkem-controls/node_modules/.bin/playwright install --with-deps chromium
+      - name: Publish only the manually approved preview version
+        run: node scripts/release-approved-assets.mjs promote
+      - name: Verify production assets and preserved backend
+        run: node scripts/release-approved-assets.mjs verify
+      - name: Verify actual live pages on desktop tablet and phones
+        env:
+          HK_PREVIEW_URL: https://heavenlykey.org
+        run: |
+          node scripts/test-account1-radio-audio.cjs
+          node scripts/test-account1-approved-browser.cjs
+      - name: Restore previous version on failed verification
+        if: failure()
+        run: node scripts/release-approved-assets.mjs rollback

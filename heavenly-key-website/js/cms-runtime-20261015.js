@@ -12,6 +12,7 @@
  const key=page==='index'?'home':page;
  const params=new URL(location.href).searchParams,nonce=params.get('hkem-session');
  const editing=params.get('hkem-cms')==='edit'&&nonce&&window.opener;
+ if(site==='account1'&&!editing)return; // CMS changes are preview-only; production is reviewed static content.
  const skip='[data-cms-ignore],script,style,template,noscript,svg,form,input,textarea,select,option,#page-root,#authbar,#verses,#bible-verses,#chapter-text,#reader-content,#scripture-text,#scripture-results,#selected-text,#study-note,#saved-verses,#tracks,#lyrics,.social-stream,.message-list,.post-card,.feed-post,.hk-assistant,#hkem-public-assistant';
  const hash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0).toString(36).padStart(7,'0')};
  function selector(n){const parts=[];while(n&&n!==document.body){if(n.id&&/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(n.id)){parts.unshift('#'+n.id);break}const parent=n.parentElement;if(!parent)break;const tag=n.tagName.toLowerCase();const siblings=[...parent.children].filter(x=>x.tagName===n.tagName);parts.unshift(tag+':nth-of-type('+(siblings.indexOf(n)+1)+')');n=parent}return parts.join('>')}
