@@ -90,19 +90,18 @@
   }
 
   function safeImage(value) {
-    if (typeof value !== "string" || !value || value.length > 2048 || /[\\u0000-\\u001f<>\"'\\\\]/.test(value)) return false;
-    if (value.startsWith("/") && !value.startsWith("//")) return true;
-    if (/^(?:\\.\\/|\\.\\.\\/)?[a-zA-Z0-9_-]/.test(value) && !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(value)) return !value.includes("..\\");
-    try { return new URL(value).protocol === "https:"; } catch { return false; }
+    if(typeof value!=='string'||!value||value.length>2048||/[<>"'\\\s]/.test(value)||value.startsWith('//'))return false;
+    try{
+      const url=new URL(value,location.origin);
+      return (url.protocol==='https:'||url.origin===location.origin) && !url.username && !url.password;
+    }catch{return false}
   }
-
   function safeLink(value) {
-    if(typeof value!=="string"||!value||value.length>500||/[\u0000-\u001f"'<>\\()]/.test(value))return false;
-    if(value.startsWith("#"))return /^#[a-zA-Z0-9_-]*$/.test(value);
-    if(/^https:\/\//i.test(value)){try{return new URL(value).protocol==="https:";}catch{return false;}}
-    if(/^mailto:/i.test(value))return /^mailto:[a-zA-Z0-9._+%-]+@[a-zA-Z0-9.-]+$/.test(value);
-    if(/^tel:/i.test(value))return /^tel:\+?[0-9-]{5,25}$/.test(value);
-    return !value.startsWith("//")&&!value.includes("..")&&/^[a-zA-Z0-9_./?#%&=+-]+$/.test(value);
+    if(typeof value!=='string'||!value||value.length>500||/[<>"'\\\s()]/.test(value)||value.startsWith('//'))return false;
+    try{
+      const url=new URL(value,location.origin);
+      return ['https:','mailto:','tel:'].includes(url.protocol)||url.origin===location.origin;
+    }catch{return false}
   }
 
   function applyOverrides(descriptors, content) {
