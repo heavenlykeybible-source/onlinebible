@@ -1,4 +1,4 @@
-name: Publish approved Account 1 chat above content and locked shell
+name: Release approved active AI and Radio above site content
 on:
   push:
     branches: ['release/account1-approved-assets-20261017']
