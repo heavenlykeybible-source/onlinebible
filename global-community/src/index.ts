@@ -12,6 +12,7 @@ import {communityAiDraft,validateAiDraftRequest} from "./heavenly-key-ai";
 
 const security=(headers=new Headers())=>{
   headers.set("X-Content-Type-Options","nosniff");headers.set("X-Frame-Options","DENY");headers.set("Referrer-Policy","strict-origin-when-cross-origin");
+  headers.set("Strict-Transport-Security","max-age=31536000");
   headers.set("Permissions-Policy","camera=(self), microphone=(self), geolocation=()");
   return headers;
 };
