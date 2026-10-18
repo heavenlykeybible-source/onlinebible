@@ -85,6 +85,11 @@ async function route(request:Request,env:Env):Promise<Response>{
   if(current?.status==='restricted'&&!['/api/me','/api/me/safety','/api/me/requests','/api/auth/logout'].includes(p))return error('Your account is locked pending administrator review. Open Safety & privacy to read the reason and request review.',403);
   if(p==="/api/auth/logout"&&m==="POST"){await destroySession(request,env);return json({ok:true},200,{"Set-Cookie":clearSessionCookie()});}
 
+  {const match=p.match(/^\/api\/admin\/adverts\/images\/([a-f0-9-]{36})$/);if(match&&m==='GET'){
+    const admin=await requireRole(request,env,'administrator');if(!admin)return error('Administrator access required.',403);
+    const image=await Adverts.adminImage(env,match[1]);if(!image)return error('Advert image unavailable.',404);
+    return new Response(image.body,{headers:security(new Headers({'Content-Type':image.mime,'Cache-Control':'no-store'}))});
+  }}
   if(p==="/api/admin/adverts/images"&&m==="POST"){const admin=await requireRole(request,env,"administrator");if(!admin)return error("Administrator access required.",403);return json(await Adverts.uploadImage(env,admin,request),201);}
   {const match=p.match(/^\/api\/adverts\/images\/([a-f0-9-]{36})$/);if(match&&m==="GET"){const image=await Adverts.image(env,match[1]);if(!image)return error("Advert image unavailable.",404);return new Response(image.body,{headers:security(new Headers({"Content-Type":image.mime,"Cache-Control":"public, max-age=60","ETag":image.etag}))});}}
   if(p==="/api/adverts"&&m==="GET")return json(await Adverts.publicAdverts(env));

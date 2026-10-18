@@ -29,10 +29,23 @@ Status: tested source repairs, awaiting production approval and deployment.
 - Identity changes and expiry clear private drafts, cached message history, retry identifiers and polling. Successful sign-out also cancels pending verification results.
 - Profile connect, message-request, block and report actions expose errors in an accessible status message and recover their buttons.
 
+## Administrator follow-up
+
+- Draft advert images now have an administrator-only preview endpoint with `Cache-Control: no-store`. Public access still requires an actively published advert; ordinary members and moderators cannot use the admin endpoint.
+- The advert form displays the saved image in its preview, including draft and paused adverts.
+- Editorial publication, reply, edit and removal are batched with their audit writes. If the audit write fails, the content change rolls back. Regression tests reproduce the original partial-write failure and verify rollback and successful subject IDs.
+
+## Repository CI status
+
+- At commit `e6aea2a224b5cbcc3283bdc40bd1cb55f0247390`, GitHub's Account 3 community source check passed.
+- Full repository CI remains blocked by `scripts/protected-state-gate.mjs`, which detects protected-source/binding/workflow and migration differences from its reviewed baseline. This gate was not removed or rebaselined.
+- Shared architecture CI also fails because the root contains 40 migration files ending at 0039, including both `0032_social_provider_apps.sql` and `0032_website_ai_inbox.sql`. The checker expects 39. These shared production migrations were not renamed, deleted or applied; reconcile them against actual deployment history before changing migration identity.
+- Green local community tests do not establish that the complete repository or production deployment passes all checks.
+
 ## Verification
 
 - All 18 public JavaScript files passed syntax checks. The canonical text-only messaging contract and the additional live-chat quality gate passed.
-- `npm run buildcheck`: passed, including TypeScript, frontend syntax, configuration preflight and 37 test cases.
+- `npm run buildcheck`: passed, including TypeScript, frontend syntax, configuration preflight and 38 test cases.
 - `npm audit --omit=dev`: zero reported production dependency vulnerabilities. This is not a full application security assessment.
 - API security tests execute the actual Worker routes against an isolated SQLite database with the application migrations and KV test adapter. Privacy defaults, private posts, messages, reporting, independent appeals, account restrictions, CSRF rejection and oversized requests passed.
 - Chinese, Arabic and Devanagari Space creation and URL lookup passed; malformed Space links and overlong emails were rejected.

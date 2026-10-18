@@ -39,3 +39,12 @@ export async function uploadImage(env:Env,actor:SessionUser,request:Request){
  return {imageUrl:"/api/adverts/images/"+id};
 }
 export async function image(env:Env,id:string){const now=new Date().toISOString(),url="/api/adverts/images/"+id;const row=await env.DB.prepare("SELECT i.object_key,i.mime_type FROM advert_images i WHERE i.image_id=? AND EXISTS(SELECT 1 FROM community_adverts a WHERE a.image_url=? AND a.status='published' AND (a.starts_at IS NULL OR a.starts_at<=?) AND (a.ends_at IS NULL OR a.ends_at>?))").bind(id,url,now,now).first<any>();if(!row)return null;const object=await env.MEDIA.get(row.object_key);return object?{body:object.body,mime:row.mime_type,etag:object.httpEtag}:null;}
+
+// Only the authenticated administrator route may call this for draft previews.
+export async function adminImage(env:Env,id:string){
+ const row=await env.DB.prepare("SELECT object_key,mime_type FROM advert_images WHERE image_id=?").bind(id).first<any>();
+ if(!row)return null;
+ const object=await env.MEDIA.get(row.object_key);
+ return object?{body:object.body,mime:row.mime_type}:null;
+}
+

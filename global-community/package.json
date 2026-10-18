@@ -15,7 +15,7 @@
     "test:feed": "node --test test/frontend-feed.checks.mjs",
     "test:stewardship": "node --test test/stewardship.checks.mjs",
     "test:social-adverts": "node --test test/social-adverts.checks.mjs",
-    "test:security": "node --test test/api-security.checks.mjs test/rate-limit.checks.mjs test/ai-privacy.checks.mjs test/network-responses.checks.mjs test/messaging-reliability.checks.mjs && node tests/live-chat-contract.test.mjs"
+    "test:security": "node --test test/api-security.checks.mjs test/rate-limit.checks.mjs test/ai-privacy.checks.mjs test/network-responses.checks.mjs test/messaging-reliability.checks.mjs test/editorial-transactions.checks.mjs && node tests/live-chat-contract.test.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20261015.1",
