@@ -33,3 +33,6 @@
 body:has(#hkem-assistant .hkem-iphone-chat:not([hidden])) #hkem-assistant{z-index:2147483646!important}
 body:has(#hk-floating-radio .hkr-panel:not([hidden])) #hk-floating-radio{z-index:2147483646!important}
 body:has(#hkem-assistant .hkem-iphone-chat:not([hidden])):has(#hk-floating-radio .hkr-panel:not([hidden])) #hkem-assistant{z-index:2147483647!important}
+
+/* Invisible, native-feeling touch drag surfaces; no drag handles or controller icons. */
+#hkem-assistant .hkem-launcher,#hk-floating-radio .hkr-bubble,#hk-floating-radio .hkr-head{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
