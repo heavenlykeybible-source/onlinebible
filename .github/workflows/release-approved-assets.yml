@@ -1,4 +1,4 @@
-name: Release light yellow companion footer and independent widget loading
+name: Release final footer and verified independent widget assets
 on:
   push:
     branches: ['release/account1-approved-assets-20261017']
@@ -33,6 +33,7 @@ jobs:
       - name: Check approved shell lock and scoped interactions
         run: |
           node scripts/stamp-widget-release.mjs --check
+          node scripts/test-widget-independent-loader.cjs
           python3 scripts/sync-account1-approved-shell.py --check
           node scripts/test-account1-approved-shell.cjs
           node scripts/test-account1-radio-audio.cjs
