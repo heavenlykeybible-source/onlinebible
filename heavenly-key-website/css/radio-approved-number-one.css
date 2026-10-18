@@ -45,3 +45,8 @@
 #hk-floating-radio .hkr-volume-label input{margin:0;height:16px;padding:0}
 #hk-radio-page-mount #hk-floating-radio.hkr-page{display:block!important;visibility:visible!important;pointer-events:auto!important}
 
+
+/* Listener-controlled volume remains available at every screen width. */
+#hk-floating-radio .hkr-volume-label{display:flex!important;min-height:20px}
+#hk-floating-radio .hkr-volume-label input{height:20px;touch-action:pan-y}
+#hk-floating-radio .hkr-art-transport{overflow-y:auto;overscroll-behavior:contain}

@@ -10,3 +10,7 @@
 #hkem-assistant .hkem-launcher[hidden]{display:none!important}
 #hk-approved-launcher-stack:has(.hkem-iphone-chat:not([hidden])),#hkem-assistant:has(.hkem-iphone-chat:not([hidden])),#hkem-assistant .hkem-iphone-chat,#hk-floating-radio:not(.hkr-mini):not(.hkr-page){z-index:2147483647!important}
 @media(max-width:600px){#hk-approved-launcher-stack{right:7px;top:37dvh;width:min(45vw,190px);gap:12px}}
+
+/* Keep the approved chat controls at their homepage size despite legacy page form rules. */
+#hkem-assistant .hkem-chat-form input{padding:10px!important;font:16px Arial!important}
+#hkem-assistant .hkem-chat-form button{min-height:0!important;padding:9px 13px!important;border-radius:22px!important;font:800 16px/1.4 Arial,sans-serif!important}

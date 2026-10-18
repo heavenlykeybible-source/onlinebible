@@ -1,4 +1,4 @@
-name: Verify final approved transparent launchers and consistent menus
+name: Release Account 1 silent loading and listener radio volume
 on:
   push:
     branches: ['release/account1-approved-assets-20261017']
@@ -33,6 +33,7 @@ jobs:
         run: |
           python3 scripts/sync-account1-approved-shell.py --check
           node scripts/test-account1-approved-shell.cjs
+          node scripts/test-account1-radio-audio.cjs
           node --check scripts/release-approved-assets.mjs
       - name: Verify asset-only scope and back up exact production backend
         run: node scripts/release-approved-assets.mjs prepare
@@ -50,7 +51,9 @@ jobs:
       - name: Verify uploaded preview in desktop tablet and phone browsers
         env:
           HK_PREVIEW_URL: ${{ steps.preview.outputs.url }}
-        run: node scripts/test-account1-approved-browser.cjs
+        run: |
+          node scripts/test-account1-radio-audio.cjs
+          node scripts/test-account1-approved-browser.cjs
       - name: Promote the tested version on the existing Worker
         run: node scripts/release-approved-assets.mjs promote
       - name: Verify live asset hashes backend bytes and unchanged bindings
@@ -58,7 +61,9 @@ jobs:
       - name: Verify actual live desktop tablet and phone pages
         env:
           HK_PREVIEW_URL: https://heavenlykey.org
-        run: node scripts/test-account1-approved-browser.cjs
+        run: |
+          node scripts/test-account1-radio-audio.cjs
+          node scripts/test-account1-approved-browser.cjs
       - name: Restore previous version if production verification fails
         if: failure()
         run: node scripts/release-approved-assets.mjs rollback
