@@ -18,3 +18,7 @@
 /* Footer pictures scroll with the document. Only an explicitly opened chat is an overlay. */
 #hkem-assistant.hkem-chat-open{position:fixed!important;inset:auto 12px 12px auto!important;width:auto!important;z-index:2147483647!important}
 #hk-approved-launcher-stack .hkem-launcher,#hk-approved-launcher-stack .hkr-bubble{animation:none!important;touch-action:pan-y!important}
+
+/* Owner-approved white companion row between the primary footer and final black strip. */
+.site-footer .hk-footer-companions{display:flow-root;background:#fff!important;color:#b00020;clear:both;border:2px solid #ffdf26;box-sizing:border-box}
+#hk-approved-launcher-stack .hkem-pulse,#hk-approved-launcher-stack .hk-launch-signal{left:calc(var(--hk-picture-width,clamp(56px,13vw,175px)) - 8px)!important;right:auto!important;top:50%!important;margin-top:-12px!important;width:8px!important;height:8px!important;box-sizing:border-box}
