@@ -1,4 +1,4 @@
-name: Release centered footer row with Radio left and AI right
+name: Release white companion row above final black copyright and legal footer
 on:
   push:
     branches: ['release/account1-approved-assets-20261017']
