@@ -16,3 +16,23 @@
 
 ## Release gates
 Do not disable the architecture or protected-state gate, edit baseline hashes to silence failures, or automatically delete/renumber applied migrations. Unrelated protected auth, CMS, Wrangler, and workflow drift requires separate owner review. A green diagnostic check is not proof of a safe production schema.
+
+## Configured D1 targets (source: root wrangler.toml)
+- Production: `heavenlykey-db` (binding `DB`, id `8665ff03-6a2c-4852-90ab-6c74375a8c87`).
+- Staging: `heavenlykey-db-staging` (binding `DB`, id `21d9963e-69d5-46b2-94a4-19b923c67075`).
+- These are repository configuration values, **not** evidence of live account ownership, access, or applied migrations.
+
+### Read-only SQL to run separately against each verified target
+```sql
+SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'd1_migrations';
+SELECT name, type, sql FROM sqlite_master
+WHERE name IN ('social_provider_apps', 'website_ai_conversations', 'website_ai_messages',
+               'idx_website_ai_messages_date', 'idx_website_ai_messages_conv')
+ORDER BY type, name;
+```
+Only **if** `d1_migrations` exists, run:
+```sql
+PRAGMA table_info(d1_migrations);
+SELECT * FROM d1_migrations ORDER BY id DESC LIMIT 50;
+```
+Confirm journal column names before relying on the final query. Never insert, update, or delete rows in `d1_migrations` as a shortcut. Compare output from both environments and retain an owner-approved backup before any repair.
