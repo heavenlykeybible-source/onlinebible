@@ -1,0 +1,8 @@
+/* Original supplied artwork; override only obsolete launcher crops and captions. */
+#hkem-assistant .hkem-launcher,#hk-floating-radio.hkr-mini .hkr-bubble{display:block!important;width:clamp(165px,22vw,245px)!important;max-width:245px!important;height:auto!important;min-height:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;animation:none!important;overflow:hidden!important}
+#hkem-assistant .hkem-launcher{aspect-ratio:1536/358!important}
+#hk-floating-radio.hkr-mini .hkr-bubble{aspect-ratio:2048/683!important}
+#hkem-assistant .hkem-launcher img,#hk-floating-radio.hkr-mini .hkr-bubble>img{display:block!important;width:100%!important;max-width:100%!important;height:100%!important;object-fit:contain!important;border:0!important;border-radius:0!important;background:transparent!important;margin:0!important;padding:0!important}
+#hkem-assistant .hkem-launcher::before,#hkem-assistant .hkem-launcher::after,#hk-floating-radio.hkr-mini .hkr-bubble::before,#hk-floating-radio.hkr-mini .hkr-bubble::after{display:none!important;content:none!important}
+#hkem-assistant .hkem-launcher[hidden]{display:none!important}
+@media(max-width:600px){#hkem-assistant .hkem-launcher,#hk-floating-radio.hkr-mini .hkr-bubble{width:min(45vw,190px)!important;max-width:min(45vw,190px)!important}}

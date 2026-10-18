@@ -1,0 +1,74 @@
+"""Copy the approved homepage shell verbatim; --check rejects future drift."""
+from pathlib import Path
+import re, sys
+
+ROOT = Path(__file__).resolve().parents[1] / 'heavenly-key-website'
+home = (ROOT / 'index.html').read_text()
+def section(pattern, text):
+    match = re.search(pattern, text, re.S)
+    if not match: raise RuntimeError('Approved component missing: ' + pattern)
+    return match.group()
+header = section(r'<header class="site-header">.*?</header>', home)
+footer = section(r'<section class="hk-share-bless".*?</footer>', home)
+sharing = section(r'<script id="hk-share-to-bless-script"[^>]*>.*?</script>', home)
+def absolute(match):
+    attr, value = match.groups()
+    if value.startswith(('https:', 'http:', '/', 'mailto:', 'tel:', 'data:')): return match.group()
+    return attr + '="/' + value + '"'
+header = re.sub(r'(href|src)="([^"]+)"', absolute, header)
+header = header.replace('class="active" href="/#main" aria-current="page"', 'href="/#main"')
+footer = re.sub(r'(href|src)="([^"]+)"', absolute, footer)
+styles = []
+for match in re.finditer(r'<style[^>]*>(.*?)</style>', home, re.S):
+    if re.search(r'main-nav|hk-footer|hk-share|hk-community', match[1]): styles.append(match[1])
+# Scope existing homepage styles to the approved components, never inner-page content.
+scope = ':is(header.site-header,footer.site-footer,.hk-share-bless)'
+def scoped(css):
+    css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
+    css = re.sub(r'@import[^;]*;', '', css)
+    output = ''; start = 0
+    while start < len(css):
+        opening = css.find('{', start)
+        if opening < 0: break
+        depth = 1; end = opening + 1
+        while depth and end < len(css):
+            if css[end] == '{': depth += 1
+            elif css[end] == '}': depth -= 1
+            end += 1
+        selector = css[start:opening].strip(); body = css[opening+1:end-1]
+        if selector.startswith(('@media', '@supports')): output += selector+'{'+scoped(body)+'}'
+        elif selector.startswith('@keyframes'): output += selector+'{'+body+'}'
+        elif selector == ':root': output += scope+'{'+body+'}'
+        elif selector == 'body': output += scope+'{'+body+'}'
+        elif not selector.startswith('@'):
+            selectors = re.split(r',(?=(?:[^()]*\([^()]*\))*[^()]*$)', selector)
+            output += ','.join(scope+':is('+s.strip()+'),'+scope+' '+s.strip() for s in selectors)+'{'+body+'}'
+        start = end
+    return output
+cssfiles = ['home-renewal.css','premium-navigation-upgrade.css','resources-dropdown-fix.css','footer-five-columns.css','footer-approved-cleanup.css']
+css = '/* Generated only from the approved homepage. Do not hand-edit. */\n' + ''.join(scoped((ROOT/'css'/p).read_text()) for p in cssfiles) + ''.join(scoped(s) for s in styles)
+css = css.replace("url('../assets/", "url('/assets/")
+css += '\n'+scope+'{font:18px/1.45 Roboto Condensed,Arial,sans-serif;color:#111}\n'
+changed=[]
+def save(path, text):
+    previous = path.read_text() if path.exists() else ''
+    if previous != text:
+        changed.append(str(path.relative_to(ROOT.parent)))
+        if '--check' not in sys.argv: path.parent.mkdir(parents=True,exist_ok=True);path.write_text(text)
+save(ROOT/'css/approved-home-shell.css',css)
+for page in sorted((ROOT/'pages').glob('*.html')):
+    if page.name == 'admin.html': continue
+    text = page.read_text()
+    if not re.search(r'<header\b',text) or not re.search(r'<footer\b',text): continue
+    text = re.sub(r'<header\b[^>]*>.*?</header>', lambda _:header, text, count=1, flags=re.S)
+    text = re.sub(r'(?:<section class="hk-share-bless".*?</section>)?\s*<footer\b[^>]*>.*?</footer>',lambda _:footer,text,count=1,flags=re.S)
+    text = re.sub(r'<script\b[^>]*src="[^"]*(?:hk-standard-footer|site-footer|approved-global-footer|floating-radio|public-site-master|approved-widget-system|online-assistant|home-renewal)\.js[^"]*"[^>]*>\s*</script>','',text)
+    text = re.sub(r'<link\b[^>]*href="[^"]*approved-home-shell\.css[^"]*"[^>]*>','',text)
+    text = re.sub(r'<script id="hk-share-to-bless-script"[^>]*>.*?</script>','',text,flags=re.S)
+    text = text.replace('</head>','<link rel="stylesheet" href="/css/approved-home-shell.css?v=20261018"></head>')
+    if page.name in ['radio.html','terms.html','privacy.html','i-said-yes.html','grdpc.html'] and 'src="/js/cms-runtime-20261015.js' not in text:
+        text = text.replace('</body>','<link rel="stylesheet" href="/js/cms-runtime-20261015.css"><script defer src="/js/cms-runtime-20261015.js?v=20261018"></script></body>')
+    text = text.replace('</body>',sharing+'<script defer src="/js/public-site-master.js?v=20261018"></script></body>')
+    save(page,text)
+if changed and '--check' in sys.argv: print('Approved shell drift: '+', '.join(changed));sys.exit(1)
+print('Approved homepage menu/footer: '+('consistent' if not changed else str(len(changed))+' files synchronized'))

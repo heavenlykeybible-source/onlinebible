@@ -1,0 +1,22 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {JSDOM,ResourceLoader,VirtualConsole}=require(process.env.HK_JSDOM||'jsdom');
+const root=path.resolve(__dirname,'../heavenly-key-website');
+class Local extends ResourceLoader{fetch(url){const u=new URL(url);if(u.hostname!=='heavenlykey.org')return Promise.resolve(Buffer.from(''));let p=path.join(root,u.pathname);return Promise.resolve(fs.existsSync(p)?fs.readFileSync(p):Buffer.from(''));}}
+function browser(file,url){return new JSDOM(fs.readFileSync(path.join(root,file),'utf8'),{url,runScripts:'dangerously',resources:new Local(),pretendToBeVisual:true,virtualConsole:new VirtualConsole(),beforeParse(w){w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});w.fetch=async url=>({ok:true,json:async()=>String(url).includes('/v1/content')?{content:{fields:[]},menu:{items:[{label:'UNAPPROVED',href:'/junk',visible:true}]},footer:{copyright:'WRONG',designer:{label:'WRONG',href:'https://example.com'}}}:{items:[]}});w.HTMLMediaElement.prototype.load=function(){};w.HTMLMediaElement.prototype.pause=function(){};w.HTMLMediaElement.prototype.play=async function(){};}});}
+(async()=>{
+const files=['index.html',...fs.readdirSync(path.join(root,'pages')).filter(f=>f.endsWith('.html')&&f!=='admin.html').map(f=>'pages/'+f)];
+for(const file of files){const dom=browser(file,'https://heavenlykey.org/'+(file==='index.html'?'':file)),w=dom.window;await new Promise(r=>setTimeout(r,800));const d=w.document;
+assert.equal(d.querySelectorAll('.site-header .main-nav').length,1,file+' canonical menu');
+assert.equal(d.querySelectorAll('.site-header .main-nav>ul>li').length,7,file+' seven menu entries');
+assert.equal(d.querySelectorAll('footer.site-footer').length,1,file+' canonical footer');
+assert.ok(d.querySelector('footer .hk-footer-community'),file+' Community footer');
+assert.equal(d.querySelectorAll('.hk-share-bless').length,1,file+' share section');
+assert.ok(!d.querySelector('a[href="/junk"]'),file+' CMS menu override blocked');assert.ok(!d.querySelector('footer').textContent.includes('WRONG'),file+' CMS footer override blocked');
+const radio=file==='pages/radio.html';assert.equal(d.querySelectorAll('#hkem-assistant').length,radio?0:1,file+' approved assistant');assert.equal(d.querySelectorAll('#hk-floating-radio').length,radio?0:1,file+' approved radio');
+assert.equal(d.querySelectorAll('#hkem-public-assistant').length,0,file+' obsolete assistant');
+const old=d.createElement('aside');old.id='hkem-public-assistant';d.body.append(old);await new Promise(r=>setTimeout(r,0));assert.equal(d.querySelectorAll('#hkem-public-assistant').length,0,file+' delayed obsolete assistant blocked');
+if(!radio){assert.ok(d.querySelector('#hkem-assistant img').src.includes('approved-ai-launcher-20261017.webp'));assert.ok(d.querySelector('.hkr-bubble img').src.includes('heavenly-key-radio-launcher-20261017.webp'));d.querySelector('.hkem-launcher').click();assert.equal(d.querySelector('.hkem-iphone-chat').hidden,false);d.querySelector('.hkem-close').click();assert.equal(d.querySelector('.hkem-iphone-chat').hidden,true);d.querySelector('.hkr-bubble').click();assert.ok(!d.querySelector('#hk-floating-radio').classList.contains('hkr-mini'));d.querySelector('.hkr-min').click();assert.ok(d.querySelector('#hk-floating-radio').classList.contains('hkr-mini'));}
+console.log('PASS',file);w.close();}
+for(const host of ['global.heavenlykey.org','bible.heavenlykey.org']){const dom=new JSDOM('<body><header>INDEPENDENT</header><footer>INDEPENDENT</footer></body>',{url:'https://'+host,runScripts:'outside-only'});dom.window.eval(fs.readFileSync(path.join(root,'js/public-site-master.js'),'utf8'));assert.equal(dom.window.document.body.textContent,'INDEPENDENTINDEPENDENT');assert.ok(!dom.window.__hkApprovedPublicShell);dom.window.close();}
+console.log('PASS independent Bible/Community exclusions');
+})().catch(e=>{console.error(e);process.exit(1)});

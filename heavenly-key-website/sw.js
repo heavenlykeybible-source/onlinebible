@@ -1,5 +1,5 @@
 /* Heavenly Key: offline public-shell cache. Never cache private or authenticated responses. */
-const CACHE='hk-public-shell-v2';
+const CACHE='hk-public-shell-v3-approved';
 const SHELL=['/','/index.html','/css/home-renewal.css','/js/home-renewal.js','/assets/ministry/logo.png','/offline.html'];
 const PUBLIC_PAGES=new Set(['/','/index.html','/offline.html','/pages/about.html','/pages/ministries.html','/pages/contact.html','/pages/resources.html','/pages/radio.html']);
 const MAX_ENTRIES=90;
@@ -17,3 +17,4 @@ self.addEventListener('fetch',event=>{
  if(!/\.(?:css|js|png|jpg|jpeg|webp|svg|woff2?|ico)$/i.test(url.pathname))return;
  event.respondWith((async()=>{const cached=await caches.match(req);if(cached)return cached;try{const res=await fetch(req);if(res.ok&&res.type==='basic'&&!res.headers.has('set-cookie')&&!/private|no-store/i.test(res.headers.get('cache-control')||'')){const cache=await caches.open(CACHE);await cache.put(req,res.clone())}return res}catch{return Response.error()}})());
 });
+
