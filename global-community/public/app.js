@@ -206,7 +206,7 @@ else if(p.post_format==="premium_text"){if(p.title)x.append(el("h3",p.title,"pre
 else if(settings){x.append(designCard(p.title,p.post_format==="design_card"?p.body:"",p.scripture,settings,p.design_category));if(p.post_format==="article")x.append(premiumText(p.body));}
 else if(p.background_style){const bg=el("div",null,"faith-bg faith-bg-"+p.background_style);if(p.title)bg.append(el("h3",p.title));bg.append(expandableText(p.body));x.append(bg);}
 else{if(p.title)x.append(el("h3",p.title,"premium-post-title"));x.append(premiumText(p.body));}
-x.append(reactions(p));const actions=el("div",null,"actions"),reply=el("button","Reply"+(p.comment_count?" · "+p.comment_count:""),"btn secondary"),report=el("button","Report this post","btn secondary");reply.type=report.type="button";reply.addEventListener("click",()=>commentThread(p,x));report.addEventListener("click",()=>reportPost(p,x));actions.append(reply);menu.append(report);const share=el("button","Share","btn secondary");share.type="button";
+x.append(reactions(p));const actions=el("div",null,"actions"),reply=el("button","Reply"+(p.comment_count?" · "+p.comment_count:""),"btn secondary"),report=el("button","Report this post","btn secondary");reply.type=report.type="button";reply.addEventListener("click",()=>commentThread(p,x));report.addEventListener("click",()=>reportPost(p,x));actions.append(reply,report);const share=el("button","Share This Post to Bless Others","btn secondary");share.type="button";
 share.addEventListener("click",async()=>{
  const restricted=p.visibility==="connections"||p.visibility==="group"||p.visibility==="private"||!!p.group_id;
  const url=new URL("index.html?post="+p.post_id,location.href).href;
