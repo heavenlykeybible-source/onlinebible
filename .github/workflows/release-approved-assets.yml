@@ -1,4 +1,4 @@
-name: Release official transparent AI-first Radio-below arrangement
+name: Verify final approved transparent launchers and consistent menus
 on:
   push:
     branches: ['release/account1-approved-assets-20261017']
