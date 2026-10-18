@@ -27,8 +27,8 @@ async function body(request:Request){
   try{const value=JSON.parse(new TextDecoder().decode(bytes));if(!value||Array.isArray(value)||typeof value!=="object")throw new Error();return value;}catch{throw new Error("Send a valid JSON object.");}
 }
 async function sourceKey(request:Request){const address=request.headers.get("CF-Connecting-IP")||"local";const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(address));return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");}
-const cleanEmail=(v:any)=>String(v||"").trim().toLowerCase().slice(0,160);
-const validEmail=(v:string)=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+const cleanEmail=(v:any)=>String(v||"").trim().toLowerCase();
+const validEmail=(v:string)=>v.length<=160&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 async function me(request:Request,env:Env){const u=await getSession(request,env);if(!u)throw Object.assign(new Error("Please sign in."),{status:401});return u;}
 
@@ -123,7 +123,7 @@ async function route(request:Request,env:Env):Promise<Response>{
 
   if(p==="/api/spaces"&&m==="GET"){const u=await getSession(request,env);return json({items:await S.listSpaces(env,url.searchParams.get("category")||undefined,u?.userId||null)});}
   if(p==="/api/spaces"&&m==="POST"){const u=await me(request,env);return json(await S.createSpace(env,u.userId,await body(request)),201);}
-  {const x=p.match(/^\/api\/spaces\/([a-z0-9-]+)$/);if(x&&m==="GET"){const space=await S.getSpace(env,x[1]);if(!space)return error("Space not found.",404);const u=await getSession(request,env);let canManage=false;if(u)canManage=!!await env.DB.prepare("SELECT 1 FROM space_members WHERE space_id=? AND user_id=?").bind(space.space_id,u.userId).first();return json({space:{...space,canManage}});}}
+  {const x=p.match(/^\/api\/spaces\/([^/]+)$/);if(x&&m==="GET"){let slug:string;try{slug=decodeURIComponent(x[1]);}catch{return error("Invalid Space link.");}if(!/^[\p{L}\p{N}-]+$/u.test(slug))return error("Invalid Space link.");const space=await S.getSpace(env,slug);if(!space)return error("Space not found.",404);const u=await getSession(request,env);let canManage=false;if(u)canManage=!!await env.DB.prepare("SELECT 1 FROM space_members WHERE space_id=? AND user_id=?").bind(space.space_id,u.userId).first();return json({space:{...space,canManage}});}}
 
   if(p==="/api/groups"&&m==="GET"){const u=await getSession(request,env);return json({items:await S.listGroups(env,u?.userId||null)});}
   {const x=p.match(/^\/api\/groups\/(\d+)$/);if(x&&m==='GET'){const u=await getSession(request,env);return json({group:await S.groupDetail(env,u?.userId||null,Number(x[1]))});}if(x&&m==='PATCH'){const u=await me(request,env);return json(await S.updateGroup(env,u.userId,Number(x[1]),await body(request)));}}

@@ -1,0 +1,32 @@
+# Community security and international readiness
+
+Status: tested source repairs, awaiting production approval and deployment.
+
+## Repairs
+
+- Rate-limit retries retain a fixed expiry rather than extending the waiting period; rate-limit keys hash account identifiers.
+- Configuration preflight rejects plaintext session, password-pepper and interservice secrets.
+- Space routes resolve encoded Unicode slugs, including Chinese, Arabic and Devanagari, and reject malformed encodings or encoded path separators.
+- Registration and login reject overlong email identifiers instead of truncating them into a different identifier.
+- Frontend API calls reject broken JSON and invalid response shapes instead of treating them as successful saves. Writes are not automatically retried.
+- Text fields detect writing direction; form status updates announce through a polite live region.
+- Radio display labels use Heavenly Key branding without changing player behavior or page layout.
+
+## Verification
+
+- `npm run buildcheck`: passed, including TypeScript, frontend syntax, configuration preflight and 33 test cases.
+- `npm audit --omit=dev`: zero reported production dependency vulnerabilities. This is not a full application security assessment.
+- API security tests execute the actual Worker routes against an isolated SQLite database with the application migrations and KV test adapter. Privacy defaults, private posts, messages, reporting, independent appeals, account restrictions, CSRF rejection and oversized requests passed.
+- Chinese, Arabic and Devanagari Space creation and URL lookup passed; malformed Space links and overlong emails were rejected.
+- Live browser smoke check: home feed and Groups loaded, empty states rendered, and navigation worked. No application console errors observed in those views; browser extension metadata errors were excluded.
+- Live GET health endpoint returned active service during the preceding check.
+
+## Remaining release checks
+
+- Real Cloudflare D1/KV integration: the separate Wrangler HTTP audit could not start in this execution environment (`uv_interface_addresses` error). The in-process tests do not replace deployed integration tests.
+- Authenticated production administrator and member journeys, real Google/Facebook provider credentials, call relay, and recovery workflows require verification in the target environment.
+- Real iOS/Android, keyboard and screen-reader testing, load/concurrency testing, backup restoration and operational monitoring remain unverified.
+- Direction detection does not translate the English interface or certify full multilingual/RTL layout support.
+- KV counters remain best-effort under concurrency; strict distributed rate limiting is not certified.
+
+No production deployment, moderation-policy removal, database change or layout redesign was performed by this repair.
