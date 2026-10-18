@@ -921,3 +921,9 @@ body.social-page .composer-prompt-spark{color:#bf8a25;filter:drop-shadow(0 0 4px
 body.social-page .composer-prompt-text{color:#1f4b3c;font-weight:750}
 @keyframes hk-composer-soft-glow{0%,100%{background-position:0% 50%;box-shadow:0 0 0 1px #ffffffcc,0 5px 18px #1d6b3920}50%{background-position:100% 50%;box-shadow:0 0 0 2px #a7dbb04a,0 6px 24px #33844c32}}
 @media(prefers-reduced-motion:reduce){body.social-page .composer-prompt{animation:none!important;transition:none!important}}
+
+/* Keep Christian reactions and all post actions visible and usable on every screen. */
+.social-page .post>.reactions{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.social-page .post>.actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.social-page .post>.actions>button{max-width:100%;white-space:normal;text-align:center;line-height:1.35}
+@media(max-width:600px){.social-page .post>.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.social-page .post>.actions>button{min-width:0;width:100%;padding:10px 7px}.social-page .post>.actions>button:first-child{grid-column:1/-1}}
