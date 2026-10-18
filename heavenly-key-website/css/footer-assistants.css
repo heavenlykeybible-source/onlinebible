@@ -31,3 +31,9 @@
 #hkem-assistant{position:fixed!important;left:auto!important;right:12px!important;top:42dvh!important;bottom:auto!important;z-index:10020!important}
 #hkem-assistant .hkem-iphone-chat{position:fixed!important;top:auto!important;right:12px!important;bottom:12px!important}
 @media(max-width:600px){#hk-floating-radio{right:7px!important;top:calc(37dvh + 65px)!important;bottom:auto!important}#hkem-assistant{right:7px!important;top:37dvh!important;bottom:auto!important}#hkem-assistant .hkem-iphone-chat{right:7px!important;bottom:7px!important}}
+
+/* Compact owner-requested home-page calls to action, separate from approved artwork. */
+.hk-approved-widget-ctas{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin:12px auto;padding:0 12px;max-width:520px}
+.hk-approved-widget-cta{display:inline-flex;justify-content:center;align-items:center;padding:8px 13px;border:1px solid #e8efdc;border-radius:999px;background:#e4f6df;color:#174a30;text-decoration:none;font:700 12px/1.4 system-ui,sans-serif;cursor:pointer}
+.hk-approved-widget-cta:hover,.hk-approved-widget-cta:focus-visible{background:#fff;outline:2px solid #5b9865;outline-offset:2px}
+@media(max-width:600px){.hk-approved-widget-ctas{gap:7px}.hk-approved-widget-cta{font-size:11px;padding:8px 10px}}
