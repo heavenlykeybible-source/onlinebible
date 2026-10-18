@@ -25,7 +25,7 @@ for match in re.finditer(r'<style[^>]*>(.*?)</style>', home, re.S):
 scope = ':is(header.site-header,footer.site-footer,.hk-share-bless)'
 def scoped(css):
     css = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
-    css = re.sub(r'@import[^;]*;', '', css)
+    css = re.sub(r'@import\s+url\([^)]*\)\s*;', '', css)
     output = ''; start = 0
     while start < len(css):
         opening = css.find('{', start)
@@ -42,6 +42,8 @@ def scoped(css):
         elif selector == 'body': output += scope+':is(header.site-header,footer.site-footer,.hk-share-bless){'+body+'}'
         elif not selector.startswith('@'):
             selectors = re.split(r',(?=(?:[^()]*\([^()]*\))*[^()]*$)', selector)
+            selectors = [s for s in selectors if re.match(r'^(?:[*.]|h[1-6]\b|p\b|a\b|button\b|summary\b|img\b|figure\b|blockquote\b)', s.strip()) and (not s.strip().startswith('.') or re.match(r'^\.(?:wrap|site-header|header-inner|header-swoosh|brand|main-nav|dropdown|nav-toggle|site-footer|hk-footer|copyright|social|hk-community|hk-share)',s.strip()))]
+            if not selectors: start=end;continue
             def protect(s):
                 match = re.search(r'(::[A-Za-z-]+|:(?:before|after))$', s.strip())
                 pseudo = match.group() if match else ''
@@ -51,7 +53,7 @@ def scoped(css):
         start = end
     return output
 cssfiles = ['home-renewal.css','premium-navigation-upgrade.css','resources-dropdown-fix.css','footer-five-columns.css','footer-approved-cleanup.css']
-font_import = re.search(r'@import[^;]*;', (ROOT/'css/home-renewal.css').read_text()).group()
+font_import = re.search(r'@import\s+url\([^)]*\)\s*;', (ROOT/'css/home-renewal.css').read_text()).group()
 css = font_import + '\n/* Generated only from the approved homepage. Do not hand-edit. */\n' + ''.join(scoped((ROOT/'css'/p).read_text()) for p in cssfiles) + ''.join(scoped(s) for s in styles)
 css = css.replace("url('../assets/", "url('/assets/")
 

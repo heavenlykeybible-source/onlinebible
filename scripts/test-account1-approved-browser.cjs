@@ -1,7 +1,7 @@
 const {chromium}=require(process.env.HK_PLAYWRIGHT||'playwright');
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'../heavenly-key-website');
-(async()=>{const browser=await chromium.launch({headless:true,args:['--no-sandbox']});fs.mkdirSync('approved-shell-screenshots',{recursive:true});
+(async()=>{const browser=await chromium.launch({executablePath:process.env.HK_BROWSER_PATH,headless:true,args:['--no-sandbox']});fs.mkdirSync('approved-shell-screenshots',{recursive:true});
 for(const size of [{width:1440,height:1000},{width:768,height:1024},{width:390,height:844},{width:360,height:800}]){
 let expected;
 for(const file of ['index.html',...fs.readdirSync(path.join(root,'pages')).filter(f=>f.endsWith('.html')&&f!=='admin.html').map(f=>'pages/'+f)]){
