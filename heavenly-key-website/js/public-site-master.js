@@ -20,7 +20,7 @@ await load('/js/online-assistant.js?v=20261018f','hk-original-assistant');await 
 const radio=document.getElementById('hk-floating-radio'),assistant=document.getElementById('hkem-assistant');approvedAssistant=assistant;approvedRadio=radio;clean();stack.append(assistant,radio);
 if(path==='/'||path==='/index.html'){
  const ctas=document.createElement('div');ctas.className='hk-approved-widget-ctas';ctas.setAttribute('aria-label','Ministry app actions');
- const download=document.createElement('a');download.href='https://app.heavenlykey.org/';download.target='_blank';download.rel='noopener noreferrer';download.textContent='Download App';download.className='hk-approved-widget-cta';
+ const download=document.createElement('a');download.href='https://app.heavenlykey.org/';download.target='_blank';download.rel='noopener noreferrer';download.textContent='Download This App';download.className='hk-approved-widget-cta';
  const share=document.createElement('button');share.type='button';share.textContent='Share to bless others';share.className='hk-approved-widget-cta';
  share.addEventListener('click',async()=>{const url='https://www.heavenlykey.org/';try{if(navigator.share)await navigator.share({title:'Heavenly Key Evangelistic Movement',url});else if(navigator.clipboard){await navigator.clipboard.writeText(url);share.textContent='Link copied ✓';}else prompt('Copy ministry link',url);}catch(e){if(e?.name!=='AbortError')prompt('Copy ministry link',url);}});
  ctas.append(download,share);stack.append(ctas);
