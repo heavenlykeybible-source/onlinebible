@@ -209,7 +209,8 @@ export async function createPost(env:Env,user:SessionUser,input:any){
   const types=["fellowship","prayer","testimony","bible_question","bible_answer","encouragement","mission","salvation","announcement"];
   const type=types.includes(input.postType)?input.postType:"fellowship";
   const visibility=groupId?"group":input.visibility==="connections"?"connections":"public";
-  const held=mod.decision==="hold"||videoCheck.decision==="hold";
+  // Provider metadata cannot establish that video frames/audio are safe. Require review.
+  const held=mod.decision==="hold"||Boolean(presentation.video)||videoCheck.decision==="hold";
   const state=held?"held":mod.decision==="warn"?"warned":"allowed",status=held?"held":"active";
   const row=await env.DB.prepare("INSERT INTO posts(author_user_id,author_space_id,group_id,post_type,title,body,visibility,status,moderation_state,post_format,design_category,design_settings,scripture,video_url,video_provider) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING post_id")
     .bind(user.userId,authorSpaceId,groupId,type,title||null,body,visibility,status,state,presentation.format,presentation.category,presentation.design?JSON.stringify(presentation.design):null,scripture||null,presentation.video?.url||null,presentation.video?.provider||null).first<any>();
@@ -223,7 +224,8 @@ export async function editPost(env:Env,user:SessionUser,id:number,input:any){
   const p=validatePostPresentation(input),videoCheck=await inspectVideoLink(p.video),mod=moderateText(p.title+"\n"+p.body+"\n"+p.scripture+"\n"+(p.video?.url||""),"post");
   if(mod.decision==="block"){await recordModeration(env,user.userId,"post",id,mod);throw new Error("This edit violates the Christian Community Standards.");}
   if(videoCheck.decision==="block")throw new Error("The linked video violates community standards.");
-  const held=mod.decision==="hold"||videoCheck.decision==="hold";
+  // Provider metadata cannot establish that video frames/audio are safe. Require review.
+  const held=mod.decision==="hold"||Boolean(p.video)||videoCheck.decision==="hold";
   const state=held?"held":mod.decision==="warn"?"warned":"allowed",status=held?"held":"active";
   const changed=await env.DB.prepare("UPDATE posts SET title=?,body=?,post_format=?,design_category=?,design_settings=?,scripture=?,video_url=?,video_provider=?,background_style=NULL,status=?,moderation_state=?,updated_at=datetime('now') WHERE post_id=? AND author_user_id=? AND status IN ('active','held')")
     .bind(p.title||null,p.body,p.format,p.category,p.design?JSON.stringify(p.design):null,p.scripture||null,p.video?.url||null,p.video?.provider||null,status,state,id,user.userId).run();
