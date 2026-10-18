@@ -3,7 +3,7 @@
 import {readFileSync,writeFileSync,mkdirSync,existsSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-const ACCOUNT='a160ba9fc74911bd4b3005eac86eefcb',WORKER='heavenlykey',EXPECTED_VERSION='e8eac275-3dd9-4301-9e7f-fcb906887396';
+const ACCOUNT='a160ba9fc74911bd4b3005eac86eefcb',WORKER='heavenlykey',EXPECTED_VERSION='ee8f0d99-0180-48b0-af5d-51563d866288';
 const BASE='9992aee0d09ef59db697e43ad281383bf234be93',token=process.env.CLOUDFLARE_API_TOKEN?.trim().replace(/^Bearer\s+/i,'');
 const cf='https://api.cloudflare.com/client/v4/accounts/'+ACCOUNT,message='Owner approved Account 1 shell assets '+process.env.GITHUB_SHA;
 const sha=b=>createHash('sha256').update(b).digest('hex');

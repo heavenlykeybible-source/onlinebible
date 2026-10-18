@@ -1,4 +1,4 @@
-name: Release nonintrusive footer AI and Radio pictures
+name: Release centered footer row with Radio left and AI right
 on:
   push:
     branches: ['release/account1-approved-assets-20261017']
