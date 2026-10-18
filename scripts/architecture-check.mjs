@@ -17,8 +17,18 @@ if (/catch\s*\{\s*\}/.test(mediaIndex)) {
 const rootMigrations = (await readdir(join(root, "migrations")))
   .filter((f) => /^\d{4}_.+\.sql$/.test(f))
   .sort();
+const rootMigrationNumbers = new Map();
+for (const filename of rootMigrations) {
+  const number = filename.slice(0, 4);
+  rootMigrationNumbers.set(number, [...(rootMigrationNumbers.get(number) ?? []), filename]);
+}
+for (const [number, filenames] of rootMigrationNumbers) {
+  if (filenames.length > 1) {
+    failures.push(`Duplicate root migration number ${number}: ${filenames.join(", ")}. Resolve with an owner-reviewed migration plan; never delete or renumber applied migrations automatically.`);
+  }
+}
 if (rootMigrations.length !== 39 || !rootMigrations.at(-1)?.startsWith("0039_")) {
-  failures.push("Root migration tip must be 0039 with exactly 39 numbered migrations.");
+  failures.push(`Root migration tip must be 0039 with exactly 39 numbered migrations (found ${rootMigrations.length}; tip ${rootMigrations.at(-1) ?? "none"}).`);
 }
 
 const mediaMigrations = (await readdir(join(root, "media-engine/migrations")))
