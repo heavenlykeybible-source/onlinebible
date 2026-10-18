@@ -80,7 +80,7 @@ test('Believer discovery retains the latest search and recovers after a failed r
  const guest=welcome();assert.equal(guest.className,'community-welcome');
  assert.equal(guest.children[2],shortcuts,'Real community action panel follows the official banner');
  const art=guest.children[0];assert.equal(art.tag,'img');
- assert.equal(art.src,'assets/global-christian-community-official.jpeg');
+ assert.equal(art.src,'assets/70F8EC1C-065B-4893-8ADD-6F21949C73D2.png');
  assert.equal(art.width,1536);assert.equal(art.height,614);
  assert.equal(art.className,'community-official-network-image');
  assert.equal(created.filter(n=>n.tag==='img').length,1,'No unapproved additional banner artwork');
