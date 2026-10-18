@@ -26,8 +26,8 @@ function install(eq,audio){
  const setPlaying=()=>{buffering=false;sync()};
  if(audio){
   ['waiting','stalled','seeking','loadstart','emptied','error','abort','suspend'].forEach(e=>audio.addEventListener(e,setBuffering));
-  ['playing','canplay','seeked'].forEach(e=>audio.addEventListener(e,setPlaying));
-  ['pause','ended','volumechange'].forEach(e=>audio.addEventListener(e,sync));
+  ['playing','canplay','seeked','timeupdate'].forEach(e=>audio.addEventListener(e,setPlaying));
+  ['pause','ended','volumechange','ratechange'].forEach(e=>audio.addEventListener(e,sync));
  }
  sync();
 }
