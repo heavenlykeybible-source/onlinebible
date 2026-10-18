@@ -16,7 +16,7 @@ def absolute(match):
     if value.startswith(('https:', 'http:', '/', 'mailto:', 'tel:', 'data:')): return match.group()
     return attr + '="/' + value + '"'
 header = re.sub(r'(href|src)="([^"]+)"', absolute, header)
-header = header.replace('class="active" href="/#main" aria-current="page"', 'href="/#main"')
+header = header.replace('class="active" href="/#main" aria-current="page"', 'class="active" href="/#main"')
 footer = re.sub(r'(href|src)="([^"]+)"', absolute, footer)
 styles = []
 for match in re.finditer(r'<style[^>]*>(.*?)</style>', home, re.S):
@@ -57,7 +57,7 @@ font_import = re.search(r'@import\s+url\([^)]*\)\s*;', (ROOT/'css/home-renewal.c
 css = font_import + '\n/* Generated only from the approved homepage. Do not hand-edit. */\n' + ''.join(scoped((ROOT/'css'/p).read_text()) for p in cssfiles) + ''.join(scoped(s) for s in styles)
 css = css.replace("url('../assets/", "url('/assets/")
 
-css += '\nheader.site-header.site-header{color:var(--ink,#111)}\n'
+css += '\nheader.site-header.site-header{color:var(--ink,#111)}header.site-header.site-header,footer.site-footer.site-footer{padding:0;margin:0;border:0;text-align:start}\n'
 changed=[]
 def save(path, text):
     previous = path.read_text() if path.exists() else ''
