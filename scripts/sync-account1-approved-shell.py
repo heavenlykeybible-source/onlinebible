@@ -41,23 +41,31 @@ def scoped(css):
         elif selector == ':root': output += scope+'{'+body+'}'
         elif selector == 'body': output += scope+'{'+body+'}'
         elif not selector.startswith('@'):
+            if 'hk-primary-footer' in selector:
+                body = ';'.join(d+'!important' if d.strip().startswith('padding') and '!important' not in d else d for d in body.split(';'))
             selectors = re.split(r',(?=(?:[^()]*\([^()]*\))*[^()]*$)', selector)
             selectors = [s for s in selectors if re.match(r'^(?:[*.]|h[1-6]\b|p\b|a\b|button\b|summary\b|img\b|figure\b|blockquote\b)', s.strip()) and (not s.strip().startswith('.') or re.match(r'^\.(?:wrap|site-header|header-inner|header-swoosh|brand|main-nav|dropdown|nav-toggle|site-footer|hk-footer|copyright|social|hk-community|hk-share)',s.strip()))]
             if not selectors: start=end;continue
-            def protect(s):
+            def protect(s, tier=0):
                 match = re.search(r'(::[A-Za-z-]+|:(?:before|after))$', s.strip())
                 pseudo = match.group() if match else ''
                 base = s.strip()[:-len(pseudo)] if pseudo else s.strip()
-                return ':is('+base+'):is('+scope+','+scope+' *)'+pseudo
-            output += ','.join(protect(s) for s in selectors)+'{'+body+'}'
+                guard = ':is('+('#hk-shell-priority'*tier+', ' if tier else '')+scope+','+scope+' *)'
+                return ':is('+base+')'+guard+pseudo
+            if re.search(r'main-nav|nav-toggle|header-inner|header-swoosh|\.brand|^\.site-header$',selector):
+                normal = [d+'!important' for d in body.split(';') if d.strip() and '!important' not in d]
+                important = [d for d in body.split(';') if '!important' in d]
+                if normal: output += ','.join(protect(s,1) for s in selectors)+'{'+(';'.join(normal))+'}'
+                if important: output += ','.join(protect(s,2) for s in selectors)+'{'+(';'.join(important))+'}'
+            else: output += ','.join(protect(s) for s in selectors)+'{'+body+'}'
         start = end
     return output
 cssfiles = ['home-renewal.css','premium-navigation-upgrade.css','resources-dropdown-fix.css','footer-five-columns.css','footer-approved-cleanup.css']
 font_import = re.search(r'@import\s+url\([^)]*\)\s*;', (ROOT/'css/home-renewal.css').read_text()).group()
-css = font_import + '\n/* Generated only from the approved homepage. Do not hand-edit. */\n' + ''.join(scoped((ROOT/'css'/p).read_text()) for p in cssfiles) + ''.join(scoped(s) for s in styles)
+css = font_import + '\n/* Generated only from the approved homepage. Do not hand-edit. */\n.site-header .main-nav{position:static!important;inset:auto!important;transform:none!important;transition:none!important;padding:0!important;margin:0!important;border:0!important;box-shadow:none!important;background:transparent!important;overflow:visible!important}.site-header .main-nav li{width:auto!important;min-width:0!important;max-width:none!important;margin:0!important;padding:0!important;list-style:none!important;transform:none!important}\n' + ''.join(scoped((ROOT/'css'/p).read_text()) for p in cssfiles) + ''.join(scoped(s) for s in styles)
 css = css.replace("url('../assets/", "url('/assets/")
 
-css += '\nheader.site-header.site-header{color:var(--ink,#111)}header.site-header.site-header,footer.site-footer.site-footer{padding:0;margin:0;border:0;text-align:start}\n'
+css += '\nheader.site-header.site-header{color:var(--ink,#111)}header.site-header.site-header,footer.site-footer.site-footer{padding:0;margin:0;border:0;text-align:start}header.site-header .brand img{filter:none!important}\n'
 changed=[]
 def save(path, text):
     previous = path.read_text() if path.exists() else ''
