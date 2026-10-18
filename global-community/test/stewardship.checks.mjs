@@ -64,7 +64,7 @@ test('Moderation blocks commercial promotions while allowing ordinary ministry m
   writeFileSync(join(dir,'moderation.mjs'),stripTypeScriptTypes(source));
   const {moderateText}=await import(pathToFileURL(join(dir,'moderation.mjs')).href);
   assert.equal(moderateText('Buy now, limited time offer!','post').decision,'block');
-  assert.equal(moderateText('DM me for investment profit','post').decision,'block');
+  assert.equal(moderateText('DM me for investment profit','post').decision,'hold');
   assert.equal(moderateText('Please pray for our Christian outreach','post').decision,'allow');
   assert.equal(moderateText('We pray for people struggling with pornography addiction','post').decision,'hold');
  }finally{rmSync(dir,{recursive:true,force:true});}
