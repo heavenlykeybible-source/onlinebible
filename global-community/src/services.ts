@@ -81,10 +81,12 @@ export async function createSpace(env:Env,userId:number,input:any){
   const allowed=["ministry","church","christian_organization","mission_outreach","christian_business","christian_media","music_ministry","christian_project","fellowship_network","other_approved"];
   if(!allowed.includes(input.category))throw new Error("Choose a valid Space category.");
   let slug=slugify(input.slug||name),n=1;while(await env.DB.prepare("SELECT 1 FROM spaces WHERE slug=?").bind(slug).first())slug=slugify(name)+"-"+(++n);
-  const row=await env.DB.prepare(`INSERT INTO spaces(slug,name,category,description,country,state_region,city,website,contact_email,owner_user_id)
-    VALUES(?,?,?,?,?,?,?,?,?,?) RETURNING space_id`).bind(slug,name,input.category,description,clamp(input.country,80)||null,clamp(input.stateRegion,100)||null,clamp(input.city,100)||null,clamp(input.website,300)||null,clamp(input.contactEmail,160)||null,userId).first<any>();
-  if(!row)throw new Error("Space could not be created.");
-  await env.DB.prepare("INSERT INTO space_members(space_id,user_id,role) VALUES(?,?,'owner')").bind(row.space_id,userId).run();
+  const created=await env.DB.batch([
+    env.DB.prepare(`INSERT INTO spaces(slug,name,category,description,country,state_region,city,website,contact_email,owner_user_id)
+      VALUES(?,?,?,?,?,?,?,?,?,?) RETURNING space_id`).bind(slug,name,input.category,description,clamp(input.country,80)||null,clamp(input.stateRegion,100)||null,clamp(input.city,100)||null,clamp(input.website,300)||null,clamp(input.contactEmail,160)||null,userId),
+    env.DB.prepare("INSERT INTO space_members(space_id,user_id,role) SELECT space_id,?,'owner' FROM spaces WHERE slug=? AND owner_user_id=?").bind(userId,slug,userId)
+  ]);
+  const row=created[0].results?.[0] as any;if(!row)throw new Error("Space could not be created.");
   if(mod.decision!=="allow")await recordModeration(env,userId,"space",row.space_id,mod);
   return {spaceId:Number(row.space_id),slug};
 }
@@ -109,10 +111,12 @@ export async function createGroup(env:Env,userId:number,input:any){
   const visibility=["public","private","hidden"].includes(input.visibility)?input.visibility:"private";
   const rules=clamp(input.rules,2000),joinApproval=input.joinApproval===true||visibility!=='public'?1:0,postingPolicy=input.postingPolicy==='managers'?'managers':'members';
   if(moderateText(rules,"group").decision==='block')throw new Error("Group rules violate Community Standards.");
-  const row=await env.DB.prepare("INSERT INTO groups(name,slug,group_type,description,christian_purpose,visibility,owner_user_id,rules,join_approval,posting_policy) VALUES(?,?,?,?,?,?,?,?,?,?) RETURNING group_id")
-    .bind(name,slug,input.groupType,description,purpose,visibility,userId,rules,joinApproval,postingPolicy).first<any>();
-  if(!row)throw new Error("Group could not be created.");
-  await env.DB.prepare("INSERT INTO group_members(group_id,user_id,role,join_status) VALUES(?,?,'owner','approved')").bind(row.group_id,userId).run();
+  const created=await env.DB.batch([
+    env.DB.prepare("INSERT INTO groups(name,slug,group_type,description,christian_purpose,visibility,owner_user_id,rules,join_approval,posting_policy) VALUES(?,?,?,?,?,?,?,?,?,?) RETURNING group_id")
+      .bind(name,slug,input.groupType,description,purpose,visibility,userId,rules,joinApproval,postingPolicy),
+    env.DB.prepare("INSERT INTO group_members(group_id,user_id,role,join_status) SELECT group_id,?,'owner','approved' FROM groups WHERE slug=? AND owner_user_id=?").bind(userId,slug,userId)
+  ]);
+  const row=created[0].results?.[0] as any;if(!row)throw new Error("Group could not be created.");
   if(mod.decision!=="allow")await recordModeration(env,userId,"group",row.group_id,mod);
   return {groupId:Number(row.group_id),slug};
 }

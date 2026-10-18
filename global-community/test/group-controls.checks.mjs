@@ -13,7 +13,7 @@ test('Messaging and groups: privacy, retry safety, posting permissions and manag
  for(const file of readdirSync(path.join(base,'migrations')).filter(x=>x.endsWith('.sql')).sort())db.exec(readFileSync(path.join(base,'migrations',file),'utf8'));
  for(let id=1;id<=5;id++){db.prepare("INSERT INTO users(user_id,email,password_hash,password_salt) VALUES(?,?,?,?)").run(id,'group-test-'+id+'@example.invalid','unused','unused');db.prepare("INSERT INTO profiles(user_id,full_name,display_name) VALUES(?,?,?)").run(id,'Member '+id,'Member '+id);}
  const statement=(sql,params=[])=>({bind(...p){return statement(sql,p);},async first(){return db.prepare(sql).get(...params)||null;},async all(){return {results:db.prepare(sql).all(...params)};},async run(){const result=db.prepare(sql).run(...params);return {meta:{changes:Number(result.changes)}};}});
- const env={DB:{prepare:sql=>statement(sql)},SESSIONS:{},MEDIA:{}};
+ const env={DB:{prepare:sql=>statement(sql),async batch(queries){db.exec('BEGIN');try{const results=[];for(const q of queries)results.push(await q.all());db.exec('COMMIT');return results;}catch(e){db.exec('ROLLBACK');throw e;}}},SESSIONS:{},MEDIA:{}};
  const mod=stripTypeScriptTypes(readFileSync(path.join(base,'src/moderation.ts'),'utf8'));writeFileSync(path.join(dir,'moderation.mjs'),mod);writeFileSync(path.join(dir,'stewardship.mjs'),stripTypeScriptTypes(readFileSync(path.join(base,'src/stewardship.ts'),'utf8')));
  let src=stripTypeScriptTypes(readFileSync(path.join(base,'src/services.ts'),'utf8'));
  src=src.replace(/from ["']\.\/stewardship["']/,'from "./stewardship.mjs"');
