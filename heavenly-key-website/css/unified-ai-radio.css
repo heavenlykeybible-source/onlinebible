@@ -18,3 +18,9 @@
 #hkem-assistant .hkem-invitation-detail{display:block;margin-top:5px;font-size:14px;font-weight:500;line-height:1.45}
 @media(max-width:600px){#hkem-assistant .hkem-invitation-title{font-size:14px}#hkem-assistant .hkem-invitation-detail{font-size:14px}}
 @media(prefers-reduced-motion:reduce){#hkem-assistant .hkem-invitation-title{animation:none}}
+
+/* Approved Heavenly Key Radio horizontal banner. Existing icon remains a fallback
+   until the transparent approved-radio-banner.png is uploaded to the assets folder. */
+#hk-floating-radio.hkr-mini{width:clamp(180px,23vw,275px)!important;max-width:calc(100vw - 20px)}
+#hk-floating-radio.hkr-mini .hkr-bubble{width:100%!important;height:auto!important;aspect-ratio:3/1!important;border:0!important;border-radius:0!important;background-color:transparent!important;background-image:url('/assets/ministry/approved-radio-banner.png'),url('/assets/ministry/approved-radio-floating-icon.webp')!important;background-size:contain!important;background-repeat:no-repeat!important;background-position:center!important;box-shadow:none!important;color:transparent!important;font-size:0!important}
+@media(max-width:600px){#hk-floating-radio.hkr-mini{width:clamp(145px,40vw,195px)!important}#hk-floating-radio.hkr-mini .hkr-bubble{width:100%!important;height:auto!important}}
