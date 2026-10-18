@@ -493,212 +493,371 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #a7
   text-decoration:none;
 }
 
-/* Gospel Design Studio: simple starter themes and unobtrusive single shared AI. */
-.featured-card-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
-.featured-card-preset{border:1px solid #d6e0ef;border-radius:12px;min-height:48px;background:linear-gradient(135deg,#f5f8ff,#fffaf1);color:#213d72;font-weight:750;cursor:pointer;padding:9px;letter-spacing:.01em}
-.featured-card-preset:hover,.featured-card-preset:focus-visible{border-color:#d0a953;background:#fff7dc;outline-offset:2px}
-.hk-ai-composer{align-self:flex-start;font-size:.85rem!important;margin:4px 0 10px;background:#edf1fb!important;color:#294776!important;border:1px solid #c9d6e9}
-.hk-ai-search-suggestion{display:block;width:100%;text-align:left;border:0;border-top:1px solid #e2e8f3;padding:10px 4px;background:transparent;color:#385b8b;font-size:.78rem;font-weight:600;cursor:pointer;white-space:normal}
-.hk-ai-search-suggestion:hover,.hk-ai-search-suggestion:focus-visible{background:#f3f7fe;color:#173b78}
-.hk-ai-dialog{box-sizing:border-box;border:1px solid #cfdbed;border-radius:18px;padding:22px;width:min(96vw,620px);max-height:88dvh;overflow:auto;box-shadow:0 24px 70px #152f5780;background:white;color:#1c2e48}
-.hk-ai-dialog::backdrop{background:#09204599}
-.hk-ai-dialog h2{color:#183e78;font-size:1.2rem;line-height:1.35;margin:0 0 6px}
-.hk-ai-dialog .actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-.hk-ai-dialog label{display:grid;gap:6px;font-size:.85rem;font-weight:700}
-.hk-ai-dialog input,.hk-ai-dialog select,.hk-ai-dialog textarea{box-sizing:border-box;width:100%;min-width:0;border:1px solid #bcc9dc;border-radius:10px;padding:11px;color:#213047;background:#fff;font:inherit;font-weight:400}
-.hk-ai-dialog textarea[readonly]{background:#f5f8fe;white-space:pre-wrap;min-height:100px}
-.video-help{display:block;color:#59718d;font-size:.78rem;margin-top:6px}
-.design-preview .linked-video{margin-bottom:12px}
-.design-card{box-shadow:0 14px 34px #0e294725,0 0 0 1px #ffffff17 inset}
-.design-card::after{transition:none;box-shadow:inset 0 0 0 4px #ffffff0b}
-.design-card .dc-category{font-size:.7em;letter-spacing:.15em}
-.design-card .dc-scripture{border-top:1px solid currentColor;padding-top:13px;margin-top:18px;opacity:.94}
-.design-card.dc-pattern-rays{background:radial-gradient(ellipse at 83% 0%,#ffffff33 0%,transparent 52%),linear-gradient(135deg,var(--dc-a),var(--dc-b))}
-.design-card.dc-layout-ribbon .dc-category{display:inline-block;background:var(--dc-accent);color:var(--dc-b);padding:6px 12px;letter-spacing:.06em;border-radius:6px}
-.design-card.dc-layout-arch .dc-inner{padding:5px 10px}
-@media(max-width:520px){.featured-card-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.hk-ai-dialog{padding:15px}.hk-ai-dialog .actions button{flex:1}}
+
+/* Signature premium series: artwork stays on the edges, never on message text. */
+.premium-design-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0 18px}
+.premium-design-choice{min-width:0;text-align:left;border:2px solid #dfe5ef;padding:6px;border-radius:16px;background:#fff;cursor:pointer;color:#263950;font:inherit;transition:border-color .15s,transform .15s,box-shadow .15s}
+.premium-design-choice:hover{transform:translateY(-2px);box-shadow:0 8px 22px #152c4a20}
+.premium-design-choice[aria-pressed=true]{border-color:#173b78;box-shadow:0 0 0 2px #b9ccee}
+.premium-design-choice:focus-visible{outline:3px solid #c18b2d;outline-offset:2px}
+.premium-design-choice>span{display:block;padding:7px 5px 4px;font-size:.78rem;font-weight:750}
+.premium-design-choice .design-card{padding:12px!important;min-height:135px!important;aspect-ratio:1.1;border-radius:11px!important;font-size:.68rem!important}
+.premium-design-choice .dc-inner{padding:6px!important}
+.premium-design-choice .design-card h3{font-size:1.25em!important;margin:0}
+.dc-size-social{aspect-ratio:1;min-height:0}
+.dc-size-facebook{aspect-ratio:1.1;min-height:0}
+.design-card.dc-premium{--dc-glow:rgba(255,255,255,.12);padding:clamp(25px,5%,52px);background:linear-gradient(138deg,var(--dc-a) 4%,var(--dc-b) 96%);box-shadow:inset 0 0 0 1px #ffffff21,inset 0 -25px 80px #00000010;letter-spacing:.005em}
+.dc-premium::before{inset:0;z-index:0;opacity:.55!important;pointer-events:none;background:radial-gradient(circle at 104% -4%,var(--dc-accent) 0,transparent 27%),radial-gradient(circle at -14% 106%,var(--dc-accent) 0,transparent 23%);mask-image:linear-gradient(90deg,#000 0%,transparent 32%,transparent 69%,#000 100%)}
+.dc-premium::after{inset:12px!important;border:1px solid var(--dc-accent)!important;opacity:.48!important;border-radius:12px}
+.dc-premium .dc-inner{z-index:1;margin:auto;max-width:48ch;padding:clamp(9px,2%,24px);background:linear-gradient(90deg,transparent,rgba(0,0,0,.045),transparent)}
+.dc-premium h3{font-weight:850;line-height:1.18;letter-spacing:-.035em;text-wrap:balance}
+.dc-premium .dc-category{font-size:.67em;letter-spacing:.21em}
+.dc-premium .dc-scripture{font-weight:650}
+.dc-premium-0{background:linear-gradient(150deg,#183e83,#0b204a 78%)}.dc-premium-0::after{border-width:2px!important}
+.dc-premium-1{background:linear-gradient(135deg,#852d4f,#431b37 65%,#702744)}
+.dc-premium-2{background:linear-gradient(125deg,#fff3ce,#f5d6a7 53%,#e5a462)}
+.dc-premium-3{background:radial-gradient(ellipse at 15% 0%,#5a579b 0,transparent 55%),linear-gradient(150deg,#343873,#171b49)}
+.dc-premium-4{background:linear-gradient(140deg,#fffaf0,#f1e8d4 63%,#e6d6b7)}
+.dc-premium-4::after{border-style:double!important;border-width:3px!important}
+.dc-premium-5{background:linear-gradient(155deg,#135e53,#0c3839)}
+.dc-premium-6{background:linear-gradient(135deg,#234fb3 0%,#102c6b 80%)}
+.dc-premium-6::before{background:repeating-radial-gradient(circle at 108% 0%,transparent 0 22px,var(--dc-accent) 23px 24px,transparent 25px 48px)}
+.dc-premium-7{background:linear-gradient(140deg,#fff0ee,#f6d9d7 60%,#efc4c4)}
+.dc-premium-8{background:linear-gradient(145deg,#075c6b,#073847)}
+.dc-premium-8::after{border-left-width:4px!important}
+.dc-premium-9{background:radial-gradient(ellipse at 95% 4%,#815f9a 0,transparent 48%),linear-gradient(140deg,#57427e,#29214f)}
+.dc-premium-10{background:linear-gradient(135deg,#225580,#153154)}
+.dc-premium-10::after{border-top-width:4px!important}
+.dc-premium-11{background:linear-gradient(140deg,#fffdf7,#e8e8de)}
+.dc-premium-11::after{border-bottom-width:4px!important}
+@media(max-width:640px){.premium-design-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-design-choice .design-card{min-height:110px!important}.design-card.dc-premium{padding:24px}}
+
+/* Premium animated post invitation — text stays in the existing tappable composer. */
+.composer-prompt{display:flex;align-items:center;gap:9px;min-height:50px;position:relative;overflow:hidden;background:linear-gradient(105deg,#f5f7fc,#eef3ff,#fbf4f7);border:1px solid #dce5f5;box-shadow:inset 0 1px 0 #ffffffb8,0 2px 12px #183e8310;transition:box-shadow .25s,border-color .25s,background .25s}
+.composer-prompt:hover,.composer-prompt:focus-visible{background:linear-gradient(105deg,#f2f5ff,#fff7fa);border-color:#8eabd8;box-shadow:0 0 0 3px #3157a21a,0 5px 20px #183e8316}
+.composer-prompt-spark{color:#a17425;flex:none;font-size:1.15em;animation:hk-prompt-spark 3.2s ease-in-out infinite}
+.composer-prompt-text{display:block;min-width:0;flex:1;color:#425579;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.005em}
+.composer-prompt-caret{display:block;width:2px;height:1.2em;flex:none;background:#875470;border-radius:2px;animation:hk-prompt-blink 1s steps(1,end) infinite}
+@keyframes hk-prompt-blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes hk-prompt-spark{0%,100%{opacity:.55;transform:scale(.9)}50%{opacity:1;transform:scale(1.14)}}
+@media(max-width:600px){.composer-prompt{gap:6px;min-height:46px}.composer-prompt-text{font-size:.94em}.composer-prompt-spark{font-size:1em}}
+@media(prefers-reduced-motion:reduce){.composer-prompt-spark,.composer-prompt-caret{animation:none!important}.composer-prompt-caret{display:none}}
 
 
-/* AOE Premium Community Cards (draft) — decorative artwork stays outside message content. */
-.dc-size-social{aspect-ratio:1 / 1;min-height:0}
-.dc-size-facebook{aspect-ratio:10 / 11;min-height:0}
-.premium-design-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0 21px}
-.premium-design-gallery[hidden]{display:none}
-.premium-design-choice{min-width:0;padding:6px;text-align:left;color:#33405b;border:2px solid #dcdfee;background:linear-gradient(130deg,#fff,#f7f5fe);border-radius:16px;cursor:pointer;box-shadow:0 5px 16px #1b2b590c;transition:border-color .18s,transform .18s,box-shadow .18s}
-.premium-design-choice:hover{border-color:#907bb8;transform:translateY(-2px);box-shadow:0 7px 20px #1b2b5928}
-.premium-design-choice[aria-pressed=true]{border-color:#5b408b;box-shadow:0 0 0 2px #6a46952b,0 7px 20px #1b2b5928}
-.premium-design-choice:focus-visible{outline:3px solid #cf9c46;outline-offset:3px}
-.premium-design-choice>span{display:block;padding:6px 4px 3px;font-weight:750;font-size:.76rem;line-height:1.3;overflow-wrap:anywhere}
-.premium-design-choice .design-card{min-height:128px!important;aspect-ratio:10 / 11!important;padding:14px!important;border-radius:10px!important;font-size:.73rem!important}
-.premium-design-choice .dc-inner{padding:5px!important}
-.premium-design-choice .design-card h3{font-size:1.17em!important;margin:4px 0!important;line-height:1.23}
+/* HK premium sapphire visual reference — 2026-10-11
+   Visual inspiration: midnight sapphire, amethyst, wine and champagne gold.
+   Colour and pattern only: existing features, member content and layout logic remain intact.
+   All decorative overlays are pointer-events:none; content remains selectable. */
+body.social-page{
+  background:
+    radial-gradient(ellipse at 3% 0%,rgba(100,83,177,.10),transparent 35%),
+    radial-gradient(ellipse at 100% 24%,rgba(21,67,148,.08),transparent 32%),
+    #f5f6fb;
+}
+body.social-page .top{
+  background:linear-gradient(112deg,#0d1d4b 0%,#192d70 43%,#34215e 78%,#4c224e 100%);
+  border-bottom:1px solid rgba(240,205,135,.48);
+  box-shadow:0 8px 28px rgba(13,26,67,.18),inset 0 -1px rgba(255,255,255,.06);
+  color:#fff;
+}
+body.social-page .top .brand,
+body.social-page .top .brand-name{color:#fff}
+body.social-page .top .brand-words>small{color:#f2d49a}
+body.social-page .top .navlinks a{color:#f0efff;border:1px solid transparent}
+body.social-page .top .navlinks a:hover,
+body.social-page .top .navlinks a[aria-current=page]{
+  background:rgba(255,255,255,.12);
+  border-color:rgba(240,205,135,.42);
+  color:#fff;
+}
+body.social-page .top .faith-media-launch strong{color:#f4d89f}
+body.social-page .top .nav .btn{box-shadow:inset 0 1px rgba(255,255,255,.18)}
+body.social-page .top .nav .btn.secondary{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25)}
+body.social-page .top .nav .btn.gold{background:linear-gradient(130deg,#f7dc92,#e9b75c);color:#332445}
+
+/* Guest-only presentation: retain the original people + world illustration. */
+body.social-page .community-welcome{
+  isolation:isolate;
+  background:
+    radial-gradient(ellipse at 74% 7%,rgba(128,105,212,.37),transparent 46%),
+    linear-gradient(120deg,#101e4b 0%,#1c3275 41%,#33265d 77%,#511f4d 100%);
+  border:1px solid rgba(215,194,255,.38);
+  border-radius:26px;
+  box-shadow:0 16px 46px rgba(28,32,87,.20),0 3px 10px rgba(34,36,86,.08),inset 0 1px rgba(255,255,255,.12);
+  padding:clamp(22px,3vw,34px);
+}
+body.social-page .community-welcome::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:.65;
+  background:
+    radial-gradient(circle at 97% 8%,rgba(248,219,151,.45) 0 1px,transparent 3px),
+    radial-gradient(circle at 12% 80%,rgba(211,186,255,.42) 0 2px,transparent 4px),
+    repeating-radial-gradient(circle at 112% -20%,transparent 0 35px,rgba(235,205,165,.15) 36px 37px,transparent 39px 65px),
+    linear-gradient(147deg,transparent 31%,rgba(205,186,255,.08) 32%,transparent 33%);
+  mask-image:linear-gradient(90deg,#000 0%,transparent 34%,transparent 65%,#000 100%);
+}
+body.social-page .community-welcome::after{
+  content:"";
+  position:absolute;
+  inset:10px;
+  z-index:0;
+  border:1px solid rgba(246,212,151,.24);
+  border-radius:19px;
+  pointer-events:none;
+}
+body.social-page .community-welcome>*{position:relative;z-index:1}
+body.social-page .community-welcome .welcome-kicker{
+  color:#f9da95;
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.15em;
+}
+body.social-page .community-welcome .welcome-copy h2{
+  color:#fff;
+  font-family:inherit;
+  font-weight:860;
+  letter-spacing:-.045em;
+  text-shadow:0 3px 18px rgba(0,0,0,.13);
+}
+body.social-page .community-welcome .welcome-copy p{color:#f7d897;font-weight:750}
+body.social-page .community-welcome .welcome-copy small{color:#e4eafa}
+body.social-page .community-welcome .network-art{
+  filter:drop-shadow(0 9px 25px rgba(6,14,45,.16));
+}
+body.social-page .community-welcome>.community-shortcuts{
+  border-top:1px solid rgba(247,215,158,.28);
+}
+body.social-page .community-welcome .community-shortcuts .shortcuts-heading h2{color:#ffdf9d}
+body.social-page .community-welcome .community-shortcuts .shortcuts-heading p{color:#e9e9ff}
+body.social-page .community-welcome .community-shortcuts .community-shortcut,
+body.social-page .community-welcome .community-shortcuts .shortcuts-grid>.btn{
+  background:linear-gradient(140deg,rgba(255,255,255,.16),rgba(255,255,255,.075));
+  color:#fff;
+  border-color:rgba(244,218,167,.39);
+  box-shadow:inset 0 1px rgba(255,255,255,.10);
+  transition:background .18s,transform .18s,border-color .18s;
+}
+body.social-page .community-welcome .community-shortcuts .community-shortcut:hover,
+body.social-page .community-welcome .community-shortcuts .shortcuts-grid>.btn:hover{
+  background:rgba(246,211,147,.18);
+  border-color:#f7d89a;
+  transform:translateY(-1px);
+}
+body.social-page .community-welcome .community-shortcuts .community-shortcut strong,
+body.social-page .community-welcome .community-shortcuts .community-shortcut span{color:inherit}
+
+/* Premium signed-in navigation: rich, dark rail; readable light feed. */
+body.social-page .social-rail{
+  background:linear-gradient(165deg,#102451 0%,#202e68 55%,#3b254b 100%);
+  border:1px solid rgba(226,198,148,.30);
+  box-shadow:0 13px 30px rgba(22,34,88,.11),inset 0 1px rgba(255,255,255,.10);
+  border-radius:20px;
+  padding:14px 10px;
+}
+body.social-page .social-rail .rail-brand{color:#f5dcaa;letter-spacing:.035em}
+body.social-page .social-rail>small,
+body.social-page .social-rail .muted{color:#d3d7f0}
+body.social-page .social-rail .rail-link{
+  color:#ecedff;
+  border:1px solid transparent;
+  transition:background .18s,transform .18s,border-color .18s;
+}
+body.social-page .social-rail .rail-link:hover,
+body.social-page .social-rail .rail-link[aria-current=page]{
+  color:#fff;
+  border-color:rgba(245,218,159,.36);
+  background:linear-gradient(105deg,rgba(220,190,255,.24),rgba(255,255,255,.09));
+  transform:translateX(2px);
+}
+body.social-page .social-rail .rail-icon{color:#e9cc8c}
+body.social-page .social-rail .rail-ministry-link{
+  color:#fff;
+  background:linear-gradient(105deg,rgba(120,33,70,.84),rgba(125,64,137,.70));
+  border-color:rgba(244,207,141,.54);
+}
+body.social-page .social-rail .rail-ministry-link:hover{background:#783451}
+body.social-page .social-rail .community-rules{color:#edf0ff}
+
+/* Content is intentionally white for comfortable reading and stronger contrast. */
+body.social-page .composer-card,
+body.social-page .post,
+body.social-page .social-sidebar .card{
+  border:1px solid #e2e4f1;
+  box-shadow:0 7px 26px rgba(35,47,105,.07),0 1px 2px rgba(30,27,76,.03);
+}
+body.social-page .composer-card{
+  background:linear-gradient(115deg,#fff,#fbfaff 85%);
+  border-top:3px solid #503584;
+  border-radius:20px;
+}
+body.social-page .composer-prompt{
+  background:linear-gradient(100deg,#f5f5ff,#f7eff9,#fffaf0);
+  border-color:#d8d5eb;
+}
+body.social-page .composer-prompt:focus-visible,
+body.social-page .composer-shortcut:focus-visible,
+body.social-page .social-rail a:focus-visible,
+body.social-page .community-welcome a:focus-visible{
+  outline:3px solid #e6b961;
+  outline-offset:3px;
+}
+body.social-page .post{border-radius:19px}
+body.social-page .post:hover{box-shadow:0 12px 34px rgba(35,47,105,.09)}
+body.social-page .social-sidebar h2{color:#49276b}
+body.social-page .social-sidebar .card:first-child{border-left:4px solid #e3ad5e}
+body.social-page .feed-tabs button[aria-pressed=true],
+body.social-page .feed-tabs button[aria-selected=true]{
+  background:linear-gradient(115deg,#203e8a,#622d66);
+  border-color:#3f397f;
+  color:#fff;
+}
+body.social-page .stream-heading h1{color:#1f2c5f}
+
+/* Signature cards: glints, corner filigree, illuminated borders, untouched text zone. */
 .design-card.dc-premium{
- border:1px solid #ffffff2b;
- padding:clamp(25px,5%,46px);
- background:linear-gradient(145deg,var(--dc-a),var(--dc-b));
- box-shadow:inset 0 1px #ffffff33,0 10px 26px #16265a20;
+  border:1px solid rgba(244,222,175,.31);
+  box-shadow:inset 0 1px rgba(255,255,255,.13),0 9px 29px rgba(22,28,70,.16);
 }
 .design-card.dc-premium::before{
- z-index:0;
- inset:0;
- opacity:.42!important;
- /* Keep the selected original dc-pattern-* paint; mask the pattern away from text. */
- mask-image:linear-gradient(90deg,#000 0%,transparent 30%,transparent 70%,#000 100%);
+  background:
+    radial-gradient(ellipse at 106% -12%,var(--dc-accent),transparent 35%),
+    radial-gradient(ellipse at -14% 109%,var(--dc-accent),transparent 33%),
+    repeating-radial-gradient(circle at 108% -16%,transparent 0 37px,var(--dc-accent) 38px 39px,transparent 40px 65px);
+  opacity:.30!important;
+  mask-image:linear-gradient(90deg,#000 0%,transparent 29%,transparent 72%,#000 100%);
 }
 .design-card.dc-premium::after{
- z-index:0;
- inset:13px!important;
- border:1px solid var(--dc-accent)!important;
- opacity:.52!important;
- border-radius:13px;
- pointer-events:none;
-}
-
-/* Retain distinct frame, arch, corner, banner and ribbon silhouettes. */
-.design-card.dc-premium.dc-layout-banner::after{
- inset:0 0 auto!important;height:24px;border:0!important;border-radius:0;background:var(--dc-accent)
-}
-.design-card.dc-premium.dc-layout-arch::after{border-radius:150px 150px 15px 15px}
-.design-card.dc-premium.dc-layout-corner::after{
- inset:16px!important;border-width:5px 0 0 5px!important;border-radius:0 0 0 16px;
- clip-path:polygon(0 0,40% 0,40% 10%,10% 10%,10% 40%,0 40%)
-}
-.design-card.dc-premium.dc-layout-ribbon::after{
- inset:auto 0 0!important;height:14px;border:0!important;background:var(--dc-accent);border-radius:0
+  inset:13px!important;
+  border:1px solid var(--dc-accent)!important;
+  opacity:.58!important;
+  border-radius:16px;
+  box-shadow:inset 0 0 0 5px rgba(255,255,255,.025);
 }
 .design-card.dc-premium .dc-inner{
- position:relative;
- z-index:1;
- width:100%;
- max-width:48ch;
- margin:auto;
- background:none;
- text-wrap:pretty;
+  z-index:1;
+  max-width:52ch;
+  background:none;
 }
-.design-card.dc-premium h3{font-weight:850;line-height:1.19;letter-spacing:-.025em;text-wrap:balance}
-.design-card.dc-premium .dc-category{font-weight:850;font-size:.7em;letter-spacing:.17em}
-.design-card.dc-premium .dc-scripture{font-weight:650;line-height:1.5}
-.dc-premium-0{background:radial-gradient(circle at 98% 4%,#4959a0,transparent 48%),linear-gradient(135deg,#0d285c,#2b246a)}
-.dc-premium-1{background:radial-gradient(circle at 85% 0%,#934f92,transparent 45%),linear-gradient(140deg,#772446,#361638)}
-.dc-premium-2{background:radial-gradient(ellipse at 5% 0%,#fff9e7,transparent 60%),linear-gradient(140deg,#fff3d0,#edc47c)}
-.dc-premium-3{background:radial-gradient(circle at 85% 0%,#514ca5,transparent 47%),linear-gradient(150deg,#242b66,#151b46)}
-.dc-premium-4{background:linear-gradient(135deg,#fffaf0,#e9dbc3)}
-.dc-premium-4::after{border-style:double!important;border-width:3px!important}
-.dc-premium-5{background:linear-gradient(155deg,#175b52,#0d383d)}
-.dc-premium-6{background:radial-gradient(circle at 10% 0%,#3a73ba,transparent 51%),linear-gradient(140deg,#214fa5,#122f70)}
-.dc-premium-7{background:linear-gradient(135deg,#fff0ef,#f0cacb)}
-.dc-premium-8{background:linear-gradient(150deg,#086077,#083d57)}
-.dc-premium-8::after{border-left-width:4px!important}
-.dc-premium-9{background:radial-gradient(circle at 98% 4%,#9166ab,transparent 49%),linear-gradient(145deg,#573e85,#292053)}
-.dc-premium-10{background:linear-gradient(135deg,#225380,#173354)}
-.dc-premium-10::after{border-top-width:4px!important}
-.dc-premium-11{background:linear-gradient(135deg,#fffef8,#e5e6df)}
-.dc-premium-11::after{border-bottom-width:4px!important}
-@media(max-width:680px){
- .premium-design-gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
- .premium-design-choice .design-card{min-height:107px!important;padding:12px!important}
- .design-card.dc-premium{padding:24px}
- .design-card.dc-premium::after{inset:8px!important}
+.design-card.dc-premium .dc-category{
+  text-transform:uppercase;
+  font-weight:850;
+  letter-spacing:.15em;
 }
-@media(prefers-reduced-motion:reduce){.premium-design-choice{transition:none}}
+.design-card.dc-premium .dc-scripture{opacity:.96}
+.dc-premium-0{
+  background:radial-gradient(circle at 92% 7%,#425eaf,transparent 48%),linear-gradient(135deg,#10285d,#192f7b 45%,#3a245e 100%);
+}
+.dc-premium-1{
+  background:radial-gradient(circle at 83% 10%,#7c3c87,transparent 45%),linear-gradient(140deg,#4b2049,#821f4b 65%,#3d173b);
+}
+.dc-premium-3{
+  background:radial-gradient(circle at 89% 1%,#6757b5,transparent 43%),linear-gradient(140deg,#20266b,#33245f 65%,#171e49);
+}
+.dc-premium-9{
+  background:radial-gradient(circle at 88% 0%,#9263b2,transparent 45%),linear-gradient(140deg,#3e3276,#251b59 65%,#5c2d68);
+}
+body.social-page .premium-design-choice{
+  border-radius:17px;
+  border-color:#dedbec;
+  background:linear-gradient(145deg,#fff,#f7f5fe);
+  box-shadow:0 5px 17px rgba(28,41,93,.05);
+}
+body.social-page .premium-design-choice[aria-pressed=true]{
+  border-color:#6e3b91;
+  box-shadow:0 0 0 2px rgba(111,70,158,.20),0 10px 26px rgba(30,29,89,.15);
+}
+body.social-page .premium-design-choice>span{color:#3a3269}
+body.social-page .premium-design-gallery{gap:13px}
 
-/* 2026 premium design-card studio — artwork-like typography without uploaded photographs.
-   Existing card IDs, themes, sizes and published content are unchanged. */
-.design-card{--dc-shadow:rgba(0,0,0,.18);background:radial-gradient(ellipse at 83% 8%,color-mix(in srgb,var(--dc-accent) 23%,transparent),transparent 46%),linear-gradient(138deg,var(--dc-a),var(--dc-b));border:1px solid color-mix(in srgb,var(--dc-accent) 35%,transparent);box-shadow:inset 0 1px 0 #ffffff2b,0 10px 28px var(--dc-shadow);border-radius:20px;min-height:280px;padding:clamp(24px,5%,48px);font-family:Georgia,"Times New Roman",serif;letter-spacing:.005em;text-wrap:pretty}
-.design-card .dc-inner{max-width:94%;margin:auto;padding:12px 8px;text-shadow:0 1px 2px #00000017}
-.design-card h3{font-family:Georgia,"Times New Roman",serif;font-weight:800;font-size:clamp(1.55em,3vw,2.35em);line-height:1.13;letter-spacing:-.028em;text-wrap:balance;overflow-wrap:anywhere;margin:14px 0 18px}
-.design-card .dc-category{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.68em;font-weight:850;letter-spacing:.19em;text-transform:uppercase}
-.design-card .dc-scripture{font-family:Georgia,"Times New Roman",serif;font-size:.88em;font-style:italic;font-weight:650;line-height:1.5;margin-top:20px}
-.design-card::after{border-color:color-mix(in srgb,var(--dc-accent) 68%,transparent);box-shadow:0 0 0 4px #ffffff0d,inset 0 0 0 1px #ffffff22}
-.design-card.dc-premium{background:radial-gradient(circle at 78% 12%,color-mix(in srgb,var(--dc-accent) 28%,transparent),transparent 43%),radial-gradient(circle at 0% 100%,#ffffff19,transparent 45%),linear-gradient(145deg,var(--dc-a),var(--dc-b) 72%);box-shadow:inset 0 1px 0 #ffffff45,0 12px 32px #132a4730}
-.design-card.dc-premium::before{opacity:.12;mix-blend-mode:screen}
-.design-card.dc-layout-frame .dc-inner{border:1px solid color-mix(in srgb,var(--dc-accent) 72%,transparent);padding:clamp(16px,5%,34px);background:#ffffff09}
-.design-card.dc-layout-banner::after{height:17px;inset:0 0 auto;border-radius:0}
-.design-card.dc-layout-ribbon::after{height:13px}
-.design-card.dc-layout-arch::after{border-radius:48% 48% 14px 14px}
-.design-card.dc-decoration-bold::after{border-width:2px}
-.design-card.dc-size-square{aspect-ratio:1/1;min-height:300px}
-.design-card.dc-size-portrait{aspect-ratio:4/5;min-height:340px}
-.design-card.dc-size-landscape{aspect-ratio:16/9;min-height:220px}
-.design-card.dc-size-facebook,.design-card.dc-size-social{aspect-ratio:1.91/1;min-height:250px}
-.design-card .post-text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.78em;line-height:1.65;font-weight:450;letter-spacing:0}
-.design-card .read-more{font-family:system-ui,sans-serif;font-size:.82em}
-.design-swatch .design-card{min-height:110px;aspect-ratio:auto;padding:12px;box-shadow:none}
-.design-swatch .design-card h3{font-size:1rem;line-height:1.2;letter-spacing:0}
-@media(max-width:650px){.design-card{min-height:225px;padding:23px;border-radius:15px}.design-card h3{font-size:clamp(1.45rem,6vw,2.2rem)}.design-card.dc-size-facebook,.design-card.dc-size-social{min-height:210px;aspect-ratio:auto}.design-card.dc-size-square{min-height:270px}.design-card.dc-size-portrait{min-height:340px}.design-card .dc-inner{max-width:100%}}
-@media(prefers-reduced-motion:reduce){.design-card{scroll-behavior:auto}}
-
-/* Premium legibility release: short editorial text stays inside the artwork;
-   longer content remains available via accessible expandable details. */
-.design-card{container-type:inline-size;max-width:100%;min-width:0;overflow:hidden}
-.design-card .dc-inner{z-index:1;min-width:0;max-width:100%;width:100%;overflow-wrap:anywhere}
-.design-card h3{font-size:clamp(1.35rem,5.8cqw,2.65rem);line-height:1.14;hyphens:auto;text-wrap:balance;max-width:100%}
-.design-card.dc-title-medium h3{font-size:clamp(1.18rem,4.8cqw,2.05rem)}
-.design-card.dc-title-long h3{font-size:clamp(1.05rem,4.05cqw,1.75rem);line-height:1.25}
-.design-card .dc-message{font:500 clamp(.88rem,2.55cqw,1.15rem)/1.58 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:0;margin:14px 0;white-space:pre-line;overflow-wrap:anywhere}
-.design-card.dc-message-long .dc-message{font-size:clamp(.85rem,2.2cqw,1rem);line-height:1.52}
-.design-card .dc-full-message{font:500 .85rem/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;text-align:left;margin:12px 0;color:var(--dc-text);position:relative}
-.design-card .dc-full-message summary{display:inline-block;cursor:pointer;border:1px solid currentColor;border-radius:100px;padding:7px 12px;font-weight:750;background:#00000018}
-.design-card .dc-full-message p{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:12px;max-height:45vh;overflow:auto;padding:8px 0}
-.design-card .dc-full-message summary:focus-visible{outline:3px solid var(--dc-accent);outline-offset:4px}
-.design-card .dc-category{font-size:clamp(.66rem,1.9cqw,.86rem)}
-.design-card .dc-scripture{font-size:clamp(.86rem,2.25cqw,1.08rem);overflow-wrap:anywhere}
-.design-card.dc-size-square,.design-card.dc-size-portrait,.design-card.dc-size-landscape,.design-card.dc-size-social,.design-card.dc-size-facebook{height:auto;aspect-ratio:auto}
-.design-card.dc-size-square{min-height:clamp(290px,60vw,540px)}
-.design-card.dc-size-portrait{min-height:clamp(370px,78vw,680px)}
-.design-card.dc-size-landscape{min-height:clamp(240px,38vw,380px)}
-.design-card.dc-size-social,.design-card.dc-size-facebook{min-height:clamp(240px,40vw,420px)}
-.design-card.dc-premium::after{pointer-events:none}
-.design-swatch .design-card,.premium-design-choice .design-card{container-type:normal;min-height:100px;aspect-ratio:auto}
-.design-swatch .design-card h3,.premium-design-choice .design-card h3{font-size:1rem}
-@media(max-width:540px){.design-card{padding:20px}.design-card .dc-inner{padding:6px}.design-card h3{font-size:clamp(1.3rem,6.4vw,2rem)}.design-card.dc-title-long h3{font-size:clamp(1.05rem,4.8vw,1.45rem)}.design-card .dc-message{font-size:.92rem}.design-card.dc-message-long .dc-message{font-size:.85rem}.design-card.dc-layout-frame .dc-inner{padding:14px}}
-
-/* Human-looking default profile avatar; real uploaded photos are shown when a safe profile URL is available. */
-.member-avatar{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;border-radius:50%;background:#e7eff6;border:2px solid #fff;box-shadow:0 1px 8px #16345625;flex-shrink:0}
-.member-avatar img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
-.post-header .member-avatar{width:48px;height:48px}
-
-/* Approved visual direction: eight code-rendered premium graphic treatments.
-   No photographic background assets; all copy remains live, selectable HTML. */
-.design-card.dc-premium{isolation:isolate;position:relative;background:radial-gradient(ellipse at 85% 8%,color-mix(in srgb,var(--dc-accent) 34%,transparent),transparent 52%),linear-gradient(135deg,var(--dc-a),var(--dc-b));border:2px solid color-mix(in srgb,var(--dc-accent) 56%,white);box-shadow:0 18px 42px #06132b30,inset 0 0 0 5px #ffffff13}
-.design-card.dc-premium::before{content:"";position:absolute;inset:13px;border:1px solid color-mix(in srgb,var(--dc-accent) 52%,transparent);border-radius:inherit;pointer-events:none;z-index:0}
-.design-card.dc-premium .dc-inner{position:relative;z-index:1}
-.design-card.dc-premium h3{font-family:Georgia,"Times New Roman",serif;font-weight:750;letter-spacing:-.025em;text-shadow:0 2px 9px #00000038}
-.design-card.dc-premium .dc-scripture{display:inline-block;max-width:100%;border-radius:999px;background:var(--dc-accent);color:var(--dc-b);padding:8px 19px;font-weight:800;box-shadow:0 5px 18px #00000024}
-/* Scripture / gold halo */
-.design-card.dc-premium.dc-pattern-plain{background:radial-gradient(ellipse at 50% 110%,color-mix(in srgb,var(--dc-accent) 60%,transparent),transparent 53%),radial-gradient(ellipse at 50% -20%,#ffffff28,transparent 60%),linear-gradient(145deg,var(--dc-a),var(--dc-b))}
-/* Salvation / sunrise rays */
-.design-card.dc-premium.dc-pattern-rays{background:repeating-conic-gradient(from 200deg at 50% 120%,#ffffff12 0deg 7deg,transparent 7deg 19deg),radial-gradient(ellipse at 50% 100%,color-mix(in srgb,var(--dc-accent) 52%,transparent),transparent 67%),linear-gradient(155deg,var(--dc-a),var(--dc-b))}
-/* Holy Spirit / luminous sky */
-.design-card.dc-premium.dc-pattern-dots{background:radial-gradient(circle at 24% 20%,#ffffff4a 1px,transparent 3px) 0 0/34px 34px,radial-gradient(ellipse at 55% 5%,#ffffff3b,transparent 60%),linear-gradient(145deg,var(--dc-a),var(--dc-b))}
-/* Refuge / flowing water */
-.design-card.dc-premium.dc-pattern-waves{background:repeating-radial-gradient(ellipse at 105% 115%,#ffffff12 0 4px,transparent 5px 30px),linear-gradient(140deg,var(--dc-a),var(--dc-b))}
-/* Prayer / stained-glass light */
-.design-card.dc-premium.dc-pattern-diamonds{background:repeating-linear-gradient(45deg,transparent 0 54px,#ffffff0d 55px 57px,transparent 58px 110px),repeating-linear-gradient(-45deg,transparent 0 54px,#ffffff0d 55px 57px,transparent 58px 110px),radial-gradient(ellipse at 80% 0%,color-mix(in srgb,var(--dc-accent) 30%,transparent),transparent 70%),linear-gradient(145deg,var(--dc-a),var(--dc-b))}
-/* Growth / layered botanical-inspired bands */
-.design-card.dc-premium.dc-pattern-stripes{background:repeating-linear-gradient(125deg,transparent 0 44px,#ffffff10 45px 49px,transparent 50px 94px),radial-gradient(ellipse at 90% 95%,color-mix(in srgb,var(--dc-accent) 27%,transparent),transparent 65%),linear-gradient(140deg,var(--dc-a),var(--dc-b))}
-/* Missions / global concentric rings */
-.design-card.dc-premium.dc-pattern-rings{background:repeating-radial-gradient(circle at 90% 110%,transparent 0 33px,#ffffff1b 34px 36px,transparent 37px 69px),linear-gradient(145deg,var(--dc-a),var(--dc-b))}
-/* Faith / stars and distant horizon */
-.design-card.dc-premium.dc-pattern-stars{background:radial-gradient(circle at 14% 19%,#fff8 1px,transparent 3px) 0 0/67px 67px,radial-gradient(circle at 67% 35%,#fff7 1px,transparent 2px) 0 0/43px 43px,radial-gradient(ellipse at 70% 115%,color-mix(in srgb,var(--dc-accent) 34%,transparent),transparent 65%),linear-gradient(145deg,var(--dc-a),var(--dc-b))}
-
-
-/* Keep phone navigation inside the viewport and leave room for its fixed menu. */
+/* Respect compact mobile navigation; avoid horizontal overflow. */
 @media(max-width:760px){
- body{padding-bottom:calc(86px + env(safe-area-inset-bottom));}
- .top .nav{flex-wrap:wrap;min-width:0;gap:10px;}
- .top .brand{min-width:0;max-width:100%;white-space:normal;}
- .top .brand-words{min-width:0;overflow-wrap:anywhere;}
- .top #authbar{flex-wrap:wrap;min-width:0;max-width:100%;}
- .top .reference-search{flex:1 1 100%;min-width:0;max-width:100%;}
- .top .reference-search input{min-width:0;width:100%;}
- body[data-page=home] .social-rail{display:none;}
- .social-layout,.social-stream,.social-sidebar,.card{min-width:0;max-width:100%;}
- .social-stream img,.social-sidebar img{max-width:100%;}
- .mobile-dock{z-index:40;}
- .mobile-dock>a,.mobile-more{min-width:0;}
- .mobile-more-menu{max-width:calc(100vw - 24px);}
- input,select,textarea{font-size:16px;}
- .hk-family-promo{margin:12px auto;padding:14px;}
- .hk-family-promo nav a{max-width:100%;overflow-wrap:anywhere;}
+  body.social-page .social-rail{padding:11px;border-radius:16px}
+  body.social-page .community-welcome{padding:21px 16px;border-radius:20px}
+  body.social-page .community-welcome::after{inset:6px;border-radius:15px}
+  body.social-page .community-welcome .welcome-kicker{font-size:8px;letter-spacing:.08em}
+  body.social-page .community-welcome .welcome-copy h2{font-size:clamp(20px,5.5vw,29px)}
+  body.social-page .community-welcome .welcome-copy p{font-size:clamp(11px,3vw,13px)}
+  body.social-page .community-welcome .welcome-copy small{font-size:10px}
+  body.social-page .community-welcome .community-shortcuts .community-shortcut,
+  body.social-page .community-welcome .community-shortcuts .shortcuts-grid>.btn{min-height:42px}
+  .design-card.dc-premium::after{inset:8px!important}
 }
+@media(prefers-reduced-motion:reduce){
+  body.social-page .social-rail .rail-link,
+  body.social-page .community-welcome .community-shortcuts a{transition:none;transform:none!important}
+}
+
+
+/* Premium automatic text presentation: no changes to stored posts or Design Cards. */
+.post>.premium-post-title{font-size:clamp(1.15rem,2.5vw,1.45rem);line-height:1.35;letter-spacing:-.015em;color:#173d7a;margin:4px 0 14px;font-weight:800;overflow-wrap:anywhere}
+.post>.premium-post-text{font-size:1rem;line-height:1.8;color:#202c3b;max-width:100%;overflow-wrap:anywhere}
+.premium-text-content{display:grid;gap:0}
+.premium-paragraph{white-space:pre-wrap;line-height:1.8;margin:0 0 1.05em;overflow-wrap:anywhere}
+.premium-paragraph:last-child{margin-bottom:0}
+.premium-scripture{margin:8px 0 18px;padding:14px 18px;border-left:4px solid #e9b949;border-radius:0 12px 12px 0;background:#f6f8fd;color:#173d7a;font-weight:650;white-space:pre-wrap;line-height:1.75}
+.premium-post-text>.read-more{margin-top:14px;color:#173d7a;border-color:#cbd8ee;font-size:.9rem;font-weight:700;padding:8px 15px}
+.premium-post-text>.read-more:focus-visible{outline:3px solid #e9b949;outline-offset:3px}
+@media(max-width:760px){.post>.premium-post-text{font-size:1rem;line-height:1.75}.premium-scripture{padding:12px 14px}}
+
+
+/* Premium Text Studio adds formatting without changing the original 1,152 Design Cards. */
+.premium-studio-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px;border:1px solid #dce4ee;border-radius:14px;background:#f7f9fd;margin-top:10px}
+.premium-studio-toolbar[hidden]{display:none!important}
+.premium-studio-toolbar button{min-height:42px}
+.premium-studio-toolbar select{width:auto;min-width:180px;max-width:100%}
+.premium-studio-toolbar small{flex-basis:100%;font-size:14px;line-height:1.5;color:#53627b}
+.premium-studio-text{font-size:clamp(16px,1.05rem,19px);line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere;margin:10px 0 18px}
+.share-export-menu{position:relative;font-size:14px}
+.share-export-menu>summary{list-style:none;cursor:pointer;padding:9px 12px;border-radius:10px;color:#173d7a;background:#eef2f8;font-weight:700}
+.share-export-options{position:absolute;top:100%;right:0;min-width:190px;z-index:4;display:grid;gap:5px;padding:10px;border:1px solid #dce4ee;border-radius:12px;background:white;box-shadow:0 8px 24px #17203320}
+.share-export-options button{width:100%;font-size:14px;justify-content:flex-start}
+
+/* Premium Text Studio is independent of the original Design Card themes. */
+.premium-studio-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:10px 0;padding:12px;border:1px solid #dfe3ea;border-radius:14px;background:#f5f7fb}
+.premium-studio-toolbar[hidden]{display:none!important}
+.premium-studio-toolbar .btn{font-size:14px;padding:9px 13px}
+.premium-studio-toolbar select{width:auto;min-width:170px;max-width:100%;font-size:14px}
+.premium-studio-toolbar small{flex-basis:100%;font-size:14px;color:#526071}
+.premium-studio-text{font-size:16px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;color:#182638}
+.premium-studio-text span{white-space:inherit}
+.share-export-menu{position:relative;display:inline-block;margin:0 4px}
+.share-export-menu>summary{list-style:none;cursor:pointer;padding:8px 10px;color:#173d7a;font-size:14px;font-weight:700}
+.share-export-menu>summary::-webkit-details-marker{display:none}
+.share-export-options{position:absolute;right:0;bottom:100%;z-index:4;min-width:195px;padding:10px;background:#fff;border:1px solid #dfe3ea;border-radius:12px;box-shadow:0 8px 20px #17203322;display:grid;gap:8px}
+.share-export-options .btn{font-size:14px;white-space:nowrap}
+@media(max-width:540px){.premium-studio-toolbar .btn{flex:1}.share-export-options{right:auto;left:0}}
+
+/* Premium Text themes remain separate from the 1,152 existing Design Card combinations. */
+.premium-studio-text{padding:24px;border:2px solid;border-radius:18px;min-height:140px;box-shadow:0 10px 26px #17203316}
+.premium-studio-toolbar select{border:1px solid #ccd5e2;border-radius:9px;padding:9px 12px;background:#fff}
+@media(max-width:540px){.premium-studio-text{padding:16px;border-radius:12px}}
+
+/* Explicit opt-in sharing: caption remains editable and never auto-posts. */
+.community-share-dialog{width:min(95vw,620px);max-height:90dvh;overflow:auto;border:1px solid #d9dfeb;border-radius:16px;padding:22px;background:#fff;color:#182638;box-shadow:0 18px 50px #14243a33}
+.community-share-dialog::backdrop{background:#101e3580}
+.community-share-dialog textarea{width:100%;min-height:185px;font:inherit;font-size:16px;line-height:1.55;resize:vertical;border:1px solid #bbc8d7;border-radius:10px;padding:12px;box-sizing:border-box}
+.community-share-dialog .actions{display:flex;gap:10px;flex-wrap:wrap}
+.community-share-dialog .btn{font-size:14px}
+
+/* New global people visual theme; existing welcome and Design Card themes untouched. */
+.global-people-theme{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(240px,1fr);align-items:center;gap:22px;margin:18px 0;padding:20px;border:1px solid #d6dfe8;border-radius:20px;background:linear-gradient(120deg,#f9fcff 0%,#eaf5f3 56%,#fff8e5 100%);overflow:hidden;box-shadow:0 12px 30px #173b7812}
+.global-people-visual{position:relative;min-width:0;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 50% 60%,#dceffc,#eef5f7);display:flex;align-items:center;justify-content:center}
+.global-people-visual img{width:100%;height:auto;max-height:340px;object-fit:contain;display:block}
+.global-people-copy{min-width:0}
+.global-people-kicker{display:block;color:#812745;font-size:14px;font-weight:800;letter-spacing:.08em}
+.global-people-copy h3{font-size:clamp(22px,2.8vw,34px);line-height:1.2;color:#173b78;margin:12px 0}
+.global-people-copy p{font-size:16px;line-height:1.7;color:#273c50}
+.global-people-copy .btn{display:inline-flex;margin-top:12px}
+@media(max-width:680px){.global-people-theme{grid-template-columns:1fr;padding:14px;gap:12px}.global-people-visual img{max-height:260px}.global-people-copy h3{font-size:24px}}
+
+/* Official image is the only approved networking visual: never crop or distort. */
+.community-welcome-approved{display:block;max-width:100%;padding:0;overflow:visible}
+.community-welcome-approved .community-official-network-image{display:block;width:100%;height:auto;max-width:100%;object-fit:contain;object-position:center;border-radius:0}
+.community-welcome-approved .community-official-network-image[hidden]{display:none!important}
+.community-official-image-fallback{padding:20px;text-align:center;font-size:16px}
+.community-official-image-fallback[hidden]{display:none!important}
+.community-welcome-approved .community-shortcuts{margin-top:16px}
