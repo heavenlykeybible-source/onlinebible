@@ -1,6 +1,6 @@
 /* Account 1 public pages: silent offline updates, no automatic install/update popups. */
 (()=>{'use strict';
-if(!['heavenlykey.org','www.heavenlykey.org','localhost','127.0.0.1'].includes(location.hostname)&&!location.hostname.endsWith('.heavenlykey.alldaywow247.workers.dev'))return;
+if(!['heavenlykey.org','www.heavenlykey.org','localhost','127.0.0.1'].includes(location.hostname)&&!/^(?:[a-z0-9-]+-)?heavenlykey\.alldaywow247\.workers\.dev$/.test(location.hostname))return;
 if(/^\/(?:bible|community|admin|studio|control)(?:\/|$)/i.test(location.pathname)||/\/pages\/admin\.html$/i.test(location.pathname)||window.__hkSilentPublicUpdates)return;
 window.__hkSilentPublicUpdates=true;
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();event.stopImmediatePropagation()},true);
