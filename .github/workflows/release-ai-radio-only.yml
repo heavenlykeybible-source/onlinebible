@@ -1,5 +1,8 @@
 name: Publish AI and Radio only
 on:
+  push:
+    branches: [release/account1-approved-assets-20261017]
+    paths: [.github/workflows/release-ai-radio-only.yml]
   workflow_dispatch:
     inputs:
       expected_version:
@@ -20,7 +23,7 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: a160ba9fc74911bd4b3005eac86eefcb
       HK_WIDGET_ONLY: '1'
       HK_WIDGET_BASE: 6dc945721bda2a6a69d9e963af1a473c5f251e0b
-      HK_EXPECTED_VERSION: ${{ inputs.expected_version }}
+      HK_EXPECTED_VERSION: ${{ inputs.expected_version || 'bb9f254f-1ea6-4604-939c-82ed972b47a9' }}
       HK_JSDOM: /tmp/hkem-controls/node_modules/jsdom
       HK_PLAYWRIGHT: /tmp/hkem-controls/node_modules/playwright
     steps:
