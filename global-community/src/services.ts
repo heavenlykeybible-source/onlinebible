@@ -368,6 +368,22 @@ export async function readNotifications(env:Env,userId:number,ids:any){
  const unique=[...new Set(ids)];if(unique.length)await env.DB.prepare("UPDATE notifications SET read_at=datetime('now') WHERE user_id=? AND read_at IS NULL AND notification_id IN ("+unique.map(()=>'?').join(',')+")").bind(userId,...unique).run();
  return {unreadCount:await unreadNotificationCount(env,userId)};
 }
+export async function pendingVideoPosts(env:Env){
+ const rows=await env.DB.prepare("SELECT po.post_id,po.title,po.body,po.video_url,po.video_provider,po.created_at,p.display_name FROM posts po JOIN profiles p ON p.user_id=po.author_user_id WHERE po.post_format='video_link' AND po.status='held' ORDER BY po.post_id DESC LIMIT 100").all();
+ return rows.results;
+}
+export async function reviewVideoPost(env:Env,moderator:SessionUser,id:number,input:any){
+ if(!["moderator","administrator","owner"].includes(moderator.role))throw Object.assign(new Error("Moderator access required."),{status:403});
+ const action=input.action,note=clamp(input.note,500);
+ if(!["approve","reject"].includes(action)||note.length<10)throw new Error("Choose approve or reject and explain the decision in at least 10 characters.");
+ const row=await env.DB.prepare("SELECT post_id FROM posts WHERE post_id=? AND post_format='video_link' AND status='held'").bind(id).first();
+ if(!row)throw new Error("Pending video post unavailable.");
+ await env.DB.batch([
+  env.DB.prepare("UPDATE posts SET status=?,moderation_state=?,updated_at=datetime('now') WHERE post_id=? AND post_format='video_link' AND status='held'").bind(action==="approve"?"active":"removed",action==="approve"?"allowed":"blocked",id),
+  env.DB.prepare("INSERT INTO safety_audit(actor_user_id,action,target_type,target_id,reason) VALUES(?,?,?,?,?)").bind(moderator.userId,action==="approve"?"video_approve":"video_reject","post",id,note)
+ ]);
+ return {status:action==="approve"?"active":"removed"};
+}
 export async function moderationQueue(env:Env){
   const r=await env.DB.prepare("SELECT * FROM moderation_events WHERE decision IN ('hold','block') ORDER BY moderation_event_id DESC LIMIT 200").all<any>();return r.results;
 }
