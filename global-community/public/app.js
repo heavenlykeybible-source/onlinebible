@@ -82,7 +82,7 @@ async function commentThread(post,host){
   const reactionRow=el("div",null,"community-comment-reactions");
   reactionRow.style.cssText="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px";
   reactionRow.setAttribute("aria-label","Quick Christian reactions");
-  const choices=[["🙏","Thank You Jesus"],["🔥","Amen"],["🙌","Hallelujah"],["❤️","God Is Good"],["💯","Glory To God"]];
+  const choices=[["🙏","Thank You Jesus"],["🔥","Amen"],["🙌","Hallelujah"],["❤️","God Is Good"],["💯","Glory To God"],["💖","I Am Blessed"]];
   for(const [icon,label] of choices){
    const button=el("button",icon+" "+label,"btn secondary");button.type="button";
    button.style.cssText="background:#fff;border:1px solid #8745c7;border-radius:12px;color:#57278e";
