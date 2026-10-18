@@ -12,3 +12,4 @@
 /* Each reply shows a normal portrait crop rather than the entire launcher banner. */
 #hkem-assistant .hkem-chat-log .hkem-chat-bot>.hkem-bot-portrait{display:block!important;position:relative!important;flex:0 0 32px!important;width:32px!important;min-width:32px!important;max-width:32px!important;height:32px!important;overflow:hidden!important;border-radius:50%!important;align-self:flex-start!important}
 #hkem-assistant .hkem-chat-log .hkem-bot-portrait>img{display:block!important;position:absolute!important;left:-4%!important;top:0!important;width:auto!important;max-width:none!important;height:100%!important;object-fit:initial!important;border:0!important;border-radius:0!important}
+

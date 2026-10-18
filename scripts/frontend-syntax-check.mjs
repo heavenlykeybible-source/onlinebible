@@ -25,9 +25,13 @@ try{
   if(!studio.includes("studio-final-check"))failures.push({file:studioPath,error:'Studio final confirmation panel is missing.'});
 }catch(e){failures.push({file:studioPath,error:'Unable to inspect Production Studio runtime invariants: '+e.message});}
 
+const shell=spawnSync('python3',['scripts/sync-account1-approved-shell.py','--check'],{encoding:'utf8'});
+if(shell.status!==0)failures.push({file:'Account 1 approved homepage menu/footer',error:(shell.stderr||shell.stdout||'Approved shell verification failed').trim()});
+
 if(failures.length){
   console.error('FRONTEND SYNTAX CHECK FAILED');
   for(const f of failures)console.error('\n'+f.file+'\n'+f.error);
   process.exit(1);
 }
 console.log('FRONTEND SYNTAX CHECK PASSED — '+files.length+' browser JavaScript files parsed successfully.');
+
