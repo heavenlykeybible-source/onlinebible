@@ -47,12 +47,12 @@
  function send(type,data={}){if(editing)window.opener.postMessage({type,nonce,site,page:key,...data},CONTROL)}
  function editor(){
   const bar=document.createElement('section');bar.dataset.cmsIgnore='';bar.classList.add('hkem-ui-0');
-  const status=document.createElement('span');status.textContent='Visual CMS: click text, links, pictures or a section to edit. Changes stay private until Publish.';status.classList.add('hkem-ui-status');bar.append(status);
+  const status=document.createElement('span');status.textContent='Visual CMS: click text, links, pictures or a section to edit. Changes remain drafts until reviewed and approved by the owner.';status.classList.add('hkem-ui-status');bar.append(status);
   function button(label,action){const b=document.createElement('button');b.type='button';b.textContent=label;b.classList.add('hkem-ui-1');b.onclick=action;bar.append(b)}
   const changed=new Map();
   const snapshot=()=>[...changed.values()];
   button('Save draft',()=>send('hkem-save',{content:{schema:1,fields:snapshot()}}));
-  button('Publish',()=>send('hkem-publish',{content:{schema:1,fields:snapshot()}}));
+  /* Owner approval is mandatory; this editor may submit drafts but never publish. */
   button('Control Room',()=>window.opener.focus());
   button('Exit',()=>{const url=new URL(location.href);url.searchParams.delete('hkem-cms');url.searchParams.delete('hkem-session');location.href=url});
   document.body.append(bar);
@@ -67,7 +67,7 @@
    if(d.type==='link'&&confirm('Edit this link destination? Press Cancel to edit its visible text.')){const value=prompt('Link destination',String(d.value));if(value!==null&&safe(value)){const f={key:d.key,type:d.type,value};changed.set(f.key,f);apply([f]);send('hkem-change',{field:f})}return}
    let value;if(d.type==='visible')value=confirm('Keep this section visible?');else value=prompt(d.type==='image'?'Picture URL (upload a new picture in the Control Room)':d.label,String(d.value));
    if(value===null)return;
-   const field={key:d.key,type:d.type,value};changed.set(field.key,field);apply([field]);send('hkem-change',{field});status.textContent='Edit ready. Save draft or Publish.';
+   const field={key:d.key,type:d.type,value};changed.set(field.key,field);apply([field]);send('hkem-change',{field});status.textContent='Edit ready. Save draft for owner review.';
   },true);
   const fields=[...descriptors.values()].map(({key,type,value,label})=>({key,type,value,label}));
   send('hkem-ready',{fields,menu:{schema:1,items:menuItems()},footer:defaultFooter});
