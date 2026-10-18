@@ -3,7 +3,7 @@
 import {readFileSync,writeFileSync,mkdirSync,existsSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-const ACCOUNT='a160ba9fc74911bd4b3005eac86eefcb',WORKER='heavenlykey',EXPECTED_RELEASE='Owner approved Account 1 shell assets ddfc85b7d0e1a62dd70498ae110979632bd54a81';
+const ACCOUNT='a160ba9fc74911bd4b3005eac86eefcb',WORKER='heavenlykey',EXPECTED_RELEASES=['Owner approved Account 1 shell assets ddfc85b7d0e1a62dd70498ae110979632bd54a81','Owner approved Account 1 shell assets 55a2064cbdcf69cfac6ebb54ab4f0733b8987145'];
 const BASE='9992aee0d09ef59db697e43ad281383bf234be93',token=process.env.CLOUDFLARE_API_TOKEN?.trim().replace(/^Bearer\s+/i,'');
 const cf='https://api.cloudflare.com/client/v4/accounts/'+ACCOUNT,message='Owner approved Account 1 shell assets '+process.env.GITHUB_SHA;
 const sha=b=>createHash('sha256').update(b).digest('hex');
@@ -23,7 +23,7 @@ if(mode==='prepare'){
  const changed=diff.stdout.trim().split('\n').filter(Boolean);
  if(changed.length!==files.length||changed.some(path=>!files.includes(path.replace(/^heavenly-key-website\//,''))))throw Error('Public assets differ from the reviewed allowlist.');
  mkdirSync('approved-assets-backup',{recursive:true});mkdirSync('.approved-release',{recursive:true});
- const deployment=await current(),previousVersion=oneVersion(deployment);if(deployment.annotations?.['workers/message']!==EXPECTED_RELEASE)throw Error('Production version changed. Reinspect before release.');
+ const deployment=await current(),previousVersion=oneVersion(deployment);if(!EXPECTED_RELEASES.includes(deployment.annotations?.['workers/message']))throw Error('Production version changed. Reinspect before release.');
  const settings=await api('/workers/scripts/'+WORKER+'/settings'),expected={DB:'8665ff03-6a2c-4852-90ab-6c74375a8c87',SESSIONS_KV:'288aa06b90984012ba88aeb4a9cef087',RATE_LIMIT_KV:'d8151924a3cf4501800c8381c52765cb',LIVE_STATUS_KV:'4398d4ba4bb240979fe966465c225937',MEDIA_R2:'heavenlykey-media'};
  for(const [name,id]of Object.entries(expected)){const b=settings.bindings.find(b=>b.name===name);if((b?.id||b?.namespace_id||b?.bucket_name)!==id)throw Error('Existing resource changed: '+name);}
  const source=await fetch(cf+'/workers/scripts/'+WORKER+'/content/v2',{headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(30000)});if(!source.ok)throw Error('Source backup HTTP '+source.status);const raw=Buffer.from(await source.arrayBuffer());writeFileSync('approved-assets-backup/worker-source.bin',raw);writeFileSync('approved-assets-backup/worker-settings.json',JSON.stringify(settings,null,2));

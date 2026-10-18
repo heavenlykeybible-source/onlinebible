@@ -1,4 +1,4 @@
-name: Complete approved Account 1 shell including Live Broadcast
+name: Verify and lock approved Account 1 public shell
 on:
   push:
     branches: ['release/account1-approved-assets-20261017']
