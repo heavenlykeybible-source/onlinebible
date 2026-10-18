@@ -855,9 +855,9 @@ body.social-page .premium-design-gallery{gap:13px}
 @media(max-width:680px){.global-people-theme{grid-template-columns:1fr;padding:14px;gap:12px}.global-people-visual img{max-height:260px}.global-people-copy h3{font-size:24px}}
 
 /* Official image is the only approved networking visual: never crop or distort. */
-.community-welcome-approved{display:block;max-width:100%;padding:0;overflow:visible}
-.community-welcome-approved .community-official-network-image{display:block;width:100%;height:auto;max-width:100%;object-fit:contain;object-position:center;border-radius:0}
-.community-welcome-approved .community-official-network-image[hidden]{display:none!important}
+.community-welcome{display:block;max-width:100%;padding:0;overflow:visible}
+.community-welcome .community-official-network-image{display:block;width:100%;height:auto;max-width:100%;object-fit:contain;object-position:center;border-radius:0}
+.community-welcome .community-official-network-image[hidden]{display:none!important}
 .community-official-image-fallback{padding:20px;text-align:center;font-size:16px}
 .community-official-image-fallback[hidden]{display:none!important}
-.community-welcome-approved .community-shortcuts{margin-top:16px}
+.community-welcome .community-shortcuts{margin-top:16px}
