@@ -41,10 +41,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          npx --yes wrangler@4.145.0 d1 list > /tmp/d1.txt
+          npx --yes wrangler@4.151.1 d1 list > /tmp/d1.txt
           D1_ID=$(grep 'heavenly-key-global-community-db-staging' /tmp/d1.txt | grep -Eo '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' | head -1 || true)
           if [ -z "$D1_ID" ]; then
-            npx --yes wrangler@4.145.0 d1 create heavenly-key-global-community-db-staging > /tmp/newd1.txt
+            npx --yes wrangler@4.151.1 d1 create heavenly-key-global-community-db-staging > /tmp/newd1.txt
             D1_ID=$(grep -Eo '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' /tmp/newd1.txt | head -1 || true)
           fi
 
@@ -57,20 +57,20 @@ jobs:
           }
           KV_ID="$(fetch_staging_kv_id)"
           if [ -z "$KV_ID" ]; then
-            npx --yes wrangler@4.145.0 kv namespace create heavenly-key-global-community-sessions-staging >/tmp/newkv.txt 2>&1 || true
+            npx --yes wrangler@4.151.1 kv namespace create heavenly-key-global-community-sessions-staging >/tmp/newkv.txt 2>&1 || true
             KV_ID="$(fetch_staging_kv_id)"
           fi
 
           test -n "$D1_ID"
           test -n "$KV_ID"
-          npx --yes wrangler@4.145.0 r2 bucket create heavenly-key-global-community-media-staging >/dev/null 2>&1 || true
+          npx --yes wrangler@4.151.1 r2 bucket create heavenly-key-global-community-media-staging >/dev/null 2>&1 || true
           cp wrangler.staging.toml wrangler.staging.deploy.toml
           sed -i "s/REPLACE_ACCOUNT3_STAGING_D1_ID/$D1_ID/g;s/REPLACE_ACCOUNT3_STAGING_KV_ID/$KV_ID/g" wrangler.staging.deploy.toml
       - name: Apply Account 3 staging migrations only
         working-directory: global-community
-        run: npx --yes wrangler@4.145.0 d1 migrations apply heavenly-key-global-community-db-staging --remote --config wrangler.staging.deploy.toml
+        run: npx --yes wrangler@4.151.1 d1 migrations apply heavenly-key-global-community-db-staging --remote --config wrangler.staging.deploy.toml
       - name: Deploy Account 3 candidate only
         working-directory: global-community
-        run: npx --yes wrangler@4.145.0 deploy --config wrangler.staging.deploy.toml
+        run: npx --yes wrangler@4.151.1 deploy --config wrangler.staging.deploy.toml
       - name: Show Account 3 preview
         run: echo "Preview is the heavenly-key-global-community-staging Worker on Account 3. Production was not changed."

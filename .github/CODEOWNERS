@@ -25,3 +25,9 @@
 /media-engine/src/public-broadcast.ts @aoemeta247-cell
 /global-community/src/auth.ts @aoemeta247-cell
 /global-community/src/social-auth.ts @aoemeta247-cell
+
+# Reconciled release-policy records and exact-source maintenance verifier
+/review/security-baselines/ @aoemeta247-cell
+/review/security-baseline-reconciliation-2026-10-18.json @aoemeta247-cell
+/scripts/require-owner-dispatch.mjs @aoemeta247-cell
+/scripts/architecture-check.mjs @aoemeta247-cell

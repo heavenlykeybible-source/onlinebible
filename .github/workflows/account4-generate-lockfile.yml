@@ -1,12 +1,7 @@
 name: Generate Account 4 npm lockfile
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - '.github/workflows/account4-generate-lockfile.yml'
-      - 'account4-control-room/package-lock.json'
-      - 'account4-control-room/wrangler.toml'
-      - 'account4-control-room/package.json'
+
 permissions:
   contents: write
 jobs:
@@ -38,3 +33,4 @@ jobs:
             git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'fix(account4): add npm lockfile for Cloudflare builds'
             git push
           fi
+

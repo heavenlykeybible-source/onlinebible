@@ -1,51 +1,11 @@
-name: Restore approved public app while Account 5 connection is pending
+name: Retired automatic shortcut — restore-public-app
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/restore-public-app.yml', 'heavenly-key-app/**']
 permissions:
   contents: read
-concurrency:
-  group: public-app-recovery
-  cancel-in-progress: false
 jobs:
-  restore:
+  explain:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: a160ba9fc74911bd4b3005eac86eefcb
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Prepare public-only recovery deployment without copying any private bindings
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          source=Path('heavenly-key-app/wrangler.toml').read_text()
-          assert not any(x in source for x in ['[[d1_databases]]','[[kv_namespaces]]','[[r2_buckets]]'])
-          source=source.replace('name = "heavenly-key-app"','name = "heavenly-key-app-recovery"')
-          Path('heavenly-key-app/wrangler.recovery.toml').write_text(source)
-          PY
-          node --check heavenly-key-app/src/index.js
-          npm --prefix heavenly-key-app run build
-          node --test heavenly-key-app/test/offline-preservation.test.mjs
-          node --test heavenly-key-app/test/site-sync.test.mjs
-      - name: Deploy existing approved app assets and public shell
-        run: npx --yes wrangler@4.151.0 deploy --config heavenly-key-app/wrangler.recovery.toml
-      - name: Verify actual recovery upstream before routing
-        run: |
-          node --input-type=module <<'JS'
-          import {readFileSync} from 'node:fs';
-          import {createHash} from 'node:crypto';
-          const root='https://heavenly-key-app-recovery.alldaywow247.workers.dev';
-          const hash=s=>createHash('sha256').update(s).digest('hex'),expected=hash(readFileSync('heavenly-key-app/public/index.html','utf8'));let html,matched=false;
-          for(let i=0;i<12;i++){try{const r=await fetch(root+'/?verified-release='+process.env.GITHUB_SHA,{cache:'no-store'});html=await r.text();matched=r.ok&&hash(html)===expected;if(matched)break;console.log('Waiting for app deployment propagation',r.status,html.length)}catch{}await new Promise(r=>setTimeout(r,3000))}
-          if(!matched)throw Error('Approved app source mismatch after propagation');
-          const r=await fetch(root+'/api/health'),health=await r.json();if(!r.ok||health.status!=='ok'||health.service!=='heavenly-key-app')throw Error('App health failed');
-          for(const slug of ['android','iphone','ipad','windows','mac']){const r=await fetch(root+'/download/'+slug+'/');if(!r.ok)throw Error('Device installation guide unavailable: '+slug)}
-          console.log('Approved app recovery upstream verified, including all five device guides. Temporarily hosted in Account 1; Account 5 is not claimed repaired.');
-          JS
+      - name: Preserve manual owner approval
+        run: echo "Submit the reviewed app release through Account 4. This retired shortcut never deploys production or recovery workers."

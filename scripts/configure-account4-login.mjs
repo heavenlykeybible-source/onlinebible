@@ -9,7 +9,7 @@ const seed=process.env.LOGIN_SEED;
 if(!seed||seed.length<20||!process.env.GITHUB_WORKSPACE)throw Error('Missing HKEM_CONTROL_TOKEN or GitHub workspace');
 const password=createHmac('sha256',seed).update('hkem-account4-local-owner-login-v1').digest('base64url').slice(0,28);
 const digest=createHash('sha256').update(password).digest('hex');
-const result=spawnSync('npx',['--yes','wrangler@4.145.0','secret','put','CONTROL_PASSWORD_HASH','--config','wrangler.deploy.toml'],{
+const result=spawnSync('npx',['--yes','wrangler@4.151.1','secret','put','CONTROL_PASSWORD_HASH','--config','wrangler.deploy.toml'],{
  cwd:process.cwd(),env:process.env,input:digest+'\n',encoding:'utf8',maxBuffer:1048576
 });
 if(result.status!==0)throw Error('Could not install admin password hash in Account 4 Worker');

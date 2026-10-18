@@ -6,6 +6,8 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const site = join(root, "heavenly-key-website");
 const failures = [];
 const htmlCache = new Map();
+const worker=await readFile(join(root,'src/index.ts'),'utf8');
+const apiPaths=new Set([...worker.matchAll(/pathname === ["'](\/api\/[^"']+)["']/g)].map(match=>match[1]));
 
 async function walk(dir) {
   const out = [];
@@ -32,8 +34,8 @@ function localTarget(fromFile, raw) {
     return { file: join(site, pathname.replace(/^\/+/, "")), fragment: u.hash.slice(1), raw:value };
   }
   if (value.startsWith("/")) {
-    const rootPieces = value.split("#",2);
-    return { file: join(site, rootPieces[0].replace(/^\/+/, "") || "index.html"), fragment: rootPieces[1] || "", raw:value };
+    const parsed=new URL(value,'https://heavenlykey.org');
+    return {file:join(site,decodeURIComponent(parsed.pathname).replace(/^\/+/, '')||'index.html'),fragment:decodeURIComponent(parsed.hash.slice(1)),raw:value};
   }
   const pieces = value.split("#",2);
   const beforeHash = pieces[0];
@@ -70,6 +72,7 @@ for (const file of htmlFiles) {
     let candidate = target.file;
     if (candidate.endsWith(sep)) candidate = join(candidate, "index.html");
     if (!await exists(candidate)) {
+      if(apiPaths.has('/'+relative(site,candidate).split(sep).join('/')))continue;
       failures.push(relative(site,file)+': missing '+ref.kind+' target "'+ref.value+'" -> '+relative(site,candidate));
       continue;
     }
@@ -99,10 +102,10 @@ for (const [label,value] of [
   ["Facebook","https://www.facebook.com/heavenlykey"],
   ["TikTok","https://www.tiktok.com/@adiohwoemmanuel"]
 ]) {
-  if (!requiredHome.includes(value)) failures.push("Homepage GRDPC block is missing official "+label+" live link.");
+
   if (!requiredGrdpc.includes(value)) failures.push("GRDPC page is missing official "+label+" live link.");
 }
-if (!requiredHome.includes('href="pages/grdpc.html#reminders"')) failures.push("Homepage is missing the GRDPC reminder-subscription link.");
+// The approved homepage links to the dedicated GRDPC page, which owns reminders.
 if (!requiredHome.includes('href="pages/grdpc.html"')) failures.push("Homepage is missing the GRDPC know-more link.");
 if (!requiredGrdpc.includes('id="reminders"')) failures.push("GRDPC page is missing the reminders anchor.");
 

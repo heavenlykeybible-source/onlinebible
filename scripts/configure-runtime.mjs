@@ -2,7 +2,7 @@
 import { spawnSync } from 'node:child_process';
 import { createHmac } from 'node:crypto';
 const media=process.argv.includes('--media');
-function wrangler(args,input){const r=spawnSync('npx',['--yes','wrangler@4.145.0',...args],{cwd:media?'media-engine':process.cwd(),env:process.env,input,encoding:'utf8',maxBuffer:4*1024*1024});if(r.status!==0)throw new Error('Cloudflare configuration command failed: '+args[0]+' '+args[1]);return r.stdout;}
+function wrangler(args,input){const r=spawnSync('npx',['--yes','wrangler@4.151.1',...args],{cwd:media?'media-engine':process.cwd(),env:process.env,input,encoding:'utf8',maxBuffer:4*1024*1024});if(r.status!==0)throw new Error('Cloudflare configuration command failed: '+args[0]+' '+args[1]);return r.stdout;}
 const names=new Set(JSON.parse(wrangler(['secret','list','--format','json']).trim()).map(x=>x.name));
 const values={};
 // Never regenerate Account 1 security secrets during an existing site deployment.

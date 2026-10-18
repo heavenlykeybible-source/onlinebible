@@ -1,9 +1,16 @@
 name: Repair Heavenly Key Portal Routing
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['portal-router/**', '.github/workflows/deploy-portal-router.yml']
+    inputs:
+      approved_commit:
+        description: Exact reviewed 40-character commit SHA selected for this run
+        required: true
+        type: string
+      confirmation:
+        description: Type APPROVE_PRODUCTION_CHANGE after reviewing the preview and backup
+        required: true
+        type: string
+
 permissions:
   contents: read
   actions: read
@@ -12,6 +19,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' && (github.actor == github.repository_owner || github.actor == 'aoemeta247-cell')
+    environment: owner-production-approval
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -19,6 +28,10 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: a160ba9fc74911bd4b3005eac86eefcb
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify exact owner-approved source before production access
+        run: node "$GITHUB_WORKSPACE/scripts/require-owner-dispatch.mjs"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -125,3 +138,4 @@ jobs:
             const cross=await fetch(origin+path,{method:'POST',headers:{Origin:'https://unrelated.example','Content-Type':'application/json'},body:'{}'});if(cross.status!==403)throw Error('Cross-site login protection failed');
           }
           JS
+

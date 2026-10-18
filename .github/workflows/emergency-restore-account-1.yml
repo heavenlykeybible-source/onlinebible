@@ -87,7 +87,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: test -n "$CLOUDFLARE_API_TOKEN"
       - name: Emergency deploy exact known-good code only
-        run: npx --yes wrangler@4.145.0 deploy
+        run: npx --yes wrangler@4.151.1 deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       - name: Verify Account 1 only

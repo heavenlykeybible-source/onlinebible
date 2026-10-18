@@ -2,7 +2,7 @@
 import {spawnSync} from 'node:child_process';
 import {writeFileSync} from 'node:fs';
 const w=(args)=>{
- const p=spawnSync('npx',['--yes','wrangler@4.145.0',...args],{encoding:'utf8',env:process.env,maxBuffer:1_000_000});
+ const p=spawnSync('npx',['--yes','wrangler@4.151.1',...args],{encoding:'utf8',env:process.env,maxBuffer:1_000_000});
  if(p.status!==0)throw Error('Account 1 read-only database/secret inspection failed: '+args.slice(0,2).join(' '));
  return p.stdout;
 };

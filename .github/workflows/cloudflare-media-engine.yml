@@ -70,6 +70,14 @@ jobs:
           APPROVAL_PROOF: ${{ inputs.approval_proof }}
           APPROVAL_SECRET: ${{ secrets.HKEM_CONTROL_TOKEN }}
         run: node .trusted-account4-approval/scripts/verify-account4-approval.mjs 2
+      - name: Load independent protected-state policy
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: .trusted-release-policy
+          persist-credentials: false
+      - name: Block unreviewed identity, storage and SQL changes
+        run: node .trusted-release-policy/scripts/protected-state-gate.mjs
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -100,9 +108,9 @@ jobs:
           AUTH="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
           curl -fsS -H "$AUTH" "$API/d1/database/$D1" >/dev/null
           curl -fsS -H "$AUTH" "$API/storage/kv/namespaces/$KV" >/dev/null
-          npx --yes wrangler@4.145.0 r2 bucket info "$R2" --json >/dev/null
+          npx --yes wrangler@4.151.1 r2 bucket info "$R2" --json >/dev/null
           echo 'Account 2 existing Worker, D1, KV and R2 confirmed; no resource creation permitted.'
-      - name: Update existing Account 2 Worker
+      - name: Promote approved Account 2 release
         working-directory: media-engine
         run: npx wrangler deploy --config wrangler.toml
       - name: Verify same Worker remains

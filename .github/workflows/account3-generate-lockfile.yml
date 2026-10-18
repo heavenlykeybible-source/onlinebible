@@ -1,12 +1,7 @@
 name: Generate Account 3 npm lockfile
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - '.github/workflows/account3-generate-lockfile.yml'
-      - 'global-community/package-lock.json'
-      - 'global-community/wrangler.toml'
-      - 'global-community/package.json'
+
 permissions:
   contents: write
 jobs:
@@ -38,3 +33,4 @@ jobs:
             git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'fix(account3): add npm lockfile for Cloudflare builds'
             git push
           fi
+

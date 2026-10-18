@@ -35,12 +35,17 @@ Status: tested source repairs, awaiting production approval and deployment.
 - The advert form displays the saved image in its preview, including draft and paused adverts.
 - Editorial publication, reply, edit and removal are batched with their audit writes. If the audit write fails, the content change rolls back. Regression tests reproduce the original partial-write failure and verify rollback and successful subject IDs.
 
-## Repository CI status
+## Repository blocker reconciliation
 
-- At commit `e6aea2a224b5cbcc3283bdc40bd1cb55f0247390`, GitHub's Account 3 community source check passed.
-- Full repository CI remains blocked by `scripts/protected-state-gate.mjs`, which detects protected-source/binding/workflow and migration differences from its reviewed baseline. This gate was not removed or rebaselined.
-- Shared architecture CI also fails because the root contains 40 migration files ending at 0039, including both `0032_social_provider_apps.sql` and `0032_website_ai_inbox.sql`. The checker expects 39. These shared production migrations were not renamed, deleted or applied; reconcile them against actual deployment history before changing migration identity.
-- Green local community tests do not establish that the complete repository or production deployment passes all checks.
+- The owner requested “Resolve all” after the protected-state and migration failures were identified. Source reconciliation keeps the protected-state gate active and saves its previous hashes in `review/security-baselines/pre-reconciliation-2026-10-18.json`; the exact reviewed changes are recorded separately.
+- The protected-state gate now verifies 145 files. Tests confirm it rejects changed storage bindings, new SQL and unapproved workflows.
+- Both root `0032` migration filenames and their SQL bytes are preserved. Architecture and preflight share a checker that recognizes the exact historical website-inbox supplement by hash and still rejects unknown migrations or changes to that supplement. No database migration was executed.
+- Push-triggered production shortcuts and automatic credential regeneration were retired. Direct Control/Router maintenance now requires manual owner confirmation for the exact checked-out commit; canonical Account 1–3 signed Account 4 approvals remain in place.
+- Fixed the CMS image-validator syntax error and tested safe/unsafe URLs. Link checking now resolves versioned assets correctly and validates actual Worker endpoints; broken navigation destinations and obsolete fragments were repaired without changing the approved homepage shell.
+- Root test discovery now gives Node .mjs suites to Node and Vitest .ts suites to Vitest. Historical layout assertions were updated to the approved shell, whose consistency check still passes.
+- Added PNG installation icons rendered from the existing app SVGs; all offline preservation and app tests pass. No device data keys or download caches were reset.
+- Updated the platform and community build tooling; npm audits report zero known dependency vulnerabilities in these two packages.
+- Local verification: 163 platform tests, 76 Node tests, 38 community tests and 11 policy/regression tests pass. Syntax, TypeScript, preflight, architecture, API contracts and the 19-page link audit pass. GitHub must confirm the new commit independently before promotion.
 
 ## Verification
 

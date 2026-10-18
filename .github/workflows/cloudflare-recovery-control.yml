@@ -56,7 +56,7 @@ jobs:
           test -n "$CLOUDFLARE_ACCOUNT_ID"
       - name: Check Account 4 R2 quarantine exists without creating or replacing it
         working-directory: recovery-control
-        run: npx --yes wrangler@4.145.0 r2 bucket info heavenlykey-account4-code-quarantine --json > /tmp/account4-r2-verified.json
+        run: npx --yes wrangler@4.151.1 r2 bucket info heavenlykey-account4-code-quarantine --json > /tmp/account4-r2-verified.json
       - name: Verify the exact pinned Account 4 owner database
         working-directory: recovery-control
         shell: bash
@@ -65,7 +65,7 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$ACCOUNT4_EXPECTED_D1_ID" =~ ^[0-9a-f-]{36}$ ]] || { echo '::error::Account 4 original D1 ID is not owner-pinned. Normal releases cannot choose a replacement database.'; exit 1; }
-          npx --yes wrangler@4.145.0 d1 list --json > /tmp/account4-d1.json
+          npx --yes wrangler@4.151.1 d1 list --json > /tmp/account4-d1.json
           node --input-type=module <<'NODE'
           import {readFileSync} from 'node:fs';
           const x=JSON.parse(readFileSync('/tmp/account4-d1.json','utf8'));
@@ -81,7 +81,7 @@ jobs:
         working-directory: recovery-control
         run: |
           set -euo pipefail
-          npx --yes wrangler@4.145.0 secret list --config wrangler.deploy.toml > /tmp/account4-secret-names.json
+          npx --yes wrangler@4.151.1 secret list --config wrangler.deploy.toml > /tmp/account4-secret-names.json
           node --input-type=module -e '
             import {readFileSync} from "node:fs";
             const a=JSON.parse(readFileSync("/tmp/account4-secret-names.json","utf8"));
@@ -94,7 +94,7 @@ jobs:
       # No Account 4 database migration runs during regular UI/code releases.
       - name: Deploy password-protected Account 4 control plane
         working-directory: recovery-control
-        run: npx --yes wrangler@4.145.0 deploy --config wrangler.deploy.toml
+        run: npx --yes wrangler@4.151.1 deploy --config wrangler.deploy.toml
       - name: Verify dashboard after deployment
         run: |
           set -euo pipefail

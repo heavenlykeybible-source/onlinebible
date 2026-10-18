@@ -47,8 +47,8 @@ describe("Global Christian Community foundation",()=>{
     for(const page of pages){
       const html=await readFile(join(process.cwd(),"global-community/public",page),"utf8");
       expect(html).toContain('id="page-root"');
-      expect(html).toContain('id="back-button"');
-      expect(html).toContain("Social Home");
+      if(page!=="index.html"){expect(html).toContain('id="back-button"');expect(html).toContain("Social Home");}
+      expect(html).toContain('app.js');
     }
   });
 

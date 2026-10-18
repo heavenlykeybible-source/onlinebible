@@ -46,25 +46,25 @@ jobs:
         run: |
           set -euo pipefail
 
-          npx --yes wrangler@4.145.0 d1 list > /tmp/d1.txt
+          npx --yes wrangler@4.151.1 d1 list > /tmp/d1.txt
           D1_ID=$(grep 'heavenlykey-media-db-staging' /tmp/d1.txt | grep -Eo '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' | head -1 || true)
           if [ -z "$D1_ID" ]; then
-            npx --yes wrangler@4.145.0 d1 create heavenlykey-media-db-staging > /tmp/newd1.txt
+            npx --yes wrangler@4.151.1 d1 create heavenlykey-media-db-staging > /tmp/newd1.txt
             D1_ID=$(grep -Eo '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' /tmp/newd1.txt | head -1 || true)
           fi
 
           # Wrangler may render KV list output in a table or JSON-like form depending on version.
           # First capture the matching line with surrounding context, then extract the 32-char ID.
-          npx --yes wrangler@4.145.0 kv namespace list > /tmp/kv.txt
+          npx --yes wrangler@4.151.1 kv namespace list > /tmp/kv.txt
           KV_ID=$(grep -i -B 3 -A 3 'heavenlykey-media-live-staging' /tmp/kv.txt | grep -Eo '[0-9a-fA-F]{32}' | head -1 || true)
           if [ -z "$KV_ID" ]; then
             # Fallback: compact the output so title and id can still be associated when printed on separate lines.
             KV_ID=$(tr '\n' ' ' < /tmp/kv.txt | sed -nE 's/.*([0-9a-fA-F]{32})[^0-9a-fA-F]{0,300}heavenlykey-media-live-staging.*/\1/p' | head -1 || true)
           fi
           if [ -z "$KV_ID" ]; then
-            npx --yes wrangler@4.145.0 kv namespace create heavenlykey-media-live-staging > /tmp/newkv.txt 2>&1 || true
+            npx --yes wrangler@4.151.1 kv namespace create heavenlykey-media-live-staging > /tmp/newkv.txt 2>&1 || true
             # Creation can race with/expose an already-existing namespace; always re-list before failing.
-            npx --yes wrangler@4.145.0 kv namespace list > /tmp/kv-recheck.txt
+            npx --yes wrangler@4.151.1 kv namespace list > /tmp/kv-recheck.txt
             KV_ID=$(grep -i -B 3 -A 3 'heavenlykey-media-live-staging' /tmp/kv-recheck.txt | grep -Eo '[0-9a-fA-F]{32}' | head -1 || true)
             if [ -z "$KV_ID" ]; then
               KV_ID=$(tr '\n' ' ' < /tmp/kv-recheck.txt | sed -nE 's/.*([0-9a-fA-F]{32})[^0-9a-fA-F]{0,300}heavenlykey-media-live-staging.*/\1/p' | head -1 || true)
@@ -73,14 +73,14 @@ jobs:
 
           test -n "$D1_ID"
           test -n "$KV_ID"
-          npx --yes wrangler@4.145.0 r2 bucket create heavenlykey-media-engine-staging >/dev/null 2>&1 || true
+          npx --yes wrangler@4.151.1 r2 bucket create heavenlykey-media-engine-staging >/dev/null 2>&1 || true
           cp wrangler.staging.toml wrangler.staging.deploy.toml
           sed -i "s/REPLACE_ACCOUNT2_STAGING_D1_ID/$D1_ID/g;s/REPLACE_ACCOUNT2_STAGING_KV_ID/$KV_ID/g" wrangler.staging.deploy.toml
       - name: Apply staging migrations only
         working-directory: media-engine
-        run: npx --yes wrangler@4.145.0 d1 migrations apply heavenlykey-media-db-staging --remote --config wrangler.staging.deploy.toml
+        run: npx --yes wrangler@4.151.1 d1 migrations apply heavenlykey-media-db-staging --remote --config wrangler.staging.deploy.toml
       - name: Deploy Account 2 candidate only
         working-directory: media-engine
-        run: npx --yes wrangler@4.145.0 deploy --config wrangler.staging.deploy.toml
+        run: npx --yes wrangler@4.151.1 deploy --config wrangler.staging.deploy.toml
       - name: Show Account 2 preview
         run: echo "Preview is the heavenlykey-media-staging Worker on Account 2. Production was not changed."
