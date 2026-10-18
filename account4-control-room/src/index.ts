@@ -48,9 +48,9 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
   if(u.pathname==='/api/system/health'&&request.method==='GET'){
    let cms='unavailable',publishing='unavailable';
    try{await env.DB.prepare('SELECT 1 FROM cms_entries LIMIT 1').first();cms='ready';await env.DB.prepare('SELECT 1 FROM cms_publications LIMIT 1').first();publishing='ready'}catch{}
-   return json({cms,publishing,ai:env.AI?'connected':'unavailable',media:env.MEDIA?'connected':'unavailable',publicService:PUBLIC_CMS_ORIGIN,note:'Publish makes an approved snapshot available to the connected website renderer. AI inference is tested by sending a prompt.'});
+   return json({cms,publishing,ai:env.AI?'connected':'unavailable',media:env.MEDIA?'connected':'unavailable',publicService:PUBLIC_CMS_ORIGIN,note:'Publishing and restoring are locked pending explicit owner approval. AI may suggest drafts only.'});
   }
-  if(u.pathname==='/api/deploy/sites'&&request.method==='GET')return json({sites:SITES,executionEnabled:false,contentPublishingEnabled:true});
+  if(u.pathname==='/api/deploy/sites'&&request.method==='GET')return json({sites:SITES,executionEnabled:false,contentPublishingEnabled:false});
   if(u.pathname==='/api/deploy/plan'&&request.method==='POST')return json({plan:planDeployment(await body(request,4096))});
   if(u.pathname==='/api/entry'&&request.method==='GET'){
    const {site,kind,key}=location();
@@ -60,8 +60,8 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
   }
   if(u.pathname==='/api/revisions'&&request.method==='GET'){const {site,kind,key}=location();return json({items:(await env.DB.prepare('SELECT id,version,editor,created_at FROM cms_revisions WHERE site=? AND kind=? AND entry_key=? ORDER BY id DESC LIMIT 30').bind(site,kind,key).all()).results})}
   if(u.pathname==='/api/save'&&request.method==='POST'){const data=await body(request);return json(await saveDraft(env.DB,location(),data.content,data.expectedVersion,actor))}
-  if(u.pathname==='/api/publish'&&request.method==='POST'){const data=await body(request,4096);return json(await publishDraft(env.DB,location(),data.expectedVersion,actor))}
-  if(u.pathname==='/api/restore'&&request.method==='POST'){const data=await body(request,4096);if(!Number.isSafeInteger(data.revisionId)||data.revisionId<1)return fail('Choose a revision.');return json({...await restoreDraft(env.DB,location(),data.revisionId,data.expectedVersion,actor),published:false})}
+  if(u.pathname==='/api/publish'&&request.method==='POST')return fail('Publication locked: requires a separately verified explicit owner approval in the review workflow.',403);
+  if(u.pathname==='/api/restore'&&request.method==='POST')return fail('Restore locked: requires separately verified explicit owner approval.',403);
   if(u.pathname==='/api/media'&&request.method==='POST'){
    if(Number(request.headers.get('content-length')||0)>5000000)return fail('Image exceeds 5 MB',413);
    const bytes=new Uint8Array(await request.arrayBuffer()),type=imageType(bytes);
