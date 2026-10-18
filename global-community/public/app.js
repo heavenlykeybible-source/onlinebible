@@ -66,7 +66,7 @@ async function commentThread(post,host){
   const form=el("form",null,"stack"),textarea=el("textarea",null,"community-comment-text");
   textarea.name="body";textarea.rows=3;textarea.placeholder="Write your comment…";textarea.maxLength=4000;
   textarea.setAttribute("aria-label","Write your comment");
-  textarea.style.cssText="width:100%;box-sizing:border-box;border:1px solid #8745c7;border-radius:12px;background:#fff;padding:12px";
+  textarea.style.cssText="width:100%;box-sizing:border-box;border:2px solid #8745c7;border-radius:12px;background:#e9ffe9;padding:12px;color:#57278e";
   const send=el("button","Post comment","btn secondary"),st=el("p","","status");
   send.type="submit";form.append(textarea,send,st);
   async function submitComment(body,button){
