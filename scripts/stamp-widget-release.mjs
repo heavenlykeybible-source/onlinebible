@@ -1,0 +1,7 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+export const widgetFiles=['css/approved-launchers.css','css/online-assistant.css','css/radio-approved-number-one.css','js/online-assistant.js','js/approved-widget-system.js','js/approved-picture-gestures.js','assets/ministry/approved-ai-transparent-original.png','assets/ministry/approved-radio-transparent-original.png','assets/ministry/approved-radio-display-20261017.webp'];
+export function validateWidgetScope(changed){const allowed=new Set([...widgetFiles,'widget-release.json']);if(!changed.includes('widget-release.json')||changed.length<2||changed.some(path=>!allowed.has(path)))throw Error('AI/Radio-only updates must change shared widget files and their release manifest, never ministry pages.');}
+export function manifest(){const hash=createHash('sha256');for(const path of widgetFiles)hash.update(path+'\0').update(readFileSync('heavenly-key-website/'+path));return JSON.stringify({schema:1,version:'widgets-'+hash.digest('hex').slice(0,20)},null,2)+'\n'}
+const path='heavenly-key-website/widget-release.json';
+if(process.argv[2]==='--check'){if(readFileSync(path,'utf8')!==manifest())throw Error('Stamp the approved widget release before publishing.');console.log('Widget release matches its nine shared assets.')}else if(process.argv[2]==='--write'){writeFileSync(path,manifest());console.log('Stamped shared AI and Radio release.');}

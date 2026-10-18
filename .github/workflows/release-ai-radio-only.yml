@@ -1,0 +1,74 @@
+name: Preview AI and Radio only
+on:
+  workflow_dispatch:
+    inputs:
+      expected_version:
+        description: Existing production Worker version reviewed before this widget-only update
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: heavenlykey-account-1-production
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: a160ba9fc74911bd4b3005eac86eefcb
+      HK_WIDGET_ONLY: '1'
+      HK_WIDGET_BASE: 7359a3cfd8bf1d28135987bdc10d3dc2d6e736fd
+      HK_EXPECTED_VERSION: ${{ inputs.expected_version || 'bb9f254f-1ea6-4604-939c-82ed972b47a9' }}
+      HK_JSDOM: /tmp/hkem-controls/node_modules/jsdom
+      HK_PLAYWRIGHT: /tmp/hkem-controls/node_modules/playwright
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install pinned verification tools
+        run: |
+          npm install --prefix /tmp/hkem-controls --ignore-scripts --no-audit --no-fund jsdom@26.1.0 playwright@1.56.1
+          /tmp/hkem-controls/node_modules/.bin/playwright install --with-deps chromium
+      - name: Check approved shell lock and scoped interactions
+        run: |
+          node scripts/stamp-widget-release.mjs --check
+          node scripts/test-widget-independent-loader.cjs
+          python3 scripts/sync-account1-approved-shell.py --check
+          node scripts/test-account1-approved-shell.cjs
+          node scripts/test-account1-cms-preview-only.cjs
+          node scripts/test-account1-radio-audio.cjs
+          node --check scripts/release-approved-assets.mjs
+      - name: Verify asset-only scope and back up exact production backend
+        run: node scripts/release-approved-assets.mjs prepare
+      - uses: actions/upload-artifact@v4
+        with:
+          name: private-account1-before-approved-shell
+          path: approved-assets-backup/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload a version to the existing Worker without changing production traffic
+        run: npx --yes wrangler@4.145.0 versions upload --config .approved-release/wrangler.json --no-bundle --keep-vars --preview-alias approved-ai-radio --message "Owner approved Account 1 shell assets $GITHUB_SHA; website=7359a3cfd8bf1d28135987bdc10d3dc2d6e736fd"
+      - name: Verify every changed preview asset
+        id: preview
+        run: node scripts/release-approved-assets.mjs preview
+      - name: Verify uploaded preview in desktop tablet and phone browsers
+        env:
+          HK_PREVIEW_URL: ${{ steps.preview.outputs.url }}
+        run: |
+          node scripts/test-account1-radio-audio.cjs
+          node scripts/test-account1-approved-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: approved-account1-shell-release-results
+          path: |
+            approved-assets-backup/
+            approved-assets-evidence.json
+            approved-assets-candidate.json
+            approved-shell-screenshots/
+          retention-days: 30

@@ -1,9 +1,8 @@
 name: Publish authorized official community posts
+# Retired direct production bypass: changes must use a reviewed preview and owner approval.
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['deployments/heavenly-key-editorial-2880.zip', '.github/workflows/publish-authorized-community.yml']
+
 permissions:
   contents: read
 concurrency:
@@ -11,6 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   publish:
+    if: ${{ false }} # Deliberately disabled; no push or app can publish through this legacy route.
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
