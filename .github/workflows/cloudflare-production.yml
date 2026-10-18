@@ -106,7 +106,7 @@ jobs:
       - name: Record D1 recovery bookmark before touching production CMS data
         run: |
           set -euo pipefail
-          npx --yes wrangler@4.145.0 d1 time-travel info heavenlykey-db --json > /tmp/account1-before-migration-bookmark.json
+          npx --yes wrangler@4.151.1 d1 time-travel info heavenlykey-db --json > /tmp/account1-before-migration-bookmark.json
           test -s /tmp/account1-before-migration-bookmark.json
           echo 'D1 Time Travel recovery bookmark recorded. No database changes have been made.'
       - name: Preserve bookmark report for manual recovery
@@ -119,6 +119,6 @@ jobs:
       # Routine release is code-only. Database migrations/credential changes require
       # a separately approved security change and a verified recovery plan.
       - name: Promote approved Account 1 release
-        run: npx --yes wrangler@4.145.0 deploy
+        run: npx --yes wrangler@4.151.1 deploy
       - name: Verify Account 1 only
         run: node scripts/verify-live.mjs

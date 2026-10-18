@@ -1,6 +1,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import {validateRootMigrationHistory} from "./root-migration-history.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const allowPlaceholders = process.argv.includes("--allow-placeholders");
@@ -48,15 +49,9 @@ if (placeholders.length && !allowPlaceholders) {
   warn.push(`Placeholder Cloudflare IDs allowed for local validation: ${new Set(placeholders).size}.`);
 }
 
-const migrations = (await readdir(join(root, "migrations")))
-  .filter(f => /^\d{4}_.+\.sql$/.test(f)).sort();
-const nums = migrations.map(f => Number(f.slice(0, 4)));
-for (let i = 0; i < nums.length; i++) {
-  if (nums[i] !== i + 1) fail.push(`Migration sequence gap at ${String(i + 1).padStart(4, "0")}.`);
-}
-if (nums.length !== 39 || nums[nums.length - 1] !== 39) {
-  fail.push(`Expected migration 0039 as the current schema tip; found ${nums.length ? String(nums[nums.length - 1]).padStart(4, "0") : "none"}.`);
-}
+const rootHistory=await validateRootMigrationHistory(root);
+const migrations=rootHistory.files;
+fail.push(...rootHistory.failures);
 
 async function walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {

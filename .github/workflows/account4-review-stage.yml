@@ -63,9 +63,9 @@ jobs:
       - name: Resolve only Account 4 sandbox resources
         run: node review/provision.mjs "$REVIEW_ACCOUNT"
       - name: Apply migrations to the isolated Account 4 review database
-        run: npx --yes wrangler@4.145.0 d1 migrations apply "heavenlykey-review-$REVIEW_ACCOUNT-db" --remote --config "review/account-$REVIEW_ACCOUNT.toml"
+        run: npx --yes wrangler@4.151.1 d1 migrations apply "heavenlykey-review-$REVIEW_ACCOUNT-db" --remote --config "review/account-$REVIEW_ACCOUNT.toml"
       - name: Deploy only the isolated Account 4 preview
-        run: npx --yes wrangler@4.145.0 deploy --config "review/account-$REVIEW_ACCOUNT.toml"
+        run: npx --yes wrangler@4.151.1 deploy --config "review/account-$REVIEW_ACCOUNT.toml"
       - name: Configure Account 4 preview-only secrets
         run: node review/set-secrets.mjs "$REVIEW_ACCOUNT"
       - name: Confirm Account 4 preview homepage loads without extra authentication

@@ -2,12 +2,15 @@ name: Deploy Account 4 Control Room (update existing worker only)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'account4-control-room/**'
-      - 'shared-cms/**'
-      - '.github/workflows/deploy-account4-control-room.yml'
+    inputs:
+      approved_commit:
+        description: Exact reviewed 40-character commit SHA selected for this run
+        required: true
+        type: string
+      confirmation:
+        description: Type APPROVE_PRODUCTION_CHANGE after reviewing the preview and backup
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -18,6 +21,8 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' && (github.actor == github.repository_owner || github.actor == 'aoemeta247-cell')
+    environment: owner-production-approval
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -31,6 +36,10 @@ jobs:
       EXISTING_WORKER: heavenlykey-control-room
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify exact owner-approved source before production access
+        run: node "$GITHUB_WORKSPACE/scripts/require-owner-dispatch.mjs"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -72,8 +81,6 @@ jobs:
           npm run check
           node --experimental-strip-types --test test/*.mjs
           npx wrangler deploy --dry-run --config wrangler.toml
-      - name: Apply only existing non-destructive migrations
-        run: npx wrangler d1 migrations apply heavenlykey-control-room-db --remote
       - name: Update existing Account 4 Worker
         run: npx wrangler deploy --config wrangler.toml
       - name: Verify same Worker remains
@@ -83,3 +90,4 @@ jobs:
           code=$(curl -sS -o /tmp/after.json -w '%{http_code}' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/services/$EXISTING_WORKER")
           test "$code" = "200" || exit 1
           echo "Account 4 updated in place; this workflow creates no extra Worker."
+

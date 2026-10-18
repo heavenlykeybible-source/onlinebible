@@ -37,7 +37,8 @@ describe('production release approval independent of candidate code',()=>{
    expect(text).toContain(invocation);
    expect(text).not.toContain('run: node scripts/verify-account4-approval.mjs');
    expect(text.indexOf('path: .trusted-account4-approval')).toBeLessThan(text.indexOf(invocation));
-   expect(text.indexOf(invocation)).toBeLessThan(text.indexOf('Promote approved Account '+account+' release'));
+   expect(text.indexOf(invocation)).toBeLessThan(text.lastIndexOf('run: npx'));
+   expect(text).toContain('protected-state-gate.mjs');
   });
  }
 

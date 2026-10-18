@@ -25,6 +25,7 @@ jobs:
         run: |
           node scripts/protected-state-gate.mjs
           node --test scripts/test-protected-state-gate.mjs
+          node --test scripts/test-owner-dispatch.mjs scripts/test-architecture-migration-history.mjs scripts/test-site-cms-images.mjs scripts/test-site-link-audit.mjs
       - name: Deployment preflight (placeholders allowed in CI)
         run: npm run preflight:local
       - name: Preserve Account 1 administrator identity and session resources
@@ -55,7 +56,7 @@ jobs:
       - name: Unit tests
         run: npm test
       - name: Worker bundle dry run
-        run: npx --yes wrangler@4.145.0 deploy --dry-run
+        run: npx --yes wrangler@4.151.1 deploy --dry-run
 
   validate-media-engine:
     runs-on: ubuntu-latest

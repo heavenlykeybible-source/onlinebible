@@ -38,12 +38,12 @@ jobs:
           npx tsc --noEmit --pretty false
           npm test
       - name: Apply staging migrations only
-        run: npx --yes wrangler@4.145.0 d1 migrations apply heavenlykey-db-staging --env staging --remote
+        run: npx --yes wrangler@4.151.1 d1 migrations apply heavenlykey-db-staging --env staging --remote
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Deploy Account 1 candidate only
-        run: npx --yes wrangler@4.145.0 deploy --env staging
+        run: npx --yes wrangler@4.151.1 deploy --env staging
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -140,7 +140,7 @@ describe('community and studio integration against the real SQL migrations',()=>
   await request('/api/broadcast/live-session/'+id+'/stop','POST',{},cookie);expect((await request('/api/broadcast/livekit/viewer-token','POST',{})).status).toBe(404);
  });
 
- it('opens the main broadcast dashboard from the Account 2 public address',async()=>{const r=await engine.fetch(new Request('https://media.test/'),mediaEnv);expect(r.status).toBe(302);expect(r.headers.get('Location')).toBe('https://heavenlykey.alldaywow247.workers.dev/pages/admin#studio');});
+ it('opens the main broadcast dashboard from the Account 2 public address',async()=>{const r=await engine.fetch(new Request('https://media.test/'),mediaEnv);expect(r.status).toBe(302);expect(r.headers.get('Location')).toBe('https://heavenlykey.org/pages/admin#studio');});
 
  it('requires approved group membership for poll votes and hides archived poll results',async()=>{
   const admin=await login('Administrator'),member=await login();

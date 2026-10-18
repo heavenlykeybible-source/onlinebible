@@ -90,10 +90,14 @@
   }
 
   function safeImage(value) {
-    if (typeof value !== "string" || !value || value.length > 2048 || /[\\u0000-\\u001f<>\"'\\\\]/.test(value)) return false;
-    if (value.startsWith("/") && !value.startsWith("//")) return true;
-    if (/^(?:\\.\\/|\\.\\.\\/)?[a-zA-Z0-9_-]/.test(value) && !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(value)) return !value.includes("..\\");
-    try { return new URL(value).protocol === "https:"; } catch { return false; }
+    if (typeof value !== "string" || !value || value.length > 2048 || /[\u0000-\u001f<>"'\\]/.test(value)) return false;
+    if (value.startsWith("//")) return false;
+    try {
+      const url=new URL(value,location.href);
+      if(url.username||url.password)return false;
+      if(/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(value))return url.protocol==="https:";
+      return url.origin===location.origin&&/^[a-zA-Z0-9_./?#%&=+-]+$/.test(value);
+    } catch { return false; }
   }
 
   function safeLink(value) {

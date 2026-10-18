@@ -94,7 +94,7 @@ jobs:
 
       - name: Emergency deploy exact known-good Account 2 code only
         working-directory: media-engine
-        run: npx --yes wrangler@4.145.0 deploy
+        run: npx --yes wrangler@4.151.1 deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.ACCOUNT_2_TOKEN }}
 

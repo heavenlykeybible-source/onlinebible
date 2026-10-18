@@ -129,7 +129,7 @@ jobs:
 
       - name: Emergency deploy exact known-good Account 3 code only
         working-directory: global-community
-        run: npx --yes wrangler@4.145.0 deploy --config wrangler.restore.toml
+        run: npx --yes wrangler@4.151.1 deploy --config wrangler.restore.toml
 
 # Emergency restore deliberately performs no D1 migrations
 # and no runtime-secret mutation.

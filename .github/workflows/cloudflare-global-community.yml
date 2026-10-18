@@ -109,6 +109,7 @@ jobs:
           npm run test:feed
           npm run test:social-adverts
           npm run test:stewardship
+          npm run test:security
           node scripts/preflight.mjs
       - name: Verify pinned Account 3 resources (no first-install creation during updates)
         working-directory: global-community
@@ -134,7 +135,7 @@ jobs:
           if((db?.uuid||db?.id)!==process.env.ACCOUNT3_EXPECTED_D1_ID||!kv)
             throw Error('Account 3 database or session resource identity changed — production update blocked.');
           NODE
-          npx --yes wrangler@4.145.0 r2 bucket info heavenly-key-global-community-media --json > /tmp/account3-r2-verified.json
+          npx --yes wrangler@4.151.1 r2 bucket info heavenly-key-global-community-media --json > /tmp/account3-r2-verified.json
           cp wrangler.toml wrangler.deploy.toml
           sed -i "s/REPLACE_ACCOUNT3_D1_ID/$ACCOUNT3_EXPECTED_D1_ID/g" wrangler.deploy.toml
           sed -i "s/REPLACE_ACCOUNT3_SESSIONS_KV_ID/$ACCOUNT3_EXPECTED_KV_ID/g" wrangler.deploy.toml
@@ -142,4 +143,4 @@ jobs:
       # No automatic D1, KV or R2 provisioning or migrations in a routine release.
       - name: Promote approved Account 3 release
         working-directory: global-community
-        run: npx --yes wrangler@4.145.0 deploy --config wrangler.deploy.toml
+        run: npx --yes wrangler@4.151.1 deploy --config wrangler.deploy.toml

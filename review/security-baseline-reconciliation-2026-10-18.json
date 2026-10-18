@@ -1,0 +1,282 @@
+{
+  "sourceCommit": "8ffef08f7858ae21a46ba01bf8432c354bc00025",
+  "request": "Resolve all remaining repository blockers; retain owner approval",
+  "scope": "Source policy reconciliation only. No deployed storage, credentials or databases modified.",
+  "changes": [
+    {
+      "path": "global-community/src/auth.ts",
+      "previous": "581e51c6b13f25da51674602e0966bf9e7ab2b01",
+      "current": "0fd3de1b77efef8556724c6f3faeefdafab6909c"
+    },
+    {
+      "path": "global-community/wrangler.toml",
+      "previous": "6f9203a130db4e2c79b96579f2c49f5a5c612506",
+      "current": "8d284d21da5d93c1ede3a0c45cd404d339187003"
+    },
+    {
+      "path": "heavenly-key-website/js/site-cms.js",
+      "previous": "ad46d64caf3469cee489f11b10b40788cc75f788",
+      "current": "50017900e29d4aadb7f8d67347db0bbecd573c81"
+    },
+    {
+      "path": "media-engine/wrangler.toml",
+      "previous": "111eece5a7eb523999ef20625e0bb0e5ed8792ce",
+      "current": "8020bb17319b1e403ac57763dfc62422c99d34c0"
+    },
+    {
+      "path": "src/routes/auth.ts",
+      "previous": "3384d80dfc0c5fac9c4e1fffa71f7ce9846a8893",
+      "current": "187c669da54d83d8857d1ee21e53d50e37ff1630"
+    },
+    {
+      "path": "wrangler.toml",
+      "previous": "33f5e6d741cecb2f808aa4288a464f527e557013",
+      "current": "66d04e4fa05cbf2857cd95a8c03c2d3b44d847db"
+    },
+    {
+      "path": ".github/CODEOWNERS",
+      "previous": "ea961a1c556020cc6a4f0465c45ca18d8d87d9b9",
+      "current": "883b3cd897a94a97284b89d6ce7038ea8f0fd618"
+    },
+    {
+      "path": ".github/workflows/account4-access-probe.yml",
+      "previous": "cba2d974096f6e7aa83d0690e98ceb135fd4f501",
+      "current": "630d089300dbf881f4b4bf6341738e43d0576030"
+    },
+    {
+      "path": ".github/workflows/account4-review-stage.yml",
+      "previous": "7f0ae560368bd2e7cb81c857eb68b7b8c15ed1a3",
+      "current": "3421ebfc75caeec76756167f98392ca21018e40d"
+    },
+    {
+      "path": ".github/workflows/account4-stage-all.yml",
+      "previous": "1c6a28639310e0a23e0621017ce846d4c66839f3",
+      "current": "e531600da64a466a742e1122547dfbc4d8cf7dc8"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "previous": "f312cb864228d230806e2daa64cd048116a6429b",
+      "current": "773a3201f28868118f4cf647b77a78716d11374d"
+    },
+    {
+      "path": ".github/workflows/cloudflare-global-community-staging.yml",
+      "previous": "a2d23c7f6c92e932cc9b709d03c16f1b92b82ce1",
+      "current": "fc1a8dcc859d7ed3b5b61810ed2e9df923a231f3"
+    },
+    {
+      "path": ".github/workflows/cloudflare-global-community.yml",
+      "previous": "03be592c76cb83c13a747fb880f491c8f7c85825",
+      "current": "9174b98fbcdf1ea4e2636123dec652c1ab8966b6"
+    },
+    {
+      "path": ".github/workflows/cloudflare-media-engine-staging.yml",
+      "previous": "b5e4b539313685f1cb337aae6eb658a698a7e6cc",
+      "current": "84294fa7ca99cb432f9e9be1cf9ac7e7dee9892f"
+    },
+    {
+      "path": ".github/workflows/cloudflare-media-engine.yml",
+      "previous": "cbe636b8266b175e316d56e0eaf5e4f6227346b2",
+      "current": "40a41df1f4551341092f8d1fba9965340013560b"
+    },
+    {
+      "path": ".github/workflows/cloudflare-production.yml",
+      "previous": "f8158d6d8732f0c1bc972b99864bd3e17316a833",
+      "current": "6a9f2fe544f37a34122d892d56cb33e4517451e6"
+    },
+    {
+      "path": ".github/workflows/cloudflare-recovery-control.yml",
+      "previous": "a69940691b144678b445e0995be92b9ee17d7bd5",
+      "current": "2259560b63cebcbffb9a381334b200cab214f3ce"
+    },
+    {
+      "path": ".github/workflows/cloudflare-staging.yml",
+      "previous": "e4710beb5db4c70335b8cd1f9ad00aec45834a79",
+      "current": "fdaf2383d1b3a41b66f78b42b83704703f9f017c"
+    },
+    {
+      "path": ".github/workflows/emergency-restore-account-1.yml",
+      "previous": "f0f39e51ab8af8a3381939548c47f5a30c11a765",
+      "current": "d4994accd706960d4e6126cd2525ce554a692dda"
+    },
+    {
+      "path": ".github/workflows/emergency-restore-account-2.yml",
+      "previous": "0d685f5ab7e7602c0e5f5507d0a365e7f43f83ab",
+      "current": "41ecce2c53fac7a3eb856bf89762cd599106a1d1"
+    },
+    {
+      "path": ".github/workflows/emergency-restore-account-3.yml",
+      "previous": "056a380e38f034ef0d3a24751567a150e19890ee",
+      "current": "718bcb400e19b21faee219f98ca6f93b315454f9"
+    },
+    {
+      "path": "scripts/bootstrap-admin.mjs",
+      "previous": "0551feb1e05d5587849ad4a77180126a69fc35cb",
+      "current": "a8abf11deefcfb704762c6820261b759b3fff892"
+    },
+    {
+      "path": "scripts/configure-account4-login.mjs",
+      "previous": "dc2d59e1b121629c5a8501694e39755c286e287c",
+      "current": "dd8aa0ef727d37c866d55f748c9e79ad11ff7ef4"
+    },
+    {
+      "path": "scripts/configure-runtime.mjs",
+      "previous": "65ae5038c9d6774cfea5c5a6b0be48f59beca8bd",
+      "current": "a029e1368acbf8b0ffd413520d60e4ee0529b443"
+    },
+    {
+      "path": "migrations/0032_website_ai_inbox.sql",
+      "previous": null,
+      "current": "6d243b47bedf06590e33ffedcf11558e9db54ad1"
+    },
+    {
+      "path": "global-community/migrations/0013_ministry_editorial_audit.sql",
+      "previous": null,
+      "current": "90501f7140628fba65224d9b3efa05ceacff08b1"
+    },
+    {
+      "path": "global-community/migrations/0014_ministry_post_actions.sql",
+      "previous": null,
+      "current": "329cc075fbe2ad14be83afdaa8e3f919c225b485"
+    },
+    {
+      "path": "global-community/migrations/0012_ministry_editorial.sql",
+      "previous": null,
+      "current": "0920d211ffc98fb4699462c2c46876505bec149a"
+    },
+    {
+      "path": "global-community/migrations/0015_ministry_bulk_activation.sql",
+      "previous": null,
+      "current": "a2de51b4af50db97e8dc7380ed0c373850f54add"
+    },
+    {
+      "path": ".github/workflows/six-service-readonly-ci.yml",
+      "previous": null,
+      "current": "32d3e045d7b5dfc2f946922e3b48feebf1c04d86"
+    },
+    {
+      "path": ".github/workflows/publish-authorized-community.yml",
+      "previous": null,
+      "current": "b143f944dd960f507c2f0cded0fbd6ffcef44064"
+    },
+    {
+      "path": ".github/workflows/bible-quality.yml",
+      "previous": null,
+      "current": "60e812cfaecb6123910380a19a5710c664dd8e72"
+    },
+    {
+      "path": ".github/workflows/restore-public-app.yml",
+      "previous": null,
+      "current": "a05e41ec0774b86d43b10386883f2c4a599e2611"
+    },
+    {
+      "path": ".github/workflows/verify-account1-design.yml",
+      "previous": null,
+      "current": "04f20393f222ffdf52969eb876710c1f2213f57e"
+    },
+    {
+      "path": ".github/workflows/verify-account4-installation.yml",
+      "previous": null,
+      "current": "f4f09995613ea7ac009eaeedef8d336e46c18a27"
+    },
+    {
+      "path": ".github/workflows/verify-repaired-public-sites.yml",
+      "previous": null,
+      "current": "bfca60bdd7b3982959c6e00248c0f9a47c0a1b4d"
+    },
+    {
+      "path": ".github/workflows/inspect-admin-control.yml",
+      "previous": null,
+      "current": "2db80317afb2dfaeee5f02ddafaceeb77bf663d7"
+    },
+    {
+      "path": ".github/workflows/verified-deployment-audit.yml",
+      "previous": null,
+      "current": "4e5d7cae66c762ed6f31bdeeba58c417f0ee44b8"
+    },
+    {
+      "path": ".github/workflows/account4-generate-lockfile.yml",
+      "previous": null,
+      "current": "a31f21b72d8e81eaacaaf1e717ee8207bdae3620"
+    },
+    {
+      "path": ".github/workflows/diagnose-studio-owner-login.yml",
+      "previous": null,
+      "current": "889b57e5911abb748693214ee80cf03f39de0ee0"
+    },
+    {
+      "path": ".github/workflows/deploy-portal-router.yml",
+      "previous": null,
+      "current": "11f71f59c248981ec3d78eed8124daaa42fcab19"
+    },
+    {
+      "path": ".github/workflows/deploy-account4-control-room.yml",
+      "previous": null,
+      "current": "9899ef236a425d3212d859e130f96f6834572470"
+    },
+    {
+      "path": ".github/workflows/verify-live-cms.yml",
+      "previous": null,
+      "current": "af4c6abb75add2aa3597c6b77dc1e605bd456639"
+    },
+    {
+      "path": ".github/workflows/verify-account1-access.yml",
+      "previous": null,
+      "current": "7909349dfc5028c4fa75e3bc462f85d96024690a"
+    },
+    {
+      "path": ".github/workflows/diagnose-owner-login-20261015.yml",
+      "previous": null,
+      "current": "b649be93096704910a40fd43b2c5fc0fafd28783"
+    },
+    {
+      "path": ".github/workflows/inspect-account3-build.yml",
+      "previous": null,
+      "current": "a9cae6a4efa90858cc1be1000c7386b0884db931"
+    },
+    {
+      "path": ".github/workflows/account3-generate-lockfile.yml",
+      "previous": null,
+      "current": "d87f5c408124955a0c860f85d67fa55f19ee9576"
+    },
+    {
+      "path": ".github/workflows/deploy-account3-global-community.yml",
+      "previous": null,
+      "current": "bb7c6b278315aae42b29bbbd12189c27eef87cfb"
+    },
+    {
+      "path": ".github/workflows/configure-studio-owner-login.yml",
+      "previous": null,
+      "current": "c280248a1f50e6458a0eb2a9154aa36dadffed83"
+    },
+    {
+      "path": ".github/workflows/verify-admin-signin.yml",
+      "previous": null,
+      "current": "e64399224d9fd23d1c30736065cefdb14b217eb1"
+    },
+    {
+      "path": "scripts/require-owner-dispatch.mjs",
+      "previous": null,
+      "current": "53372879e570ba81017a7835e8a6be7905cc73c9"
+    },
+    {
+      "path": "scripts/architecture-check.mjs",
+      "previous": null,
+      "current": "40173301999f47de974b3a248cd2a35d4d05787e"
+    },
+    {
+      "path": "scripts/root-migration-history.mjs",
+      "previous": null,
+      "current": "474363b3cec413de1ef8dece226e0cc0f06cf361"
+    },
+    {
+      "path": "scripts/deployment-preflight.mjs",
+      "previous": null,
+      "current": "955686758e4a40d1e489a95d086cce56609687b0"
+    },
+    {
+      "path": "scripts/site-link-audit.mjs",
+      "previous": null,
+      "current": "2953b47413e6ed61d44c8b7a2cae4ff2e16c6de7"
+    }
+  ]
+}

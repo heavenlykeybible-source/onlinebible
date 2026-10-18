@@ -46,6 +46,7 @@ jobs:
       - run: npm run test:registration
       - run: npm run test:stewardship
       - run: npm run test:social-adverts
+      - run: npm run test:security
       - run: npm run test:audit
   platform-code:
     name: Shared platform contract and architecture checks

@@ -1,6 +1,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import {validateRootMigrationHistory} from "./root-migration-history.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const failures = [];
@@ -14,12 +15,8 @@ if (/catch\s*\{\s*\}/.test(mediaIndex)) {
   failures.push("Media Engine must not silently swallow storage/deletion failures.");
 }
 
-const rootMigrations = (await readdir(join(root, "migrations")))
-  .filter((f) => /^\d{4}_.+\.sql$/.test(f))
-  .sort();
-if (rootMigrations.length !== 39 || !rootMigrations.at(-1)?.startsWith("0039_")) {
-  failures.push("Root migration tip must be 0039 with exactly 39 numbered migrations.");
-}
+const rootHistory=await validateRootMigrationHistory(root);
+failures.push(...rootHistory.failures);
 
 const mediaMigrations = (await readdir(join(root, "media-engine/migrations")))
   .filter((f) => /^\d{4}_.+\.sql$/.test(f))

@@ -109,3 +109,30 @@ test('Community HTML navigation and referenced scripts/styles/images exist',asyn
   }
  }
 });
+
+test('Community ministry and app shortcuts resolve to current source pages or Worker endpoints',async()=>{
+ const {readdirSync,existsSync}=await import('node:fs');
+ const {fileURLToPath}=await import('node:url');
+ const {resolve}=await import('node:path');
+ const directory=fileURLToPath(new URL('../public/',import.meta.url));
+ const website=fileURLToPath(new URL('../../heavenly-key-website/',import.meta.url));
+ const app=fileURLToPath(new URL('../../heavenly-key-app/public/',import.meta.url));
+ const worker=readFileSync(new URL('../../src/index.ts',import.meta.url),'utf8');
+ const files=readdirSync(directory).filter(name=>/\.(html|js)$/.test(name));
+ let checked=0;
+ for(const file of files){
+  const source=readFileSync(resolve(directory,file),'utf8');
+  for(const [value] of source.matchAll(/https:\/\/(?:(?:www\.)?heavenlykey\.org|app\.heavenlykey\.org|bible\.heavenlykey\.org)[^\s"'<>`\\]*/g)){
+   const url=new URL(value);checked++;
+   if(url.hostname==='bible.heavenlykey.org'){assert.equal(url.pathname,'/');continue;}
+   const root=url.hostname==='app.heavenlykey.org'?app:website;
+   const path=url.pathname==='/'?'/index.html':url.pathname;
+   const target=resolve(root,'.'+path);
+   if(existsSync(target)||(!path.split('/').pop().includes('.')&&existsSync(target+'.html')))continue;
+   assert.ok(path.startsWith('/api/')&&worker.includes('pathname === "'+path+'"'),file+' links to missing destination: '+value);
+  }
+ }
+ assert.ok(checked>20,'Check real public shortcuts, not just a fixture');
+ const sharedPromo=readFileSync(new URL('../../heavenly-key-website/js/hk-footer-app-promo-20261015.js',import.meta.url),'utf8');
+ assert.ok(sharedPromo.includes('href="https://app.heavenlykey.org/"'),'Shared app promotion must reach the independent app');
+});

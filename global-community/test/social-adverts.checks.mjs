@@ -69,6 +69,12 @@ test('Social sign-in and adverts: permissions, encrypted settings, identity vali
  async function uploadImage(cookie,bytes=png,type='image/png'){return worker.fetch(new Request('https://community.example/api/admin/adverts/images',{method:'POST',headers:{Cookie:cookie,'Content-Type':type},body:bytes}),env);}
  assert.equal((await uploadImage(member)).status,403);assert.equal((await uploadImage(admin,Buffer.from('<svg></svg>'),'image/svg+xml')).status,400);assert.equal((await uploadImage(admin,Buffer.from('wrong file signature'))).status,400);assert.equal((await uploadImage(admin,Buffer.alloc(2*1024*1024+1))).status,413);
  const imageUpload=await uploadImage(admin);assert.equal(imageUpload.status,201);const imageUrl=(await imageUpload.json()).imageUrl;
+ const previewUrl=imageUrl.replace('/api/adverts/images/','/api/admin/adverts/images/');
+ for(const cookie of [null,member,moderator])assert.equal((await req(previewUrl,null,cookie)).status,403);
+ const draftPreview=await worker.fetch(new Request('https://community.example'+previewUrl,{headers:{Cookie:admin}}),env);
+ assert.equal(draftPreview.status,200);assert.equal(draftPreview.headers.get('Cache-Control'),'no-store');
+ assert.equal(draftPreview.headers.get('Content-Type'),'image/png');assert.deepEqual(Buffer.from(await draftPreview.arrayBuffer()),png);
+
  assert.equal((await req('/api/admin/adverts',{...input,imageUrl:'https://tracker.example/image.png'},admin)).status,400);
  assert.equal((await req(imageUrl)).status,404);const pictured=await req('/api/admin/adverts',{...input,imageUrl,status:'published'},admin);assert.equal(pictured.status,201);
  const imageResponse=await worker.fetch(new Request('https://community.example'+imageUrl),env);assert.equal(imageResponse.status,200);assert.equal(imageResponse.headers.get('Content-Type'),'image/png');assert.deepEqual(Buffer.from(await imageResponse.arrayBuffer()),png);
@@ -77,3 +83,4 @@ test('Social sign-in and adverts: permissions, encrypted settings, identity vali
  db.prepare("UPDATE users SET status='restricted' WHERE user_id=2").run();assert.equal((await req('/api/admin/adverts',input,admin)).status,403);
  }finally{globalThis.fetch=realFetch;db.close();rmSync(dir,{recursive:true,force:true});}
 });
+

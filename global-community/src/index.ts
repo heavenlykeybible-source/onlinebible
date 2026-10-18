@@ -1,4 +1,5 @@
 import type {Env} from "./types";
+import {rate} from "./rate-limit";
 import {passwordError} from "../public/password-policy.js";
 import {hashPassword,verifyPassword,createSession,getSession,destroySession,sessionCookie,clearSessionCookie,requireRole} from "./auth";
 import * as S from "./services";
@@ -12,7 +13,7 @@ import {communityAiDraft,validateAiDraftRequest} from "./heavenly-key-ai";
 
 const security=(headers=new Headers())=>{
   headers.set("X-Content-Type-Options","nosniff");headers.set("X-Frame-Options","DENY");headers.set("Referrer-Policy","strict-origin-when-cross-origin");
-  headers.set("Permissions-Policy","camera=(self), microphone=(self), geolocation=()");
+  headers.set("Permissions-Policy","camera=(), microphone=(), geolocation=()");
   return headers;
 };
 const json=(data:unknown,status=200,extra?:Record<string,string>)=>{const h=security(new Headers({"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store",...(extra||{})}));return new Response(JSON.stringify(data),{status,headers:h});};
@@ -26,12 +27,9 @@ async function body(request:Request){
   try{const value=JSON.parse(new TextDecoder().decode(bytes));if(!value||Array.isArray(value)||typeof value!=="object")throw new Error();return value;}catch{throw new Error("Send a valid JSON object.");}
 }
 async function sourceKey(request:Request){const address=request.headers.get("CF-Connecting-IP")||"local";const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(address));return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");}
-const cleanEmail=(v:any)=>String(v||"").trim().toLowerCase().slice(0,160);
-const validEmail=(v:string)=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+const cleanEmail=(v:any)=>String(v||"").trim().toLowerCase();
+const validEmail=(v:string)=>v.length<=160&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
-async function rate(env:Env,key:string,max:number,seconds:number){
-  const k="rate:"+key,raw=await env.SESSIONS.get(k),state=raw?JSON.parse(raw):{n:0};if(state.n>=max)return false;state.n++;await env.SESSIONS.put(k,JSON.stringify(state),{expirationTtl:seconds});return true;
-}
 async function me(request:Request,env:Env){const u=await getSession(request,env);if(!u)throw Object.assign(new Error("Please sign in."),{status:401});return u;}
 
 async function route(request:Request,env:Env):Promise<Response>{
@@ -87,6 +85,11 @@ async function route(request:Request,env:Env):Promise<Response>{
   if(current?.status==='restricted'&&!['/api/me','/api/me/safety','/api/me/requests','/api/auth/logout'].includes(p))return error('Your account is locked pending administrator review. Open Safety & privacy to read the reason and request review.',403);
   if(p==="/api/auth/logout"&&m==="POST"){await destroySession(request,env);return json({ok:true},200,{"Set-Cookie":clearSessionCookie()});}
 
+  {const match=p.match(/^\/api\/admin\/adverts\/images\/([a-f0-9-]{36})$/);if(match&&m==='GET'){
+    const admin=await requireRole(request,env,'administrator');if(!admin)return error('Administrator access required.',403);
+    const image=await Adverts.adminImage(env,match[1]);if(!image)return error('Advert image unavailable.',404);
+    return new Response(image.body,{headers:security(new Headers({'Content-Type':image.mime,'Cache-Control':'no-store'}))});
+  }}
   if(p==="/api/admin/adverts/images"&&m==="POST"){const admin=await requireRole(request,env,"administrator");if(!admin)return error("Administrator access required.",403);return json(await Adverts.uploadImage(env,admin,request),201);}
   {const match=p.match(/^\/api\/adverts\/images\/([a-f0-9-]{36})$/);if(match&&m==="GET"){const image=await Adverts.image(env,match[1]);if(!image)return error("Advert image unavailable.",404);return new Response(image.body,{headers:security(new Headers({"Content-Type":image.mime,"Cache-Control":"public, max-age=60","ETag":image.etag}))});}}
   if(p==="/api/adverts"&&m==="GET")return json(await Adverts.publicAdverts(env));
@@ -125,7 +128,7 @@ async function route(request:Request,env:Env):Promise<Response>{
 
   if(p==="/api/spaces"&&m==="GET"){const u=await getSession(request,env);return json({items:await S.listSpaces(env,url.searchParams.get("category")||undefined,u?.userId||null)});}
   if(p==="/api/spaces"&&m==="POST"){const u=await me(request,env);return json(await S.createSpace(env,u.userId,await body(request)),201);}
-  {const x=p.match(/^\/api\/spaces\/([a-z0-9-]+)$/);if(x&&m==="GET"){const space=await S.getSpace(env,x[1]);if(!space)return error("Space not found.",404);const u=await getSession(request,env);let canManage=false;if(u)canManage=!!await env.DB.prepare("SELECT 1 FROM space_members WHERE space_id=? AND user_id=?").bind(space.space_id,u.userId).first();return json({space:{...space,canManage}});}}
+  {const x=p.match(/^\/api\/spaces\/([^/]+)$/);if(x&&m==="GET"){let slug:string;try{slug=decodeURIComponent(x[1]);}catch{return error("Invalid Space link.");}if(!/^[\p{L}\p{N}-]+$/u.test(slug))return error("Invalid Space link.");const space=await S.getSpace(env,slug);if(!space)return error("Space not found.",404);const u=await getSession(request,env);let canManage=false;if(u)canManage=!!await env.DB.prepare("SELECT 1 FROM space_members WHERE space_id=? AND user_id=?").bind(space.space_id,u.userId).first();return json({space:{...space,canManage}});}}
 
   if(p==="/api/groups"&&m==="GET"){const u=await getSession(request,env);return json({items:await S.listGroups(env,u?.userId||null)});}
   {const x=p.match(/^\/api\/groups\/(\d+)$/);if(x&&m==='GET'){const u=await getSession(request,env);return json({group:await S.groupDetail(env,u?.userId||null,Number(x[1]))});}if(x&&m==='PATCH'){const u=await me(request,env);return json(await S.updateGroup(env,u.userId,Number(x[1]),await body(request)));}}
@@ -143,10 +146,13 @@ async function route(request:Request,env:Env):Promise<Response>{
 
   {const x=p.match(/^\/api\/groups\/(\d+)\/requests$/);if(x&&m==='GET'){const u=await me(request,env);return json({items:await S.groupRequests(env,u.userId,Number(x[1]))});}}
   {const x=p.match(/^\/api\/groups\/(\d+)\/requests\/(\d+)$/);if(x&&m==='POST'){const u=await me(request,env),b=await body(request);if(!['accept','decline'].includes(b.decision))return error('Choose accept or decline.');return json(await S.decideGroupRequest(env,u.userId,Number(x[1]),Number(x[2]),b.decision==='accept'));}}
-  if(p==='/api/calls/config'&&m==='GET'){const u=await me(request,env);return json(await Calls.config(env,u.userId));}
-  if(p==='/api/calls'&&m==='GET'){const u=await me(request,env);return json({items:await Calls.incoming(env,u.userId)});}
-  if(p==='/api/calls'&&m==='POST'){const u=await me(request,env);if(!await rate(env,'call:'+u.userId,10,3600))return error('Please wait before making another call.',429);return json(await Calls.start(env,u.userId,await body(request)),201);}
-  {const x=p.match(/^\/api\/calls\/([a-f0-9-]{36})$/);if(x&&m==='GET'){const u=await me(request,env);return json(await Calls.read(env,u.userId,x[1]));}if(x&&m==='POST'){const u=await me(request,env);return json(await Calls.update(env,u.userId,x[1],await body(request)));}}
+  // Text-only community: relay secrets cannot reactivate calling.
+  if(p==='/api/calls'||p.startsWith('/api/calls/')){
+    await me(request,env);
+    if(p==='/api/calls/config'&&m==='GET')return json({enabled:false,message:'Text messaging only. Voice and video calls are unavailable.'});
+    if(p==='/api/calls'&&m==='GET')return json({items:[]});
+    return error('Text messaging only. Voice and video calls are unavailable.',410);
+  }
 
   if(p==="/api/messages"&&m==="GET"){const u=await me(request,env);return json({items:await S.inbox(env,u.userId)});}
   if(p==="/api/messages/requests"&&m==="POST"){const u=await me(request,env),b=await body(request);return json(await S.requestConversation(env,u.userId,Number(b.recipientUserId)),201);}
@@ -201,4 +207,5 @@ export default {
     catch(e:any){const internal=e instanceof TypeError||e instanceof ReferenceError||e instanceof SyntaxError||/D1_|SQLITE|constraint failed|no such table|binding|TypeError/i.test(String(e?.message))||!(e instanceof Error);return error(internal?"The request could not be completed. Please try again.":e.message,internal?500:Number((e as any)?.status)||400);}
   }
 };
+
 

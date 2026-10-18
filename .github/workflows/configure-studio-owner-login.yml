@@ -1,88 +1,11 @@
-name: Configure owner-requested Studio and Control administrator
+name: Retired automatic shortcut — configure-studio-owner-login
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/configure-studio-owner-login.yml']
 permissions:
   contents: read
-concurrency:
-  group: studio-owner-credential-setup
-  cancel-in-progress: false
 jobs:
-  configure:
+  explain:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      ACCOUNT1_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      ACCOUNT4_TOKEN: ${{ secrets.ACCOUNT_4_TOKEN }}
-      LOGIN_SEED: ${{ secrets.HKEM_CONTROL_TOKEN }}
-      GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Configure only requested owner credentials and verify actual sign-ins
-        run: |
-          python3 - <<'PY'
-          import json,os,hmac,hashlib,secrets,urllib.request,urllib.error,pathlib,time
-          seed=os.environ.get('LOGIN_SEED','')
-          # Generate only the owner-requested new admin password; retain all platform security secrets.
-          words=('Cedar','River','Olive','Maple','Sunny','Meadow','Silver','Spring')
-          password=secrets.choice(words)+secrets.choice(words)+str(1000+secrets.randbelow(9000))+'!'
-          print('::add-mask::'+password)
-          salt=secrets.token_hex(32)
-          digest=hashlib.pbkdf2_hmac('sha256',password.encode(),salt.encode(),100000).hex()
-          report=[]
-          def api(account,token,path,data=None,method=None):
-              assert token,'Existing account token is missing'
-              req=urllib.request.Request('https://api.cloudflare.com/client/v4/accounts/'+account+path,data=json.dumps(data).encode() if data is not None else None,method=method,headers={'Authorization':'Bearer '+token.strip().removeprefix('Bearer '),'Content-Type':'application/json'})
-              try:
-                  with urllib.request.urlopen(req,timeout=40) as response: result=json.load(response)
-              except urllib.error.HTTPError as error: raise RuntimeError('Cloudflare operation failed HTTP '+str(error.code)) from None
-              assert result.get('success'),'Cloudflare operation was not successful'
-              return result.get('result')
-          def secret(account,token,worker,name,value):
-              api(account,token,'/workers/scripts/'+worker+'/secrets',{'name':name,'text':value,'type':'secret_text'},'PUT')
-          def public_fetch(url,data=None,profile=None):
-              import subprocess
-              script="""const fs=require('fs');(async()=>{const input=JSON.parse(fs.readFileSync(0,'utf8'));const origin=new URL(input.url).origin;const r=await fetch(input.url,input.data?{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify(input.data)}:{});if(!r.ok)throw Error('Public endpoint HTTP '+r.status);const body=await r.json();if(input.data){const cookie=r.headers.get('set-cookie')?.split(';')[0];if(!cookie)throw Error('No authenticated session');if(input.profile){const p=await fetch(origin+input.profile,{headers:{Cookie:cookie}});if(!p.ok)throw Error('Authenticated profile HTTP '+p.status)}}console.log(JSON.stringify(body))})().catch(e=>{console.error(e.message);process.exit(1)})"""
-              result=subprocess.run(['node','-e',script],input=json.dumps({'url':url,'data':data,'profile':profile}),text=True,capture_output=True)
-              if result.returncode: raise RuntimeError(result.stderr.strip()[:200])
-              return json.loads(result.stdout)
-          def login(url,data,profile=None): return public_fetch(url,data,profile)
-          a1='a160ba9fc74911bd4b3005eac86eefcb';a4='404ebf05a781fcccbbed44aeb02cb72b'
-          t1=os.environ['ACCOUNT1_TOKEN'];t4=os.environ['ACCOUNT4_TOKEN']
-          try:
-              result=api(a1,t1,'/d1/database/8665ff03-6a2c-4852-90ab-6c74375a8c87/query',{'sql':"SELECT u.user_id FROM users u JOIN roles r ON r.role_id=u.role_id WHERE r.role_name='Super Administrator' AND u.status='active'"})
-              assert len(result[0]['results'])==1,'Requires exactly one existing active owner; no member role changes were made.'
-              secret(a1,t1,'heavenlykey','OWNER_DASHBOARD_PASSWORD_SALT',salt)
-              secret(a1,t1,'heavenlykey','OWNER_DASHBOARD_PASSWORD_HASH',digest)
-              time.sleep(5)
-              login('https://studio.heavenlykey.org/api/auth/login',{'email':'owner','password':password},'/api/auth/profile')
-              report.append('Studio: VERIFIED. Username: owner. https://studio.heavenlykey.org/')
-          except Exception as error: report.append('Studio: NOT VERIFIED. '+str(error))
-          try:
-              result=api(a4,t4,'/d1/database/25536a81-63ed-41e3-85f1-4f17bb977628/query',{'sql':"INSERT INTO cms_owner_password(id,password_hash,salt,updated_by) VALUES(1,?,?,?) ON CONFLICT(id) DO UPDATE SET password_hash=excluded.password_hash,salt=excluded.salt,updated_by=excluded.updated_by,updated_at=CURRENT_TIMESTAMP",'params':[digest,salt,'project-owner']})
-              api(a4,t4,'/d1/database/25536a81-63ed-41e3-85f1-4f17bb977628/query',{'sql':'DELETE FROM cms_owner_sessions'})
-              login('https://control.heavenlykey.org/api/owner/login',{'username':'owner','password':password},'/api/me')
-              report.append('CMS Control dashboard: VERIFIED. Username: owner. https://control.heavenlykey.org/login.html')
-          except Exception as error: report.append('CMS Control dashboard: NOT VERIFIED. '+str(error))
-          report.append('Deployment Waiting Room: not configured; use the CMS Control dashboard above.')
-          try:
-              health=public_fetch('https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev/health')
-              report.append('Public AI provider: '+str(health.get('aiProvider'))+'. Gemini configuration: '+str(health.get('ai')))
-          except Exception as error: report.append('Gemini configuration: NOT VERIFIED. '+str(error))
-          text='HEAVENLY KEY PRIVATE ADMINISTRATOR LOGIN\n\nPassword: '+password+'\n\n'+'\n'.join(report)+'\n\nExisting member password pepper, encryption keys, Cloudflare Access policy, database schema and content were not modified.\n'
-          pathlib.Path('Heavenly-Key-Administrator-Login.txt').write_text(text)
-          os.chmod('Heavenly-Key-Administrator-Login.txt',0o600)
-          for line in report: print(line)
-          PY
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: Heavenly-Key-Administrator-Login
-          path: Heavenly-Key-Administrator-Login.txt
-          retention-days: 7
-          if-no-files-found: error
+      - name: Preserve manual owner approval
+        run: echo "Use existing Account 4 administrator recovery controls. Automatic credential generation and resets are retired."

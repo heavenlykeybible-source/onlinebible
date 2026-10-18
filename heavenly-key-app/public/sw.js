@@ -3,7 +3,7 @@
 const RELEASE='local'; // stamped from the deployed Git commit during build
 const CACHE='heavenly-key-app-shell-v10-'+RELEASE;
 const SHELL=["/download/android/hk-approved-page-style-android-index.css","/download/hk-approved-page-style-download-index.css","/download/ipad/hk-approved-page-style-ipad-index.css","/download/iphone/hk-approved-page-style-iphone-index.css","/download/mac/hk-approved-page-style-mac-index.css","/download/windows/hk-approved-page-style-windows-index.css","/hk-approved-page-style-public-index.css","/cms-runtime-20261015.js","/cms-runtime-20261015.css",'/','/index.html','/styles.css','/app.js','/hk-standard-footer.js','/hk-standard-footer.css','/site-sync.js','/member.js','/platform.js','/install-app.js','/icon.svg','/manifest.webmanifest',
- '/icons/icon-192.svg','/icons/icon-512.svg','/icons/apple-touch-icon.svg',
+ '/icons/icon-192.svg','/icons/icon-512.svg','/icons/apple-touch-icon.svg','/icons/icon-192.png','/icons/icon-512.png','/icons/apple-touch-icon.png',
  '/bible.html','/devotional.html','/hymns.html','/audio-bible.html','/audio-hymns.html',
  '/study-library.js','/study-library.css','/faith-content.js','/bible-catalog.js','/bible-mobile-controls.js','/kjv-manifest.json','/daily-reading-excerpts.json','/KJV-SOURCE-LICENSE.txt',
  '/audio-bible.js','/audio-bible-catalog.js','/audio-bible-manifest.json','/audio-background-catalog.js','/audio-background-manifest.json','/audio-playlist.js',
