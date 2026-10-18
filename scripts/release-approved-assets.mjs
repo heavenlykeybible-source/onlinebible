@@ -3,7 +3,7 @@
 import {readFileSync,writeFileSync,mkdirSync,existsSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-const ACCOUNT='a160ba9fc74911bd4b3005eac86eefcb',WORKER='heavenlykey',EXPECTED_VERSION='d8c2275a-a396-48b6-9d93-34db1653ca5f';
+const ACCOUNT='a160ba9fc74911bd4b3005eac86eefcb',WORKER='heavenlykey',EXPECTED_VERSION='e8eac275-3dd9-4301-9e7f-fcb906887396';
 const BASE='9992aee0d09ef59db697e43ad281383bf234be93',token=process.env.CLOUDFLARE_API_TOKEN?.trim().replace(/^Bearer\s+/i,'');
 const cf='https://api.cloudflare.com/client/v4/accounts/'+ACCOUNT,message='Owner approved Account 1 shell assets '+process.env.GITHUB_SHA;
 const sha=b=>createHash('sha256').update(b).digest('hex');
@@ -47,4 +47,3 @@ if(mode==='prepare'){
 }else if(mode==='rollback'){
  if(!existsSync('approved-assets-promotion-started.json')){console.log('No production promotion occurred.');process.exit(0);}const s=saved();await api('/workers/scripts/'+WORKER+'/deployments',{strategy:'percentage',versions:s.deployment.versions,annotations:{'workers/message':'Restore previous version after approved asset verification failed'}});if(oneVersion(await current())!==s.previousVersion)throw Error('Rollback needs review.');console.log('Previous production version restored. Database/media left untouched.');
 }else throw Error('Unknown release mode.');
-
