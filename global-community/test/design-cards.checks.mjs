@@ -54,7 +54,7 @@ test('central Heavenly Key AI policy is shared and does not possess database or 
 test('premium Facebook and social card shapes are validated and saveable',()=>{assert.equal(normalizeDesign({templateId:'card-1151',size:'facebook'}).size,'facebook');assert.equal(normalizeDesign({templateId:'card-576',size:'social'}).size,'social');assert.throws(()=>normalizeDesign({size:'10px;color:red'}));});
 
 test('Premium Text Studio is separate from original Design Cards',()=>{
- const content='[theme=1]\\n[bold]Faith[/bold] [color=#173D7A]endures[/color]';
+ const content='[theme=1]\n[bold]Faith[/bold] [color=#173D7A]endures[/color]';
  const premium=validatePostPresentation({postFormat:'premium_text',body:content});
  assert.equal(premium.format,'premium_text');assert.equal(premium.design,null);
  assert.equal(validatePostPresentation({postFormat:'design_card',body:'Original',design:{templateId:'card-0'}}).design.templateId,'card-0');
