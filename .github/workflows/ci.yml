@@ -104,7 +104,9 @@ jobs:
       - name: Verify approved shell and controls on desktop, tablet, iPhone and Android viewports
         env:
           HK_PLAYWRIGHT: /tmp/hk-shell-tools/node_modules/playwright
-        run: node scripts/test-account1-approved-browser.cjs
+        run: |
+          node scripts/test-account1-radio-audio.cjs
+          node scripts/test-account1-approved-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
