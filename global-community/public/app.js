@@ -19,7 +19,7 @@ function communityWelcome(){
  if(session)return null;
  const banner=el("section",null,"community-welcome");
  banner.setAttribute("aria-label","Official Global Christian Community network design");
- const visual=el("img");visual.src="assets/global-christian-community-official.jpeg";
+ const visual=el("img");visual.src="assets/70F8EC1C-065B-4893-8ADD-6F21949C73D2.png";
  visual.alt="Global Christian Community official network image, with modestly dressed members from different nations, their flags, connected portraits, a central globe and the slogan Together We Take Christ To The Nations Of The World.";
  visual.width=1536;visual.height=614;visual.loading="eager";visual.decoding="async";visual.className="community-official-network-image";
  const unavailable=el("p","Official Global Christian Community picture is awaiting installation.","community-official-image-fallback");unavailable.hidden=true;
