@@ -65,7 +65,7 @@ font_import = re.search(r'@import\s+url\([^)]*\)\s*;', (ROOT/'css/home-renewal.c
 css = font_import + '\n/* Generated only from the approved homepage. Do not hand-edit. */\n.site-header .main-nav{position:static!important;inset:auto!important;transform:none!important;transition:none!important;padding:0!important;margin:0!important;border:0!important;box-shadow:none!important;background:transparent!important;overflow:visible!important}.site-header .main-nav li{width:auto!important;min-width:0!important;max-width:none!important;margin:0!important;padding:0!important;list-style:none!important;transform:none!important}\n' + ''.join(scoped((ROOT/'css'/p).read_text()) for p in cssfiles) + ''.join(scoped(s) for s in styles)
 css = css.replace("url('../assets/", "url('/assets/")
 
-css += '\nheader.site-header.site-header{color:var(--ink,#111)}header.site-header.site-header,footer.site-footer.site-footer{padding:0;margin:0;border:0;text-align:start}header.site-header .brand img{filter:none!important}\n'
+css += '\nheader.site-header .wrap,footer.site-footer .wrap,.hk-share-bless .wrap{padding:0;max-width:none;background:none}header.site-header.site-header{color:var(--ink,#111)}header.site-header.site-header,footer.site-footer.site-footer{padding:0;margin:0;border:0;text-align:start}header.site-header .brand img{filter:none!important}\n'
 changed=[]
 def save(path, text):
     previous = path.read_text() if path.exists() else ''
@@ -73,7 +73,7 @@ def save(path, text):
         changed.append(str(path.relative_to(ROOT.parent)))
         if '--check' not in sys.argv: path.parent.mkdir(parents=True,exist_ok=True);path.write_text(text)
 save(ROOT/'css/approved-home-shell.css',css)
-for page in sorted((ROOT/'pages').glob('*.html')):
+for page in [*sorted((ROOT/'pages').glob('*.html')), ROOT/'live/index.html']:
     if page.name == 'admin.html': continue
     text = page.read_text()
     if not re.search(r'<header\b',text) or not re.search(r'<footer\b',text): continue

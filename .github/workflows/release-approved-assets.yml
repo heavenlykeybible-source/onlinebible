@@ -1,4 +1,4 @@
-name: Release approved Account 1 menu footer and original controls
+name: Complete approved Account 1 shell including Live Broadcast
 on:
   push:
     branches: ['release/account1-approved-assets-20261017']

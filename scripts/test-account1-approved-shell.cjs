@@ -4,7 +4,7 @@ const root=path.resolve(__dirname,'../heavenly-key-website');
 class Local extends ResourceLoader{fetch(url){const u=new URL(url);if(u.hostname!=='heavenlykey.org')return Promise.resolve(Buffer.from(''));let p=path.join(root,u.pathname);return Promise.resolve(fs.existsSync(p)?fs.readFileSync(p):Buffer.from(''));}}
 function browser(file,url){return new JSDOM(fs.readFileSync(path.join(root,file),'utf8'),{url,runScripts:'dangerously',resources:new Local(),pretendToBeVisual:true,virtualConsole:new VirtualConsole(),beforeParse(w){w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});w.fetch=async url=>({ok:true,json:async()=>String(url).includes('/v1/content')?{content:{fields:[]},menu:{items:[{label:'UNAPPROVED',href:'/junk',visible:true}]},footer:{copyright:'WRONG',designer:{label:'WRONG',href:'https://example.com'}}}:{items:[]}});w.HTMLMediaElement.prototype.load=function(){};w.HTMLMediaElement.prototype.pause=function(){};w.HTMLMediaElement.prototype.play=async function(){};}});}
 (async()=>{
-const files=['index.html',...fs.readdirSync(path.join(root,'pages')).filter(f=>f.endsWith('.html')&&f!=='admin.html').map(f=>'pages/'+f)];
+const files=['index.html',...fs.readdirSync(path.join(root,'pages')).filter(f=>f.endsWith('.html')&&f!=='admin.html').map(f=>'pages/'+f),'live/index.html'];
 for(const file of files){const dom=browser(file,'https://heavenlykey.org/'+(file==='index.html'?'':file)),w=dom.window;await new Promise(r=>setTimeout(r,800));const d=w.document;
 assert.equal(d.querySelectorAll('.site-header .main-nav').length,1,file+' canonical menu');
 assert.equal(d.querySelectorAll('.site-header .main-nav>ul>li').length,7,file+' seven menu entries');
