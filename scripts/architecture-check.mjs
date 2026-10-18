@@ -17,6 +17,16 @@ if (/catch\s*\{\s*\}/.test(mediaIndex)) {
 const rootMigrations = (await readdir(join(root, "migrations")))
   .filter((f) => /^\d{4}_.+\.sql$/.test(f))
   .sort();
+const migrationNumbers = new Map();
+for (const file of rootMigrations) {
+  const number = file.slice(0, 4);
+  migrationNumbers.set(number, [...(migrationNumbers.get(number) || []), file]);
+}
+for (const [number, files] of migrationNumbers) {
+  if (files.length > 1) {
+    failures.push(`Duplicate root migration number ${number}: ${files.join(", ")}. Resolve with an owner-reviewed migration plan; never delete or renumber applied migrations automatically.`);
+  }
+}
 if (rootMigrations.length !== 39 || !rootMigrations.at(-1)?.startsWith("0039_")) {
   failures.push("Root migration tip must be 0039 with exactly 39 numbered migrations.");
 }
