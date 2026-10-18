@@ -861,3 +861,37 @@ body.social-page .premium-design-gallery{gap:13px}
 .community-official-image-fallback{padding:20px;text-align:center;font-size:16px}
 .community-official-image-fallback[hidden]{display:none!important}
 .community-welcome .community-shortcuts{margin-top:16px}
+
+
+/* Feed overlap repair: scope layout containment to posts; preserve approved artwork. */
+.social-page .social-stream,
+.social-page .social-sidebar,
+.social-page .social-rail,
+.social-page .feed,
+.social-page .post{min-width:0;max-width:100%}
+.social-page .feed{display:flex;flex-direction:column;align-items:stretch;gap:20px;min-height:0}
+.social-page .feed>.post,
+.social-page .feed>.card,
+.social-page .feed>.feed-empty{position:relative;flex:0 0 auto;width:100%;height:auto;min-height:0;clear:both;isolation:isolate;overflow-wrap:anywhere}
+.social-page .post>*{max-width:100%;min-width:0}
+.social-page .post img:not(.community-official-network-image),
+.social-page .post video,
+.social-page .post iframe{max-width:100%}
+.social-page .post iframe{display:block;aspect-ratio:16/9;height:auto;border:0}
+.social-page .post .actions,
+.social-page .post .reactions{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+.social-page .post .actions>*,
+.social-page .post .reactions>*{min-width:0}
+@media(min-width:761px){
+ .social-page .social-layout{min-width:0;grid-template-columns:minmax(0,220px) minmax(0,1fr) minmax(0,270px);align-items:start}
+}
+@media(min-width:761px) and (max-width:1180px){
+ .social-page .social-layout{grid-template-columns:minmax(0,210px) minmax(0,1fr)}
+ .social-page .social-sidebar{grid-column:2}
+}
+@media(max-width:760px){
+ .social-page .social-layout{display:block;min-width:0}
+ .social-page .social-stream,.social-page .social-sidebar{width:100%;min-width:0}
+ .social-page .feed{gap:16px}
+ .social-page .post .actions>*{flex:1 1 auto}
+}
