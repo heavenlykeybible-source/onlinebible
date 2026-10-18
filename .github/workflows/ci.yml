@@ -81,3 +81,35 @@ jobs:
       - name: Media Engine bundle dry run
         working-directory: media-engine
         run: npx wrangler deploy --dry-run
+
+
+  validate-approved-account1-shell:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Reject drift from the approved homepage menu and footer
+        run: python scripts/sync-account1-approved-shell.py --check
+      - name: Install isolated browser verification tools
+        run: |
+          npm install --prefix /tmp/hk-shell-tools --ignore-scripts --no-audit --no-fund jsdom@26.1.0 playwright@1.56.1
+          /tmp/hk-shell-tools/node_modules/.bin/playwright install --with-deps chromium
+      - name: Check duplicate widgets, CMS interference, and platform exclusions
+        env:
+          HK_JSDOM: /tmp/hk-shell-tools/node_modules/jsdom
+        run: node scripts/test-account1-approved-shell.cjs
+      - name: Verify approved shell and controls on desktop, tablet, iPhone and Android viewports
+        env:
+          HK_PLAYWRIGHT: /tmp/hk-shell-tools/node_modules/playwright
+        run: |
+          node scripts/test-account1-radio-audio.cjs
+          node scripts/test-account1-approved-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Account1-approved-shell-preview
+          path: approved-shell-screenshots/
+          if-no-files-found: ignore
