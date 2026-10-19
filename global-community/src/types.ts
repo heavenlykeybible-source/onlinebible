@@ -1,5 +1,6 @@
 export interface Env {
   COMMUNITY_CARE?: string;
+  COMMUNITY_BLOCKED_WORDS?: string;
   DB: D1Database;
   SESSIONS: KVNamespace;
   MEDIA: R2Bucket;
