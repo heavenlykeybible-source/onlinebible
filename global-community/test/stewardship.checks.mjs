@@ -22,6 +22,9 @@ test('Dual report routing, separate group review, flag decisions and administrat
  await S.joinGroup(env,2,group);
  await assert.rejects(S.createPost(env,user(2),{postFormat:'article',title:'Filter test',body:'F.o.r.b.i.d.d.e.n.w.o.r.d'}),/cannot be published/);
  const post=(await S.createPost(env,user(2),{groupId:group,postFormat:'article',title:'Our faith',body:'Christ gives us hope.'})).postId;
+ await assert.rejects(S.addComment(env,2,post,'bad---phrase'),/cannot be published/);
+ const filterConversation=Number(db.prepare("INSERT INTO conversations(requester_user_id,recipient_user_id,status) VALUES(1,2,'accepted') RETURNING conversation_id").get().conversation_id);
+ await assert.rejects(S.sendMessage(env,1,filterConversation,'F.o.r.b.i.d.d.e.n.w.o.r.d'),/blocked/);
  assert.equal((await S.reportContent(env,2,{targetType:'post',targetId:post,reason:'other'})).routing,'group_and_site');
  assert.equal(db.prepare("SELECT COUNT(*) n FROM notifications WHERE user_id IN (1,5,6) AND kind IN ('group_report','safety_report')").get().n,3);
  await S.reportContent(env,2,{targetType:'post',targetId:post,reason:'other'});assert.equal(db.prepare('SELECT COUNT(*) n FROM content_reports').get().n,1);
