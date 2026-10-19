@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Heavenly Key — Shared Phone Shape Drafts</title>
+<style>
+:root{font-family:Arial,sans-serif;color:#24161a;background:#fffaf0;color-scheme:light}*{box-sizing:border-box}body{margin:0}header,main,footer{max-width:1180px;margin:auto;padding:24px}header{border-bottom:1px solid #e6d5ad}.eyebrow{color:#7b193c;font-size:14px;font-weight:bold;letter-spacing:1px}h1{font-size:clamp(26px,5vw,42px);margin:10px 0;color:#6c0822}p{font-size:16px;line-height:1.6;max-width:850px}.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}label{font-size:16px;font-weight:bold}select,button{font:inherit;min-height:44px;padding:10px 14px;border:1px solid #946e26;border-radius:10px;background:#fff;color:#441226;max-width:100%}select{flex:1;max-width:550px}button{cursor:pointer}button[aria-pressed=true]{background:#6c0822;color:#fff}button:focus-visible,select:focus-visible{outline:3px solid #2450c8;outline-offset:4px}.gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px 32px}.app{min-width:0}.app[hidden]{display:none}.app h2{font-size:18px;line-height:1.4;min-height:52px;text-align:center;margin:0 0 16px}.phone{position:relative;aspect-ratio:9/16;border:5px solid #382a1b;border-radius:32px;overflow:hidden;box-shadow:0 0 0 2px #dcb34e,0 18px 55px #0002;background:#fff9e8;color:#39171b;max-width:350px;width:100%;margin:auto}.phone img{display:block;width:100%;height:100%;object-fit:fill}.app-title{position:absolute;top:32.8%;left:3%;right:3%;height:8.4%;background:#fff4df;display:flex;align-items:center;justify-content:center;padding:4px;text-align:center;color:#840b14;font:bold 17px/1.15 Arial,sans-serif;overflow-wrap:anywhere}.shape-note{font-size:14px;color:#6a4d36;text-align:center;margin:14px 0 0}.gallery.focus{grid-template-columns:1fr}.gallery.focus .phone{max-width:370px}.gallery.focus h2{min-height:0}.notice{padding:14px 18px;background:#f9efd8;border-left:4px solid #b38a31;border-radius:0 10px 10px 0}.footer-note{font-size:14px;color:#694b39}footer{border-top:1px solid #e6d5ad;margin-top:24px}@media(max-width:800px){.gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 24px}}@media(max-width:520px){header,main,footer{padding:20px}.gallery{grid-template-columns:1fr;gap:36px}.app h2{min-height:0}.controls{align-items:stretch}.controls label{width:100%}select{width:100%;flex-basis:100%}.phone{max-width:330px}.app-title{font-size:16px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header>
+<span class="eyebrow">HEAVENLY KEY · VISUAL DRAFT</span>
+<h1>One approved shape. Nine public apps.</h1>
+<p>All nine use the existing approved iPhone 18-style Radio frame and picture for now. The picture is a temporary shared screen placeholder; each app’s own screen content can be updated later.</p>
+<p class="notice">Shape previews only. The pictured playback controls are part of the artwork, and these drafts do not change the live apps.</p>
+<div class="controls"><label for="app-choice">View app</label><select id="app-choice"><option value="all">All nine apps</option><option value="main">Heavenly Key Main Website</option><option value="community">Global Christian Community</option><option value="radio">Heavenly Key Radio</option><option value="bible">Heavenly Key Bible</option><option value="study">Bible Study Portal</option><option value="walk">My Walk with God Calculator</option><option value="grdpc">Global Revival &amp; Destiny Prayer Cry</option><option value="assistant">Heavenly Key Online Assistant</option><option value="blog">Heavenly Key Blog</option></select><button id="show-all" type="button" aria-pressed="true">Show all nine</button></div>
+</header>
+<main><div id="gallery" class="gallery" aria-label="Nine app shape drafts"></div><p id="view-status" role="status" aria-live="polite">Showing all nine app drafts.</p></main>
+<footer><p class="footer-note">Audio Bible belongs inside Heavenly Key Bible and is not live. Studio / Media Engine and Control Room / CMS are administration platforms and are excluded from this app collection.</p><p class="footer-note">Taking Christ to the Nations of the World.</p></footer>
+<script>
+(()=>{'use strict';
+const apps=[['main','Heavenly Key Main Website'],['community','Global Christian Community'],['radio','Heavenly Key Radio'],['bible','Heavenly Key Bible'],['study','Bible Study Portal'],['walk','My Walk with God Calculator'],['grdpc','Global Revival & Destiny Prayer Cry'],['assistant','Heavenly Key Online Assistant'],['blog','Heavenly Key Blog']];
+const gallery=document.getElementById('gallery'),choice=document.getElementById('app-choice'),all=document.getElementById('show-all'),status=document.getElementById('view-status');
+for(const [id,name] of apps){const article=document.createElement('article');article.className='app';article.dataset.app=id;article.setAttribute('aria-labelledby','title-'+id);const h=document.createElement('h2');h.id='title-'+id;h.textContent=name;const frame=document.createElement('div');frame.className='phone';const img=document.createElement('img');img.src='../assets/ministry/approved-radio-display-20261017.webp';img.alt='Approved Heavenly Key Radio picture temporarily reused for '+name+' shape draft';img.width=941;img.height=1672;img.decoding='async';const title=document.createElement('div');title.className='app-title';title.textContent=name.toUpperCase();frame.append(img,title);const note=document.createElement('p');note.className='shape-note';note.textContent='Shared iPhone 18-style shape · Draft';article.append(h,frame,note);gallery.append(article)}
+function update(){const value=choice.value;gallery.classList.toggle('focus',value!=='all');gallery.querySelectorAll('.app').forEach(node=>node.hidden=value!=='all'&&node.dataset.app!==value);all.setAttribute('aria-pressed',String(value==='all'));status.textContent=value==='all'?'Showing all nine app drafts.':'Showing '+apps.find(app=>app[0]===value)[1]+' shape draft.'}
+choice.addEventListener('change',update);all.addEventListener('click',()=>{choice.value='all';update()});
+})();
+</script>
+</body>
+</html>
