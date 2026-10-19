@@ -29,3 +29,18 @@ body[data-page=home] .social-sidebar .card,body[data-page=home] .social-stream .
 @media(min-width:1201px){body[data-page=home] .social-layout{grid-template-columns:minmax(230px,265px) minmax(0,1fr) minmax(245px,305px)}}
 @media(max-width:760px){.top .navlinks a{font-size:14px!important}.army-brand{font-size:17px!important}.social-layout{display:block!important}body[data-page=home] .social-rail{display:flex!important;overflow-x:auto;gap:8px;padding:11px;margin-bottom:16px;scrollbar-width:thin;scroll-snap-type:x proximity}body[data-page=home] .social-rail .rail-link{flex:0 0 auto;min-height:52px;font-size:15px;padding:10px 12px;scroll-snap-align:start}body[data-page=home] .social-sidebar{display:grid;grid-template-columns:1fr;gap:12px;margin-top:16px}.composer-card{padding:17px!important}.composer-prompt{font-size:16px!important;padding:15px!important}.social-stream .post p,.social-stream .post .post-body{font-size:16px}.hk-official-posts article>p{font-size:16px}}
 @media(prefers-reduced-motion:reduce){body[data-page=home] .social-rail .rail-link{transition:none}}
+
+/* Premium navigation: two-column icon cards, mobile-first and distinct from other networks. */
+.social-rail .rail-brand{font-size:20px;font-weight:900;line-height:1.25;color:#123c83;margin:0 0 4px}
+.social-rail>.rail-ministry-link{display:inline-flex;align-items:center;font-size:14px;font-weight:750;min-height:40px}
+.social-rail .rail-link{position:relative;text-decoration:none;transition:transform .16s ease,box-shadow .16s ease}
+.social-rail .rail-link:hover{transform:translateY(-2px);box-shadow:0 5px 16px #142a4b20}
+.social-rail .rail-link:active{transform:translateY(0)}
+.social-rail .rail-link span{overflow-wrap:anywhere}
+@media(max-width:760px){
+ body[data-page=home] .social-rail{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;overflow:visible;white-space:normal;padding:13px;border-radius:18px;scroll-snap-type:none}
+ body[data-page=home] .social-rail>.rail-brand,body[data-page=home] .social-rail>small,body[data-page=home] .social-rail>.rail-ministry-link,body[data-page=home] .social-rail>.community-rules,body[data-page=home] .social-rail>details,body[data-page=home] .social-rail>.reference-mission{grid-column:1/-1}
+ body[data-page=home] .social-rail .rail-link{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:10px;min-height:110px;padding:14px!important;margin:0!important;border:1px solid #e0e6ef!important;border-radius:16px;font-size:16px;font-weight:800;white-space:normal;scroll-snap-align:none}
+ body[data-page=home] .social-rail .rail-premium-icon{width:39px;height:39px;padding:7px}
+}
+@media(max-width:350px){body[data-page=home] .social-rail{gap:7px;padding:9px}body[data-page=home] .social-rail .rail-link{font-size:14px;min-height:102px;padding:10px!important}}
