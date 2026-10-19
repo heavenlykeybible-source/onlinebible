@@ -6,11 +6,6 @@ on:
       - "release/**"
       - "global-community/**"
       - ".github/workflows/six-service-readonly-ci.yml"
-  pull_request:
-    paths:
-      - "release/**"
-      - "global-community/**"
-      - ".github/workflows/six-service-readonly-ci.yml"
 permissions:
   contents: read
 jobs:
