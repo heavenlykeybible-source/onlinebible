@@ -1,0 +1,23 @@
+{
+  "id": "/pages/apps/assistant/",
+  "name": "Heavenly Key Online Assistant",
+  "short_name": "HK Assistant",
+  "start_url": "/pages/apps/assistant/",
+  "scope": "/pages/apps/assistant/",
+  "display": "standalone",
+  "background_color": "#fcf9ef",
+  "theme_color": "#2450c8",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

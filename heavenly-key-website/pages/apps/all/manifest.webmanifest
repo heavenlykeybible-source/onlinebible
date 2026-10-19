@@ -1,0 +1,23 @@
+{
+  "id": "/pages/apps/all/",
+  "name": "Heavenly Key All-in-One",
+  "short_name": "Heavenly Key",
+  "start_url": "/pages/apps/all/",
+  "scope": "/pages/apps/all/",
+  "display": "standalone",
+  "background_color": "#fcf9ef",
+  "theme_color": "#075e46",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

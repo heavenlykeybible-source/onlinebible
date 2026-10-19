@@ -1,0 +1,23 @@
+{
+  "id": "/pages/apps/main/",
+  "name": "Heavenly Key Main Website",
+  "short_name": "Main Website",
+  "start_url": "/pages/apps/main/",
+  "scope": "/pages/apps/main/",
+  "display": "standalone",
+  "background_color": "#fcf9ef",
+  "theme_color": "#087348",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

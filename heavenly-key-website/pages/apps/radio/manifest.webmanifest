@@ -1,0 +1,23 @@
+{
+  "id": "/pages/apps/radio/",
+  "name": "Heavenly Key Radio",
+  "short_name": "Radio",
+  "start_url": "/pages/apps/radio/",
+  "scope": "/pages/apps/radio/",
+  "display": "standalone",
+  "background_color": "#fcf9ef",
+  "theme_color": "#8b1623",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
