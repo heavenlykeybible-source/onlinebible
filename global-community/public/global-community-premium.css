@@ -61,3 +61,21 @@ body[data-page=home] .social-sidebar .card,body[data-page=home] .social-stream .
 .group-tools .btn,.group-create .btn,.group-settings .btn{min-height:46px;font-size:15px;font-weight:800}
 .social-stream .entity-cover h1,.social-stream .entity-cover h2{font-size:clamp(26px,3vw,39px);line-height:1.2}
 @media(max-width:760px){.gc-entity-intro{padding:22px 18px;border-radius:18px}.gc-entity-benefit{font-size:13px;padding:7px 10px}.gc-entity-intro h2{font-size:26px!important}}
+
+/* Complete directory layout: larger cards, visible actions and readable controls. */
+.directory-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:18px 0}
+.directory-toolbar input{flex:1 1 220px;min-width:0;min-height:49px;border-radius:13px;font-size:16px;padding:12px 15px}
+.directory-toolbar .btn{min-height:49px;font-size:16px;font-weight:850;padding:11px 17px}
+.directory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,265px),1fr));gap:17px;align-items:stretch}
+.directory-card{min-width:0;overflow:hidden;border-radius:19px;background:#fff;border:1px solid #dce3ed;box-shadow:0 8px 22px #122f5210}
+.directory-card .entity-cover{min-height:140px}
+.directory-content{padding:19px;display:flex;flex-direction:column;gap:10px}
+.directory-title{font-size:21px;line-height:1.3;font-weight:900;color:#123e8e;overflow-wrap:anywhere}
+.directory-content small{font-size:14px;font-weight:750;color:#5a6580}
+.directory-content p{font-size:16px;line-height:1.6;overflow-wrap:anywhere}
+.directory-content .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:auto}
+.directory-content .btn{font-size:15px;font-weight:800;min-height:44px}
+.feed-tabs button{min-height:43px;font-size:15px;font-weight:800;padding:10px 14px}
+.group-create form label,.group-settings form label{font-size:16px;font-weight:750}
+.group-create input,.group-create select,.group-create textarea,.group-settings input,.group-settings select,.group-settings textarea{font-size:16px;max-width:100%}
+@media(max-width:760px){.directory-grid{grid-template-columns:1fr;gap:14px}.directory-toolbar .btn{flex:1 1 100%}.directory-card .entity-cover{min-height:120px}.directory-content{padding:17px}}
