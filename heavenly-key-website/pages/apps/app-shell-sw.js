@@ -1,0 +1,7 @@
+/* Public launchers only; no iframe, member, API, Bible-book or audio caching. */
+const id=new URL(self.location.href).searchParams.get('app');
+const ids=new Set(['all','main','community','radio','bible','study','walk','grdpc','assistant','blog']);
+const valid=ids.has(id),scope='/pages/apps/'+id+'/',cacheName='hk-app-launcher-v1-'+id;
+const files=[scope,scope+'index.html',scope+'manifest.webmanifest','/css/app-hub.css','/js/app-catalog.js','/js/app-session-state.js','/js/app-hub.js','/js/app-install.js','/assets/icons/icon-192.png','/assets/icons/icon-512.png'];
+self.addEventListener('install',event=>{if(valid)event.waitUntil(caches.open(cacheName).then(cache=>cache.addAll(files)));});
+self.addEventListener('fetch',event=>{const url=new URL(event.request.url);if(!valid||event.request.method!=='GET'||url.origin!==self.location.origin||!files.includes(url.pathname)||event.request.headers.has('Authorization'))return;if(url.search){if([scope,scope+'index.html'].includes(url.pathname)){if([...url.searchParams.keys()].some(key=>key!=='install')||url.searchParams.getAll('install').length!==1||!['android','iphone','android-tablet','ipad','windows','mac','linux'].includes(url.searchParams.get('install')))return;}else if([...url.searchParams.keys()].some(key=>key!=='v')||url.searchParams.getAll('v').length!==1||!['20261019','app-hub-20261019'].includes(url.searchParams.get('v')))return;}event.respondWith(fetch(event.request).catch(()=>caches.match(url.pathname).then(response=>response||Response.error())));});

@@ -1,0 +1,2 @@
+/* The new launcher has its own narrow scope. Existing Bible/notebook caches are untouched. */
+(()=>{'use strict';const id=document.body.dataset.installedApp;if(!HKApps.get(id)||!('serviceWorker' in navigator)||location.protocol!=='https:')return;navigator.serviceWorker.register('/pages/apps/app-shell-sw.js?app='+id,{scope:'/pages/apps/'+id+'/',updateViaCache:'none'}).catch(()=>{const status=document.getElementById('app-status');status.textContent='Use the app online. Browser installation is unavailable here.';});})();

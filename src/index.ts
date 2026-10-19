@@ -1,3 +1,4 @@
+import {handleAppBlog} from "./routes/app-blog";
 import {handleGRDPCPublic,handleGRDPCAdmin} from "./routes/grdpc";
 import {handleWebsiteAiInbox,handleWebsiteAiConversation} from "./routes/website-ai-inbox";
 import {runReminders} from "./services/grdpc-service";
@@ -97,6 +98,7 @@ export default {
       });
     }
 
+    if(pathname === "/api/apps/blog" && method === "GET") return handleAppBlog();
     if(pathname.startsWith('/api/')&&request.headers.get('Content-Type')?.includes('application/json')&&!['GET','HEAD','OPTIONS'].includes(method)){
       try{const body=await request.clone().json();if(!body||Array.isArray(body)||typeof body!=='object')throw new Error();}
       catch{return Response.json({error:{message:'Send a valid JSON object.'}},{status:400});}
@@ -370,3 +372,4 @@ export default {
     });
   },
 };
+
