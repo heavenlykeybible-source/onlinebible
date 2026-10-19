@@ -76,7 +76,8 @@ test('Believer discovery retains the latest search and recovers after a failed r
  const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8'),start=source.indexOf('function communityWelcome('),end=source.indexOf('function socialFeedLayout(',start),created=[];
  const shortcuts=new Node('section');shortcuts.className='community-shortcuts';const context={session:null,communityShortcuts:()=>shortcuts,el:(tag,text,cls)=>{const n=new Node(tag,text);n.className=cls;created.push(n);return n;}};
  const welcome=vm.runInNewContext(source.slice(start,end)+'\ncommunityWelcome;',context);
- const guest=welcome();assert.equal(guest.className,'community-welcome');assert.equal(guest.children[2],shortcuts,'The real action panel appears underneath the welcome artwork');assert.equal(created.filter(n=>n.tag==='img').length,3);const art=guest.children[1];assert.equal(art.children[1].src,'assets/community-network.svg');assert.match(readFileSync(new URL('../public/'+art.children[1].src,import.meta.url),'utf8'),/^<svg/,'Actual welcome illustration asset must exist');assert.equal(art.children[0].children[0].children.length,2);assert.ok(art.children[0].children[0].children.every(n=>n.src==='assets/rotating-world-land.svg'),'Only the map layers belong to the rotating track');
+ const guest=welcome();assert.equal(guest.className,'gc-visitor-banner');assert.equal(created.filter(n=>n.tag==='img').length,1);assert.equal(guest.children[0].src,'assets/global-christian-community-approved-banner.jpeg');assert.ok(readFileSync(new URL('../public/'+guest.children[0].src,import.meta.url)).length>0,'Original approved banner must exist');assert.deepEqual(guest.children[1].children.map(n=>n.textContent),['CREATE ACCOUNT','SIGN IN']);assert.equal(guest.children[0].width,1536);assert.equal(guest.children[0].height,614);
+
  context.session={user:{user_id:1}};created.length=0;assert.equal(welcome(),null);assert.equal(created.length,0,'No welcome image request or banner for a signed-in member');
  });
 
@@ -109,3 +110,4 @@ test('Community HTML navigation and referenced scripts/styles/images exist',asyn
   }
  }
 });
+

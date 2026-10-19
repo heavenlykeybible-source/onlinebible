@@ -8,6 +8,7 @@ import * as Stewardship from "./stewardship";
 import * as Social from "./social-auth";
 import * as Adverts from "./adverts";
 import * as Editorial from "./ministry-editorial";
+import * as Active from "./active";
 
 const security=(headers=new Headers())=>{
   headers.set("X-Content-Type-Options","nosniff");headers.set("X-Frame-Options","DENY");headers.set("Referrer-Policy","strict-origin-when-cross-origin");
@@ -109,6 +110,10 @@ async function route(request:Request,env:Env):Promise<Response>{
   if(p==="/api/ministry/messages"&&m==="GET"){const u=await me(request,env);return json({items:await Editorial.myMessages(env,u.userId,String(url.searchParams.get("profileId")||""))});}
   if(p==="/api/ministry/admin/inbox"&&m==="GET"){const admin=await requireRole(request,env,"administrator");if(!admin)return error("Administrator access required.",403);return json({items:await Editorial.adminInbox(env)});}
   if(p==="/api/ministry/admin/reply"&&m==="POST"){const admin=await requireRole(request,env,"administrator");if(!admin)return error("Administrator access required.",403);return json(await Editorial.reply(env,await body(request),admin.userId),201);}
+  if(p==="/api/active/preferences"&&m==="GET"){const u=await me(request,env);return json(await Active.preferences(env,u.userId));}
+  if(p==="/api/active/preferences"&&m==="PATCH"){const u=await me(request,env);return json(await Active.updatePreferences(env,u.userId,await body(request)));}
+  if(p==="/api/active"&&m==="GET"){const u=await me(request,env);return json({items:await Active.list(env,u.userId),...await Active.preferences(env,u.userId)});}
+  {const a=p.match(/^\/api\/active\/(\d+)$/);if(a){const u=await me(request,env),id=Number(a[1]);if(!Number.isSafeInteger(id)||id<1)return error('This ACTIVE content is unavailable.',404);if(m==='GET'){const items=await Active.list(env,u.userId,id);return items.length?json({item:items[0]}):error('This ACTIVE content is unavailable.',404);}if(m==='POST')return json(await Active.publish(env,u.userId,id),201);if(m==='DELETE')return json(await Active.remove(env,u.userId,id));}}
   if(p==="/api/me"&&m==="GET"){const u=await me(request,env);return json({user:u,profile:await S.publicProfile(env,u.userId,u.userId),growth:await S.growthSummary(env,u.userId)});}
   if(p==="/api/me/profile"&&m==="PATCH"){const u=await me(request,env);await S.updateProfile(env,u.userId,await body(request));return json({ok:true,profile:await S.publicProfile(env,u.userId,u.userId)});}
 
@@ -194,4 +199,5 @@ export default {
     catch(e:any){const internal=e instanceof TypeError||e instanceof ReferenceError||e instanceof SyntaxError||/D1_|SQLITE|constraint failed|no such table|binding|TypeError/i.test(String(e?.message))||!(e instanceof Error);return error(internal?"The request could not be completed. Please try again.":e.message,internal?500:Number((e as any)?.status)||400);}
   }
 };
+
 
