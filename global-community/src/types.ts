@@ -1,12 +1,5 @@
 export interface Env {
   COMMUNITY_CARE?: string;
-  // Moderation-only credentials stay server-side.
-  MODERATION_PIPELINE?: string;
-  MODERATION_MODE?: string;
-  MODERATION_API_KEY?: string;
-  MODERATION_MODEL?: string;
-  MODERATION_AUTO_STRIKES?: string;
-  MODERATION_CONCURRENCY?: string;
   DB: D1Database;
   SESSIONS: KVNamespace;
   MEDIA: R2Bucket;
