@@ -17,8 +17,15 @@ if (/catch\s*\{\s*\}/.test(mediaIndex)) {
 const rootMigrations = (await readdir(join(root, "migrations")))
   .filter((f) => /^\d{4}_.+\.sql$/.test(f))
   .sort();
-if (rootMigrations.length !== 39 || !rootMigrations.at(-1)?.startsWith("0039_")) {
-  failures.push("Root migration tip must be 0039 with exactly 39 numbered migrations.");
+const migrationNumbers = rootMigrations.map(f => Number(f.slice(0, 4)));
+const expectedNumbers = Array.from({ length: 39 }, (_, i) => i + 1);
+const distinctNumbers = [...new Set(migrationNumbers)].sort((a, b) => a - b);
+if (rootMigrations.length !== 40 || rootMigrations.at(-1)?.startsWith("0039_") !== true ||
+    JSON.stringify(distinctNumbers) !== JSON.stringify(expectedNumbers) ||
+    rootMigrations.filter(f => f.startsWith("0032_")).length !== 2 ||
+    !rootMigrations.includes("0032_social_provider_apps.sql") ||
+    !rootMigrations.includes("0032_website_ai_inbox.sql")) {
+  failures.push("Root migration inventory must preserve both existing 0032 migrations and the complete 0001–0039 sequence (40 files).");
 }
 
 const mediaMigrations = (await readdir(join(root, "media-engine/migrations")))
