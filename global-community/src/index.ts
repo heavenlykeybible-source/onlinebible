@@ -87,9 +87,11 @@ async function route(request:Request,env:Env,ctx?:ExecutionContext):Promise<Resp
     return json({ok:true,userId:Number(row.user_id),role:row.role},200,{"Set-Cookie":sessionCookie(id)});
   }
   const current=await getSession(request,env);
+  // These DELETE actions only withdraw own support or archive an owned prayer privately.
+  const careWithdrawal=m==='DELETE'&&/^\/api\/prayer-items\/\d+(?:\/support)?$/.test(p);
   if(current?.status==='restricted'&&!['/api/me','/api/me/safety','/api/me/requests','/api/auth/logout','/api/moderation/screening/mine','/api/care/preferences'].includes(p)&&!/^\/api\/moderation\/screening\/jobs\/[a-f0-9-]{36}(?:\/appeal)?$/.test(p))return error('Your account is locked pending administrator review. Open Safety & privacy to read the reason and request review.',403);
   // Timed restrictions do not change account roles/status or release administrator locks.
-  if(current?.role==='member'&&Screening.installed(env)&&!['GET','HEAD','OPTIONS'].includes(m)&&!p.startsWith('/api/auth/')&&!['/api/me/requests','/api/reports','/api/notifications/read','/api/care/preferences'].includes(p)&&!/^\/api\/members\/\d+\/block$/.test(p)&&!/^\/api\/moderation\/screening\/jobs\/[a-f0-9-]{36}\/appeal$/.test(p)){
+  if(current?.role==='member'&&!careWithdrawal&&Screening.installed(env)&&!['GET','HEAD','OPTIONS'].includes(m)&&!p.startsWith('/api/auth/')&&!['/api/me/requests','/api/reports','/api/notifications/read','/api/care/preferences'].includes(p)&&!/^\/api\/members\/\d+\/block$/.test(p)&&!/^\/api\/moderation\/screening\/jobs\/[a-f0-9-]{36}\/appeal$/.test(p)){
     const restriction=await Screening.restriction(env,current.userId);if(restriction.active)return json({error:{message:restriction.expiresAt?'Posting and messaging are paused until '+restriction.expiresAt+'. You can still read and appeal in Safety & privacy.':'Posting and messaging are paused pending administrator review. Open Safety & privacy to appeal.'},restriction},423);
   }
   if(p==='/api/care/preferences'&&['GET','PATCH'].includes(m)){const u=await me(request,env);Care.requireCare(env);return json(m==='GET'?await Care.preferences(env,u.userId):await Care.savePreferences(env,u.userId,await body(request)));}
@@ -196,7 +198,7 @@ async function route(request:Request,env:Env,ctx?:ExecutionContext):Promise<Resp
   if(p==='/api/moderation/accounts'&&m==='GET'){const u=await requireRole(request,env,'administrator');if(!u)return error('Site administrator access required.',403);return json({items:await Stewardship.accountQueue(env,u)});}
   {const x=p.match(/^\/api\/moderation\/accounts\/(\d+)$/);if(x&&m==='POST'){const u=await requireRole(request,env,'administrator');if(!u)return error('Site administrator access required.',403);return json(await Stewardship.restrictAccount(env,u,Number(x[1]),await body(request)));}}
   if(p==="/api/reports"&&m==="POST"){const u=await me(request,env);if(!await rate(env,"reports:"+u.userId,20,3600))return error("Please wait before sending another report.",429);return json(await S.reportContent(env,u.userId,await body(request)),201);}
-  {const x=p.match(/^\/api\/prayer-items\/(\d+)(?:\/(support|reminder|updates))?$/);if(x){const u=await me(request,env);Care.requireCare(env);const id=Number(x[1]);if(!Number.isSafeInteger(id)||id<1)return error('Invalid prayer request.');if(!x[2]&&m==='GET')return json(await Care.prayer(env,u.userId,id));if(x[2]==='support'&&m==='PATCH')return json(await Care.support(env,u.userId,id,await body(request)));if(x[2]==='reminder'&&m==='PATCH')return json(await Care.reminder(env,u.userId,id,await body(request)));if(x[2]==='updates'&&m==='POST')return json(await Care.updatePrayer(env,u.userId,id,await body(request)));}}
+  {const x=p.match(/^\/api\/prayer-items\/(\d+)(?:\/(support|reminder|updates))?$/);if(x){const u=await me(request,env);Care.requireCare(env);const id=Number(x[1]);if(!Number.isSafeInteger(id)||id<1)return error('Invalid prayer request.');if(!x[2]&&m==='GET')return json(await Care.prayer(env,u.userId,id));if(!x[2]&&m==='DELETE'){const b=await body(request);return json(await Care.updatePrayer(env,u.userId,id,{kind:'closed',body:'',requestKey:b.requestKey}));}if(x[2]==='support'&&m==='DELETE')return json(await Care.stopSupport(env,u.userId,id));if(x[2]==='support'&&m==='PATCH')return json(await Care.support(env,u.userId,id,await body(request)));if(x[2]==='reminder'&&m==='PATCH')return json(await Care.reminder(env,u.userId,id,await body(request)));if(x[2]==='updates'&&m==='POST')return json(await Care.updatePrayer(env,u.userId,id,await body(request)));}}
   if(p==="/api/prayer-items"&&m==="GET"){const u=await getSession(request,env);return json({items:Care.enabled(env)?await Care.listPrayers(env,u?.userId||null):await S.listPrayerItems(env,u?.userId||null)});}
   if(p==="/api/prayer-items"&&m==="POST"){const u=await me(request,env);return json(await S.addPrayerItem(env,u.userId,await body(request)),201);}
   {const x=p.match(/^\/api\/prayer-items\/(\d+)\/answered$/);if(x&&m==="POST"){const u=await me(request,env),b=await body(request);const result=Care.enabled(env)?await Care.updatePrayer(env,u.userId,Number(x[1]),{kind:"testimony",body:String(b.testimony||""),requestKey:crypto.randomUUID()}):await S.markPrayerAnswered(env,u.userId,Number(x[1]),String(b.testimony||""));return json({...result,answered:true});}}
@@ -215,7 +217,12 @@ async function route(request:Request,env:Env,ctx?:ExecutionContext):Promise<Resp
 }
 
 export default {
-  async scheduled(_event:ScheduledController,env:Env):Promise<void>{await Calls.cleanup(env);await Screening.drain(env);await env.DB.prepare("DELETE FROM social_login_flows WHERE expires_at<?").bind(Date.now()).run();await Care.deliverDue(env);},
+  async scheduled(_event:ScheduledController,env:Env):Promise<void>{
+    const jobs=[['call-cleanup',()=>Calls.cleanup(env)],['screening',()=>Screening.drain(env)],['social-flow-cleanup',()=>env.DB.prepare("DELETE FROM social_login_flows WHERE expires_at<?").bind(Date.now()).run()],['community-care',()=>Care.deliverDue(env)]] as const;
+    const results=await Promise.allSettled(jobs.map(async([,run])=>run()));
+    const failed=results.flatMap((r,i)=>r.status==='rejected'?[jobs[i][0]]:[]);
+    if(failed.length)throw new Error('Scheduled tasks failed: '+failed.join(', '));
+  },
   async fetch(request:Request,env:Env,ctx?:ExecutionContext):Promise<Response>{
     try{return await route(request,env,ctx);}
     catch(e:any){const internal=e instanceof TypeError||e instanceof ReferenceError||e instanceof SyntaxError||/D1_|SQLITE|constraint failed|no such table|binding|TypeError/i.test(String(e?.message))||!(e instanceof Error);return error(internal?"The request could not be completed. Please try again.":e.message,internal?500:Number((e as any)?.status)||400);}

@@ -1,6 +1,6 @@
 (async()=>{
 "use strict";
-const [DC,PasswordPolicy,CareUI]=await Promise.all([import("./design-cards.js"),import("./password-policy.js"),import("./community-care-ui.js?v=20261019-care1")]);
+const [DC,PasswordPolicy,CareUI]=await Promise.all([import("./design-cards.js"),import("./password-policy.js"),import("./community-care-ui.js?v=20261019-care2")]);
 const $=(s,r=document)=>r.querySelector(s),root=$("#page-root");let page=document.body.dataset.page;
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined&&text!==null)n.textContent=String(text);if(cls)n.className=cls;return n;};
 async function api(path,method="GET",body){

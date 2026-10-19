@@ -70,3 +70,5 @@ END;
 CREATE TRIGGER care_encouragement_rescheduled AFTER UPDATE OF next_at ON care_deliveries WHEN substr(NEW.delivery_key,1,2)='e:' BEGIN
  UPDATE care_preferences SET next_delivery_at=NEW.next_at WHERE user_id=NEW.user_id AND frequency!='off' AND next_delivery_at<=unixepoch('now')*1000;
 END;
+
+CREATE INDEX notifications_care_followup ON notifications(user_id,href,created_at DESC) WHERE kind='care_prayer_update';
