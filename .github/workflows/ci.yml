@@ -1,8 +1,8 @@
 name: Heavenly Key CI
 
 on:
-  pull_request:
-    branches: [main]
+  push:
+    branches: [main, fix/community-disable-all-ai-20261019]
   workflow_dispatch:
 
 permissions:
