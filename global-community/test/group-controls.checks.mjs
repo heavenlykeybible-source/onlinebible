@@ -90,10 +90,29 @@ test('Messaging and groups: privacy, retry safety, posting permissions and manag
  await assert.rejects(S.readNotifications(env,1,Array(101).fill(noticeId)),/valid notifications/);
  await S.readNotifications(env,1,[noticeId,noticeId]);assert.equal(await S.unreadNotificationCount(env,1),0);
  await S.readNotifications(env,1,[]);assert.equal(await S.unreadNotificationCount(env,1),0);
+ // Pending requests are discoverable, withdrawable, and do not grant access.
+ const pendingGroup=(await S.createGroup(env,1,{...input,name:'Pending membership checks',visibility:'private'})).groupId;
+ await S.joinGroup(env,4,pendingGroup);
+ assert.equal((await S.listGroups(env,4)).find(g=>g.group_id===pendingGroup).membership_status,'pending');
+ await assert.rejects(S.groupMembers(env,4,pendingGroup),/Join this group/);
+ await S.leaveGroup(env,4,pendingGroup);
+ assert.equal((await S.groupDetail(env,4,pendingGroup)).membership_status,null);
+ assert.equal((await S.joinGroup(env,4,pendingGroup)).status,'pending');
+ db.prepare("UPDATE profiles SET profile_photo_key='/media/original-approved.jpg' WHERE user_id=4").run();
+ assert.equal((await S.groupRequests(env,1,pendingGroup)).find(m=>m.user_id===4).profile_photo_key,'/media/original-approved.jpg');
+ await S.decideGroupRequest(env,1,pendingGroup,4,true);
+ assert.equal((await S.groupMembers(env,4,pendingGroup)).find(m=>m.user_id===4).profile_photo_key,'/media/original-approved.jpg');
+ const confidential=await S.createPost(env,{userId:1,role:'member'},{groupId:pendingGroup,postFormat:'article',title:'Private fellowship update',body:'A Christian update for the members of this fellowship.'});
+ assert.equal((await S.feed(env,null,20,{groupId:pendingGroup})).length,0);
+ assert.equal((await S.feed(env,5,20,{groupId:pendingGroup})).length,0);
+ assert((await S.feed(env,4,20,{groupId:pendingGroup})).some(p=>p.post_id===confidential.postId));
+ await S.leaveGroup(env,4,pendingGroup);
+ assert.equal((await S.feed(env,4,20,{groupId:pendingGroup})).length,0);
  const hidden=(await S.createGroup(env,1,{...input,name:'Hidden prayer',visibility:'hidden'})).groupId;
  await assert.rejects(S.groupDetail(env,4,hidden),/unavailable/);
  assert.ok(!(await S.listGroups(env,4)).some(g=>g.group_id===hidden));
  await assert.rejects(S.joinGroup(env,4,hidden),/not found/);
  }finally{db.close();rmSync(dir,{recursive:true,force:true});}
 });
+
 

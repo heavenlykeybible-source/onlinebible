@@ -146,7 +146,7 @@ export async function joinGroup(env:Env,userId:number,groupId:number){
 }
 export async function groupRequests(env:Env,userId:number,groupId:number){
   await groupManager(env,userId,groupId);
-  return (await env.DB.prepare("SELECT gm.user_id,p.display_name FROM group_members gm JOIN profiles p ON p.user_id=gm.user_id WHERE gm.group_id=? AND gm.join_status='pending' LIMIT 100").bind(groupId).all<any>()).results;
+  return (await env.DB.prepare("SELECT gm.user_id,p.display_name,p.profile_photo_key FROM group_members gm JOIN profiles p ON p.user_id=gm.user_id WHERE gm.group_id=? AND gm.join_status='pending' LIMIT 100").bind(groupId).all<any>()).results;
 }
 async function groupManager(env:Env,userId:number,groupId:number){
   if(!await env.DB.prepare("SELECT 1 FROM group_members gm JOIN groups g ON g.group_id=gm.group_id WHERE gm.group_id=? AND gm.user_id=? AND gm.join_status='approved' AND gm.role IN ('owner','administrator','moderator') AND g.status='active'").bind(groupId,userId).first())throw Object.assign(new Error("Group manager access required."),{status:403});
@@ -180,7 +180,7 @@ export async function updateGroup(env:Env,userId:number,id:number,input:any){
 }
 export async function groupMembers(env:Env,userId:number,id:number){
  const g=await groupDetail(env,userId,id);if(!g.joined)throw Object.assign(new Error("Join this group to view its members."),{status:403});
- return (await env.DB.prepare("SELECT gm.user_id,gm.role,p.display_name FROM group_members gm JOIN profiles p ON p.user_id=gm.user_id JOIN users u ON u.user_id=gm.user_id WHERE gm.group_id=? AND gm.join_status='approved' AND u.status='active' ORDER BY CASE gm.role WHEN 'owner' THEN 0 WHEN 'administrator' THEN 1 WHEN 'moderator' THEN 2 ELSE 3 END,p.display_name LIMIT 100").bind(id).all<any>()).results;
+ return (await env.DB.prepare("SELECT gm.user_id,gm.role,p.display_name,p.profile_photo_key FROM group_members gm JOIN profiles p ON p.user_id=gm.user_id JOIN users u ON u.user_id=gm.user_id WHERE gm.group_id=? AND gm.join_status='approved' AND u.status='active' ORDER BY CASE gm.role WHEN 'owner' THEN 0 WHEN 'administrator' THEN 1 WHEN 'moderator' THEN 2 ELSE 3 END,p.display_name LIMIT 100").bind(id).all<any>()).results;
 }
 export async function manageGroupMember(env:Env,userId:number,id:number,target:number,input:any){
  const g=await groupAdministrator(env,userId,id);if(target===userId||target===g.owner_user_id)throw Object.assign(new Error("You cannot change your own role or the group owner."),{status:403});
