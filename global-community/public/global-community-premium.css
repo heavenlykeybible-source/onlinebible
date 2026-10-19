@@ -44,3 +44,20 @@ body[data-page=home] .social-sidebar .card,body[data-page=home] .social-stream .
  body[data-page=home] .social-rail .rail-premium-icon{width:39px;height:39px;padding:7px}
 }
 @media(max-width:350px){body[data-page=home] .social-rail{gap:7px;padding:9px}body[data-page=home] .social-rail .rail-link{font-size:14px;min-height:102px;padding:10px!important}}
+
+/* Groups and Spaces: differentiated editorial landing cards and readable management panels. */
+.gc-entity-intro{position:relative;isolation:isolate;overflow:hidden;padding:clamp(20px,3vw,36px);margin:12px 0 22px;border-radius:23px;border:1px solid #c9d9ef;background:linear-gradient(125deg,#123f91 0%,#1d67ba 58%,#156b70 100%);color:#fff;box-shadow:0 12px 30px #173c8024}
+.gc-spaces-intro{background:linear-gradient(125deg,#57175f 0%,#973a75 48%,#bc662b 100%);border-color:#e6b7d6}
+.gc-entity-intro:after{content:'';position:absolute;z-index:-1;right:-85px;top:-100px;width:270px;height:270px;border:38px solid #ffffff1d;border-radius:50%;pointer-events:none}
+.gc-entity-eyebrow{font-size:12px;font-weight:900;letter-spacing:.13em;color:#ffe7a2}
+.gc-entity-intro h2{color:#fff!important;font-size:clamp(24px,2.6vw,36px)!important;line-height:1.15;margin:10px 0 12px;font-weight:900}
+.gc-entity-intro p{font-size:clamp(16px,1.4vw,18px);line-height:1.65;max-width:63ch;margin:0 0 18px;color:#fff}
+.gc-entity-benefits{display:flex;flex-wrap:wrap;gap:9px}
+.gc-entity-benefit{display:inline-flex;align-items:center;gap:8px;background:#ffffff20;border:1px solid #ffffff57;border-radius:999px;padding:8px 13px;font-size:14px;font-weight:800}
+.gc-entity-symbol{font-size:20px;line-height:1}
+.group-create,.group-settings,.group-tools,.group-members{border-radius:18px!important}
+.group-create summary,.group-settings summary,.group-members summary{font-size:18px;font-weight:850;cursor:pointer;padding:6px 0}
+.group-tools{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.group-tools .btn,.group-create .btn,.group-settings .btn{min-height:46px;font-size:15px;font-weight:800}
+.social-stream .entity-cover h1,.social-stream .entity-cover h2{font-size:clamp(26px,3vw,39px);line-height:1.2}
+@media(max-width:760px){.gc-entity-intro{padding:22px 18px;border-radius:18px}.gc-entity-benefit{font-size:13px;padding:7px 10px}.gc-entity-intro h2{font-size:26px!important}}
