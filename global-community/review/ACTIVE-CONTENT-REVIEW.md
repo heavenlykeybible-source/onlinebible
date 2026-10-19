@@ -62,3 +62,11 @@ Design Card colours, patterns, templates, categories, scripture, formats and eng
 ## Database migration required
 
 `global-community/migrations/0016_active_content.sql` creates active_entries plus its expiry index and opt-in INSERT trigger. It requires the earlier draft `0011_active_status.sql` profile preference column. No user data is reset, no original posts are deleted, and no migration was applied outside isolated test databases.
+
+## Premium visual refinement — 19 October 2026
+
+Files changed in this refinement: `public/active-content.css`, `public/community-dashboard-reference.js`, and cache revisions in `public/index.html`, `public/fellowship.html`, `public/groups.html`, `public/spaces.html`, `public/messages.html`, `public/profile.html`, `public/prayer.html`, `public/grow.html`, `public/missions.html`, `public/safety.html`, `public/account.html`, `public/salvation.html`. This report is also updated.
+
+The home layout now uses a coherent navy header and navigation, wine-red selection states, restrained gold accents, readable type, consistent spacing and softly bordered feed cards. Actual Design Card styles are retained. ACTIVE has compact content-first tiles. The broadcast panel has a ministry treatment without fabricated live badges. The header uses the member's existing approved photo. App links have existing vector icons and a larger, bolder card treatment below principal navigation. The compose action follows the principal links. Mobile navigation retains four immediate links and collapses remaining links/apps. Real right-hand modules remain available below the feed on phones; no data is invented. No footer, backend, permissions or security changes were made in this refinement.
+
+Validation: full `npm run buildcheck` passed (26 tests), updated dashboard syntax passed, and DOM checks passed for guest/member desktop/mobile assembly, original profile-photo reuse, app cards, collapsed navigation and distinct presence. Existing ACTIVE DOM checks passed again. Browser visual comparison and physical-device inspection remain unfinished: this revision does not claim a pixel-perfect verified match. No new database migration is required for this visual refinement; earlier ACTIVE migration requirements above remain. The draft is saved for review only; nothing is deployed or merged.
