@@ -41,7 +41,7 @@ export async function updateProfile(env:Env,userId:number,input:any){
   if(clamp(input.fullName,100).length<2||clamp(input.displayName,60).length<2)throw new Error("Names must contain at least two characters.");
   if(input.dateOfBirth){const dob=String(input.dateOfBirth);if(!/^\d{4}-\d{2}-\d{2}$/.test(dob)||!Number.isFinite(Date.parse(dob))||new Date(dob).toISOString().slice(0,10)!==dob||dob>new Date().toISOString().slice(0,10))throw new Error("Enter a valid date of birth.");}
   const text=[input.fullName,input.displayName,input.bio,input.church,input.work,input.ministryCalling,input.christianInterests,input.description].filter(Boolean).join("\n");
-  const mod=moderateText(text,"profile");if(["block","hold"].includes(mod.decision)){await recordModeration(env,userId,"profile",userId,mod);throw new Error("Profile update blocked by Community Standards.");}
+  const mod=moderateText(text,"profile",env.COMMUNITY_BLOCKED_WORDS);if(["block","hold"].includes(mod.decision)){await recordModeration(env,userId,"profile",userId,mod);throw new Error("Profile update blocked by Community Standards.");}
   await env.DB.prepare(`UPDATE profiles SET full_name=?,display_name=?,country=?,state_region=?,city=?,date_of_birth=?,birth_display_mode=?,bio=?,church=?,work=?,ministry_calling=?,christian_interests=?,description=?,location_visibility=?,church_visibility=?,work_visibility=?,global_connections_visibility=?,messaging_visibility=?,updated_at=datetime('now') WHERE user_id=?`)
     .bind(clamp(input.fullName,100),clamp(input.displayName,60),clamp(input.country,80)||null,clamp(input.stateRegion,100)||null,clamp(input.city,100)||null,clamp(input.dateOfBirth,10)||null,
       ["full","day_month","age","private"].includes(input.birthDisplayMode)?input.birthDisplayMode:"private",clamp(input.bio,280)||null,clamp(input.church,160)||null,clamp(input.work,160)||null,
@@ -77,7 +77,7 @@ export async function listConnections(env:Env,userId:number){
 export async function createSpace(env:Env,userId:number,input:any){
   const name=clamp(input.name,120),description=clamp(input.description,2000);if(name.length<2||description.length<10)throw new Error("Space name and Christian-purpose description are required.");
   const website=clamp(input.website,300);if(website){let link:URL;try{link=new URL(website);}catch{throw new Error("Website must be a valid https or http link.");}if(!["https:","http:"].includes(link.protocol)||link.username||link.password)throw new Error("Website must be a valid https or http link.");}
-  const mod=moderateText(name+"\n"+description,"space");if(["block","hold"].includes(mod.decision)){await recordModeration(env,userId,"space",null,mod);throw new Error("This Space cannot be created because it violates Community Standards.");}
+  const mod=moderateText(name+"\n"+description,"space",env.COMMUNITY_BLOCKED_WORDS);if(["block","hold"].includes(mod.decision)){await recordModeration(env,userId,"space",null,mod);throw new Error("This Space cannot be created because it violates Community Standards.");}
   const allowed=["ministry","church","christian_organization","mission_outreach","christian_business","christian_media","music_ministry","christian_project","fellowship_network","other_approved"];
   if(!allowed.includes(input.category))throw new Error("Choose a valid Space category.");
   let slug=slugify(input.slug||name),n=1;while(await env.DB.prepare("SELECT 1 FROM spaces WHERE slug=?").bind(slug).first())slug=slugify(name)+"-"+(++n);
@@ -95,7 +95,7 @@ export async function updateSpace(env:Env,userId:number,spaceId:number,input:any
   if(name.length<2||description.length<10)throw new Error("Space name and Christian-purpose description are required.");
   if(!["ministry","church","christian_organization","mission_outreach","christian_business","christian_media","music_ministry","christian_project","fellowship_network","other_approved"].includes(input.category))throw new Error("Choose a valid Space category.");
   if(website){let link:URL;try{link=new URL(website);}catch{throw new Error("Website must be a valid https or http link.");}if(!["https:","http:"].includes(link.protocol)||link.username||link.password)throw new Error("Website must be a valid https or http link.");}
-  const country=clamp(input.country,80),state=clamp(input.stateRegion,100),city=clamp(input.city,100),mod=moderateText([name,description,country,state,city].join("\n"),"space");
+  const country=clamp(input.country,80),state=clamp(input.stateRegion,100),city=clamp(input.city,100),mod=moderateText([name,description,country,state,city].join("\n"),"space",env.COMMUNITY_BLOCKED_WORDS);
   if(["block","hold"].includes(mod.decision)){await recordModeration(env,userId,"space",spaceId,mod);throw new Error("These Space details violate Community Standards.");}
   const result=await env.DB.prepare("UPDATE spaces SET name=?,description=?,category=?,website=?,country=?,state_region=?,city=?,updated_at=datetime('now') WHERE space_id=? AND status='active' AND EXISTS(SELECT 1 FROM space_members WHERE space_id=spaces.space_id AND user_id=? AND role IN ('owner','administrator'))").bind(name,description,input.category,website||null,country||null,state||null,city||null,spaceId,userId).run();
   if(!result.meta.changes)throw new Error("This Space could not be updated. Refresh and try again.");
@@ -117,13 +117,13 @@ export async function getSpace(env:Env,slug:string){
 export async function createGroup(env:Env,userId:number,input:any){
   const name=clamp(input.name,120),description=clamp(input.description,1500),purpose=clamp(input.christianPurpose,1200);
   if(name.length<2||purpose.length<15)throw new Error("Every Group must have a clear Christian purpose.");
-  const mod=moderateText(name+"\n"+description+"\n"+purpose,"group");if(["block","hold"].includes(mod.decision)){await recordModeration(env,userId,"group",null,mod);throw new Error("This Group cannot be created because it violates Community Standards.");}
+  const mod=moderateText(name+"\n"+description+"\n"+purpose,"group",env.COMMUNITY_BLOCKED_WORDS);if(["block","hold"].includes(mod.decision)){await recordModeration(env,userId,"group",null,mod);throw new Error("This Group cannot be created because it violates Community Standards.");}
   const types=["fellowship","prayer","bible_study","youth","women","men","family","pastors_ministers","new_converts","missions","country_city","service_team","other_christian"];
   if(!types.includes(input.groupType))throw new Error("Choose a valid Christian Group type.");
   let slug=slugify(input.slug||name),n=1;while(await env.DB.prepare("SELECT 1 FROM groups WHERE slug=?").bind(slug).first())slug=slugify(name)+"-"+(++n);
   const visibility=["public","private","hidden"].includes(input.visibility)?input.visibility:"private";
   const rules=clamp(input.rules,2000),joinApproval=input.joinApproval===true||visibility!=='public'?1:0,postingPolicy=input.postingPolicy==='managers'?'managers':'members';
-  if(moderateText(rules,"group").decision==='block')throw new Error("Group rules violate Community Standards.");
+  if(moderateText(rules,"group",env.COMMUNITY_BLOCKED_WORDS).decision==='block')throw new Error("Group rules violate Community Standards.");
   const row=await env.DB.prepare("INSERT INTO groups(name,slug,group_type,description,christian_purpose,visibility,owner_user_id,rules,join_approval,posting_policy) VALUES(?,?,?,?,?,?,?,?,?,?) RETURNING group_id")
     .bind(name,slug,input.groupType,description,purpose,visibility,userId,rules,joinApproval,postingPolicy).first<any>();
   if(!row)throw new Error("Group could not be created.");
@@ -173,7 +173,7 @@ export async function updateGroup(env:Env,userId:number,id:number,input:any){
  // Privacy can be tightened, never loosened, to protect members' existing posts.
  const levels=['public','private','hidden'];if(!levels.includes(input.visibility)||levels.indexOf(input.visibility)<levels.indexOf(g.visibility))throw new Error("Privacy can only be made more restrictive.");
  if(!['members','managers'].includes(input.postingPolicy))throw new Error("Choose who can publish group posts.");
- const mod=moderateText(name+"\n"+purpose+"\n"+description+"\n"+rules,"group");if(['block','hold'].includes(mod.decision)){await recordModeration(env,userId,'group',null,mod);throw new Error('These details need a Community Standards review. Please revise them.');}
+ const mod=moderateText(name+"\n"+purpose+"\n"+description+"\n"+rules,"group",env.COMMUNITY_BLOCKED_WORDS);if(['block','hold'].includes(mod.decision)){await recordModeration(env,userId,'group',null,mod);throw new Error('These details need a Community Standards review. Please revise them.');}
  const changed=await env.DB.prepare("UPDATE groups SET name=?,description=?,christian_purpose=?,rules=?,visibility=?,join_approval=?,posting_policy=? WHERE group_id=? AND status='active' AND (visibility=? OR visibility='public' OR (visibility='private' AND ?='hidden'))").bind(name,description,purpose,rules,input.visibility,input.visibility!=='public'||input.joinApproval===true?1:0,input.postingPolicy,id,input.visibility,input.visibility).run();
  if(!changed.meta.changes)throw new Error("The group changed. Refresh before saving settings.");
  if(mod.decision!=='allow')await recordModeration(env,userId,"group",id,mod);return {ok:true};
@@ -198,7 +198,7 @@ export async function leaveGroup(env:Env,userId:number,id:number){
 export async function createPost(env:Env,user:SessionUser,input:any){
   const presentation=validatePostPresentation({...input,postFormat:input.postFormat||(input.title?"article":"design_card")});
   const {body,title,scripture}=presentation;
-  const mod=moderateText(title+"\n"+body+"\n"+scripture,"post");
+  const mod=moderateText(title+"\n"+body+"\n"+scripture,"post",env.COMMUNITY_BLOCKED_WORDS);
   if(mod.decision==="block"){await recordModeration(env,user.userId,"post",null,mod);throw new Error("This post cannot be published because it violates the Christian Community Standards.");}
   let authorSpaceId:number|null=null;
   if(input.authorSpaceId){const can=await env.DB.prepare("SELECT 1 FROM space_members sm JOIN spaces s ON s.space_id=sm.space_id WHERE sm.space_id=? AND sm.user_id=? AND s.status='active'").bind(Number(input.authorSpaceId),user.userId).first();if(!can)throw new Error("You do not manage this Space.");authorSpaceId=Number(input.authorSpaceId);}
@@ -217,7 +217,7 @@ export async function createPost(env:Env,user:SessionUser,input:any){
 export async function editPost(env:Env,user:SessionUser,id:number,input:any){
   const existing=await env.DB.prepare("SELECT post_id FROM posts WHERE post_id=? AND author_user_id=? AND status IN ('active','held')").bind(id,user.userId).first();
   if(!existing)throw Object.assign(new Error("You can edit only your own available posts."),{status:403});
-  const p=validatePostPresentation(input),mod=moderateText(p.title+"\n"+p.body+"\n"+p.scripture,"post");
+  const p=validatePostPresentation(input),mod=moderateText(p.title+"\n"+p.body+"\n"+p.scripture,"post",env.COMMUNITY_BLOCKED_WORDS);
   if(mod.decision==="block"){await recordModeration(env,user.userId,"post",id,mod);throw new Error("This edit violates the Christian Community Standards.");}
   const state=mod.decision==="hold"?"held":mod.decision==="warn"?"warned":"allowed",status=mod.decision==="hold"?"held":"active";
   const changed=await env.DB.prepare("UPDATE posts SET title=?,body=?,post_format=?,design_category=?,design_settings=?,scripture=?,video_url=?,video_provider=?,background_style=NULL,status=?,moderation_state=?,updated_at=datetime('now') WHERE post_id=? AND author_user_id=? AND status IN ('active','held')")
@@ -297,7 +297,7 @@ export async function sendMessage(env:Env,userId:number,id:number,bodyRaw:string
   const retry=async()=>{const previous=await env.DB.prepare("SELECT message_id,body,status FROM messages WHERE conversation_id=? AND sender_user_id=? AND client_request_id=?").bind(id,userId,key).first<any>();if(previous){if(previous.body!==body)throw Object.assign(new Error("This retry identifier belongs to a different message."),{status:409});if(!['delivered','held'].includes(previous.status))throw new Error("This message is unavailable.");return {messageId:Number(previous.message_id),status:previous.status};}return null;};
   if(key){const previous=await retry();if(previous)return previous;}
 
-  const mod=moderateText(body,"message");if(mod.decision==="block"){await recordModeration(env,userId,"message",null,mod);throw new Error("This message was blocked by the Christian Community safety rules.");}
+  const mod=moderateText(body,"message",env.COMMUNITY_BLOCKED_WORDS);if(mod.decision==="block"){await recordModeration(env,userId,"message",null,mod);throw new Error("This message was blocked by the Christian Community safety rules.");}
   const status=mod.decision==="hold"?"held":"delivered",state=mod.decision==="hold"?"held":mod.decision==="warn"?"warned":"allowed";
   const row=await env.DB.prepare("INSERT INTO messages(conversation_id,sender_user_id,body,status,moderation_state,client_request_id) VALUES(?,?,?,?,?,?) ON CONFLICT(conversation_id,sender_user_id,client_request_id) DO NOTHING RETURNING message_id").bind(id,userId,body,status,state,key).first<any>();
   if(!row){const previous=await retry();if(previous)return previous;throw new Error("Message could not be saved.");}
@@ -319,7 +319,7 @@ export async function messages(env:Env,userId:number,id:number,before?:number){
 
 export async function createPrayerCircle(env:Env,userId:number,input:any){
   const name=clamp(input.name,100),description=clamp(input.description,1000);if(name.length<2||description.length<10)throw new Error("Prayer Circle name and purpose are required.");
-  const mod=moderateText(name+"\n"+description,"group");if(["block","hold"].includes(mod.decision))throw new Error("Prayer Circle violates Community Standards.");
+  const mod=moderateText(name+"\n"+description,"group",env.COMMUNITY_BLOCKED_WORDS);if(["block","hold"].includes(mod.decision))throw new Error("Prayer Circle violates Community Standards.");
   const max=Math.min(Math.max(Number(input.maxMembers)||20,3),50),visibility=input.visibility==="public"?"public":"private";
   const row=await env.DB.prepare("INSERT INTO prayer_circles(name,description,owner_user_id,max_members,visibility) VALUES(?,?,?,?,?) RETURNING circle_id").bind(name,description,userId,max,visibility).first<any>();
   await env.DB.prepare("INSERT INTO prayer_circle_members(circle_id,user_id,role) VALUES(?,?,'owner')").bind(row.circle_id,userId).run();return {circleId:Number(row.circle_id)};
@@ -390,7 +390,7 @@ export async function addComment(env:Env,userId:number,postId:number,bodyRaw:str
   const body=clamp(bodyRaw,2500);if(!body)throw new Error("Reply cannot be empty.");
   const post=(await feed(env,userId,1,{postId}))[0];if(!post)throw new Error("Post is unavailable.");
   if(parentCommentId){const parent=await env.DB.prepare("SELECT 1 FROM comments WHERE comment_id=? AND post_id=? AND status='active'").bind(parentCommentId,postId).first();if(!parent)throw new Error("Reply target is unavailable.");}
-  const mod=moderateText(body,"post");if(mod.decision==="block"){await recordModeration(env,userId,"post",null,mod,"comment");throw new Error("This reply cannot be published because it violates Christian Community Standards.");}
+  const mod=moderateText(body,"post",env.COMMUNITY_BLOCKED_WORDS);if(mod.decision==="block"){await recordModeration(env,userId,"post",null,mod,"comment");throw new Error("This reply cannot be published because it violates Christian Community Standards.");}
   const status=mod.decision==="hold"?"held":"active",state=mod.decision==="hold"?"held":mod.decision==="warn"?"warned":"allowed";
   const row=await env.DB.prepare("INSERT INTO comments(post_id,user_id,parent_comment_id,body,status,moderation_state) VALUES(?,?,?,?,?,?) RETURNING comment_id")
     .bind(postId,userId,parentCommentId||null,body,status,state).first<any>();
@@ -457,7 +457,7 @@ export async function reviewPostReport(env:Env,moderator:SessionUser,id:number,i
 
 export async function addPrayerItem(env:Env,userId:number,input:any){
   const title=clamp(input.title,160),requestText=clamp(input.requestText,3000);if(!title||requestText.length<3)throw new Error("Prayer title and request are required.");
-  const mod=moderateText(title+"\n"+requestText,"post");if(['block','hold'].includes(mod.decision)){await recordModeration(env,userId,'post',null,mod);throw new Error('Prayer request text needs Community Standards review. Please revise it.');}
+  const mod=moderateText(title+"\n"+requestText,"post",env.COMMUNITY_BLOCKED_WORDS);if(['block','hold'].includes(mod.decision)){await recordModeration(env,userId,'post',null,mod);throw new Error('Prayer request text needs Community Standards review. Please revise it.');}
   let circleId:number|null=input.circleId?Number(input.circleId):null;if(circleId){const member=await env.DB.prepare("SELECT 1 FROM prayer_circle_members WHERE circle_id=? AND user_id=?").bind(circleId,userId).first();if(!member)throw new Error("Join this Prayer Circle first.");}
   const visibility=["community","connections","circle","private_ministry"].includes(input.visibility)?input.visibility:"private_ministry";if(visibility==="circle"&&!circleId)throw new Error("Choose a Prayer Circle before posting to it.");
   const row=await env.DB.prepare(env.COMMUNITY_CARE==='enabled'?"INSERT INTO prayer_items(circle_id,user_id,title,request_text,visibility,care_reminder_at) VALUES(?,?,?,?,?,?) RETURNING prayer_item_id":"INSERT INTO prayer_items(circle_id,user_id,title,request_text,visibility) VALUES(?,?,?,?,?) RETURNING prayer_item_id")
