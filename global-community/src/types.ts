@@ -1,4 +1,5 @@
 export interface Env {
+  COMMUNITY_CARE?: string;
   // Moderation-only credentials stay server-side.
   MODERATION_PIPELINE?: string;
   MODERATION_MODE?: string;

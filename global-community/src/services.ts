@@ -460,8 +460,8 @@ export async function addPrayerItem(env:Env,userId:number,input:any){
   const mod=moderateText(title+"\n"+requestText,"post");if(['block','hold'].includes(mod.decision)){await recordModeration(env,userId,'post',null,mod);throw new Error('Prayer request text needs Community Standards review. Please revise it.');}
   let circleId:number|null=input.circleId?Number(input.circleId):null;if(circleId){const member=await env.DB.prepare("SELECT 1 FROM prayer_circle_members WHERE circle_id=? AND user_id=?").bind(circleId,userId).first();if(!member)throw new Error("Join this Prayer Circle first.");}
   const visibility=["community","connections","circle","private_ministry"].includes(input.visibility)?input.visibility:"private_ministry";if(visibility==="circle"&&!circleId)throw new Error("Choose a Prayer Circle before posting to it.");
-  const row=await env.DB.prepare("INSERT INTO prayer_items(circle_id,user_id,title,request_text,visibility) VALUES(?,?,?,?,?) RETURNING prayer_item_id")
-    .bind(circleId,userId,title,requestText,visibility).first<any>();return {prayerItemId:Number(row?.prayer_item_id)};
+  const row=await env.DB.prepare(env.COMMUNITY_CARE==='enabled'?"INSERT INTO prayer_items(circle_id,user_id,title,request_text,visibility,care_reminder_at) VALUES(?,?,?,?,?,?) RETURNING prayer_item_id":"INSERT INTO prayer_items(circle_id,user_id,title,request_text,visibility) VALUES(?,?,?,?,?) RETURNING prayer_item_id")
+    .bind(circleId,userId,title,requestText,visibility,...(env.COMMUNITY_CARE==='enabled'?[input.followup===true?Date.now()+3*86400000:null]:[])).first<any>();return {prayerItemId:Number(row?.prayer_item_id)};
 }
 export async function listPrayerItems(env:Env,userId:number|null){
   const r=await env.DB.prepare(`SELECT pi.prayer_item_id,pi.circle_id,pi.user_id,pi.title,pi.request_text,pi.visibility,pi.answered,pi.answer_testimony,pi.created_at,p.display_name

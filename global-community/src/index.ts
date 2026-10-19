@@ -10,6 +10,7 @@ import * as Adverts from "./adverts";
 import * as Editorial from "./ministry-editorial";
 import * as Active from "./active";
 import * as Screening from "./content-screening";
+import * as Care from "./community-care";
 
 const security=(headers=new Headers())=>{
   headers.set("X-Content-Type-Options","nosniff");headers.set("X-Frame-Options","DENY");headers.set("Referrer-Policy","strict-origin-when-cross-origin");
@@ -53,6 +54,7 @@ async function route(request:Request,env:Env,ctx?:ExecutionContext):Promise<Resp
     if(match[2]==="callback"&&m==="GET")return Social.callback(request,env,match[1]);
     if(match[2]==="start"&&m==="POST"){if(!await rate(env,"social-start:"+await sourceKey(request),20,900))return error("Too many sign-in attempts. Please wait.",429);const result=await Social.start(request,env,match[1],await body(request));return json({url:result.url},200,{"Set-Cookie":result.cookie});}
   }}
+  if(p==='/api/care/status'&&m==='GET')return json({enabled:Care.enabled(env)});
   if(p==="/api/health"&&m==="GET")return json({ok:true,service:"global-community",deployment:"active"});
   if(p==="/api/auth/register"&&m==="POST"){
     const b=await body(request),email=cleanEmail(b.email),password=String(b.password||""),fullName=String(b.fullName||"").trim(),displayName=String(b.displayName||fullName).trim();
@@ -85,11 +87,15 @@ async function route(request:Request,env:Env,ctx?:ExecutionContext):Promise<Resp
     return json({ok:true,userId:Number(row.user_id),role:row.role},200,{"Set-Cookie":sessionCookie(id)});
   }
   const current=await getSession(request,env);
-  if(current?.status==='restricted'&&!['/api/me','/api/me/safety','/api/me/requests','/api/auth/logout','/api/moderation/screening/mine'].includes(p)&&!/^\/api\/moderation\/screening\/jobs\/[a-f0-9-]{36}(?:\/appeal)?$/.test(p))return error('Your account is locked pending administrator review. Open Safety & privacy to read the reason and request review.',403);
+  if(current?.status==='restricted'&&!['/api/me','/api/me/safety','/api/me/requests','/api/auth/logout','/api/moderation/screening/mine','/api/care/preferences'].includes(p)&&!/^\/api\/moderation\/screening\/jobs\/[a-f0-9-]{36}(?:\/appeal)?$/.test(p))return error('Your account is locked pending administrator review. Open Safety & privacy to read the reason and request review.',403);
   // Timed restrictions do not change account roles/status or release administrator locks.
-  if(current?.role==='member'&&Screening.installed(env)&&!['GET','HEAD','OPTIONS'].includes(m)&&!p.startsWith('/api/auth/')&&!['/api/me/requests','/api/reports','/api/notifications/read'].includes(p)&&!/^\/api\/members\/\d+\/block$/.test(p)&&!/^\/api\/moderation\/screening\/jobs\/[a-f0-9-]{36}\/appeal$/.test(p)){
+  if(current?.role==='member'&&Screening.installed(env)&&!['GET','HEAD','OPTIONS'].includes(m)&&!p.startsWith('/api/auth/')&&!['/api/me/requests','/api/reports','/api/notifications/read','/api/care/preferences'].includes(p)&&!/^\/api\/members\/\d+\/block$/.test(p)&&!/^\/api\/moderation\/screening\/jobs\/[a-f0-9-]{36}\/appeal$/.test(p)){
     const restriction=await Screening.restriction(env,current.userId);if(restriction.active)return json({error:{message:restriction.expiresAt?'Posting and messaging are paused until '+restriction.expiresAt+'. You can still read and appeal in Safety & privacy.':'Posting and messaging are paused pending administrator review. Open Safety & privacy to appeal.'},restriction},423);
   }
+  if(p==='/api/care/preferences'&&['GET','PATCH'].includes(m)){const u=await me(request,env);Care.requireCare(env);return json(m==='GET'?await Care.preferences(env,u.userId):await Care.savePreferences(env,u.userId,await body(request)));}
+  if(p==='/api/care/today'&&m==='GET'){const u=await me(request,env);Care.requireCare(env);return json(await Care.today(env,u.userId));}
+  if(p==='/api/admin/care/readings'&&m==='GET'){const u=await requireRole(request,env,'administrator');if(!u)return error('Administrator access required.',403);Care.requireCare(env);return json(await Care.adminReadings(env));}
+  {const x=p.match(/^\/api\/admin\/care\/readings\/(\d+)$/);if(x&&m==='PATCH'){const u=await requireRole(request,env,'administrator');if(!u)return error('Administrator access required.',403);Care.requireCare(env);return json(await Care.approveReading(env,u,Number(x[1]),await body(request)));}}
   if(p==='/api/moderation/screening/mine'&&m==='GET'){const u=await me(request,env);return json(Screening.installed(env)?await Screening.mine(env,u.userId):{enabled:false,items:[],restriction:{active:false,count:0}});}
   {const x=p.match(/^\/api\/moderation\/screening\/jobs\/([a-f0-9-]{36})$/);if(x&&m==='GET'){const u=await me(request,env);if(!Screening.installed(env))return error('Screening is not configured.',503);const item=await Screening.jobStatus(env,u,x[1]);if(item.status==='queued'&&ctx&&Screening.enabled(env))ctx.waitUntil(Screening.processJob(env,item.job_id));return json(item);}}
   {const x=p.match(/^\/api\/moderation\/screening\/jobs\/([a-f0-9-]{36})\/appeal$/);if(x&&m==='POST'){const u=await me(request,env);if(!Screening.installed(env))return error('Screening is not configured.',503);return json(await Screening.appeal(env,u,x[1],await body(request)),201);}}
@@ -190,9 +196,10 @@ async function route(request:Request,env:Env,ctx?:ExecutionContext):Promise<Resp
   if(p==='/api/moderation/accounts'&&m==='GET'){const u=await requireRole(request,env,'administrator');if(!u)return error('Site administrator access required.',403);return json({items:await Stewardship.accountQueue(env,u)});}
   {const x=p.match(/^\/api\/moderation\/accounts\/(\d+)$/);if(x&&m==='POST'){const u=await requireRole(request,env,'administrator');if(!u)return error('Site administrator access required.',403);return json(await Stewardship.restrictAccount(env,u,Number(x[1]),await body(request)));}}
   if(p==="/api/reports"&&m==="POST"){const u=await me(request,env);if(!await rate(env,"reports:"+u.userId,20,3600))return error("Please wait before sending another report.",429);return json(await S.reportContent(env,u.userId,await body(request)),201);}
-  if(p==="/api/prayer-items"&&m==="GET"){const u=await getSession(request,env);return json({items:await S.listPrayerItems(env,u?.userId||null)});}
+  {const x=p.match(/^\/api\/prayer-items\/(\d+)(?:\/(support|reminder|updates))?$/);if(x){const u=await me(request,env);Care.requireCare(env);const id=Number(x[1]);if(!Number.isSafeInteger(id)||id<1)return error('Invalid prayer request.');if(!x[2]&&m==='GET')return json(await Care.prayer(env,u.userId,id));if(x[2]==='support'&&m==='PATCH')return json(await Care.support(env,u.userId,id,await body(request)));if(x[2]==='reminder'&&m==='PATCH')return json(await Care.reminder(env,u.userId,id,await body(request)));if(x[2]==='updates'&&m==='POST')return json(await Care.updatePrayer(env,u.userId,id,await body(request)));}}
+  if(p==="/api/prayer-items"&&m==="GET"){const u=await getSession(request,env);return json({items:Care.enabled(env)?await Care.listPrayers(env,u?.userId||null):await S.listPrayerItems(env,u?.userId||null)});}
   if(p==="/api/prayer-items"&&m==="POST"){const u=await me(request,env);return json(await S.addPrayerItem(env,u.userId,await body(request)),201);}
-  {const x=p.match(/^\/api\/prayer-items\/(\d+)\/answered$/);if(x&&m==="POST"){const u=await me(request,env),b=await body(request);return json(await S.markPrayerAnswered(env,u.userId,Number(x[1]),String(b.testimony||"")));}}
+  {const x=p.match(/^\/api\/prayer-items\/(\d+)\/answered$/);if(x&&m==="POST"){const u=await me(request,env),b=await body(request);const result=Care.enabled(env)?await Care.updatePrayer(env,u.userId,Number(x[1]),{kind:"testimony",body:String(b.testimony||""),requestKey:crypto.randomUUID()}):await S.markPrayerAnswered(env,u.userId,Number(x[1]),String(b.testimony||""));return json({...result,answered:true});}}
   if(p==="/api/media-policy"&&m==="GET")return json(await S.mediaPolicy(env));
   if(p==="/api/media"&&m==="GET"){const u=await me(request,env);return json({items:await S.listMyMedia(env,u.userId)});}
   if(p==="/api/media"&&m==="POST"){const u=await me(request,env);return json(await S.registerMedia(env,u.userId,await body(request)),201);}
@@ -208,7 +215,7 @@ async function route(request:Request,env:Env,ctx?:ExecutionContext):Promise<Resp
 }
 
 export default {
-  async scheduled(_event:ScheduledController,env:Env):Promise<void>{await Calls.cleanup(env);await Screening.drain(env);await env.DB.prepare("DELETE FROM social_login_flows WHERE expires_at<?").bind(Date.now()).run();},
+  async scheduled(_event:ScheduledController,env:Env):Promise<void>{await Calls.cleanup(env);await Screening.drain(env);await env.DB.prepare("DELETE FROM social_login_flows WHERE expires_at<?").bind(Date.now()).run();await Care.deliverDue(env);},
   async fetch(request:Request,env:Env,ctx?:ExecutionContext):Promise<Response>{
     try{return await route(request,env,ctx);}
     catch(e:any){const internal=e instanceof TypeError||e instanceof ReferenceError||e instanceof SyntaxError||/D1_|SQLITE|constraint failed|no such table|binding|TypeError/i.test(String(e?.message))||!(e instanceof Error);return error(internal?"The request could not be completed. Please try again.":e.message,internal?500:Number((e as any)?.status)||400);}

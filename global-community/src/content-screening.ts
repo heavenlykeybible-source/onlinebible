@@ -38,7 +38,7 @@ export function surface(path:string,method:string){
  if(/^\/api\/messages\/\d+$/.test(path))return 'message';
  if(/^\/api\/(?:groups|spaces)(?:\/[^/]+)?$/.test(path))return 'community_identity';
  if(path==='/api/me/profile')return 'profile';
- if(['/api/prayer-items','/api/prayer-circles','/api/ministry/messages','/api/ministry/posts','/api/ministry/admin/reply'].includes(path)||/^\/api\/prayer-items\/\d+\/answered$/.test(path))return 'ministry_content';
+ if(['/api/prayer-items','/api/prayer-circles','/api/ministry/messages','/api/ministry/posts','/api/ministry/admin/reply'].includes(path)||/^\/api\/prayer-items\/\d+\/(?:answered|updates)$/.test(path))return 'ministry_content';
  return null;
 }
 const evidence=(payload:any,kind:string)=>{
