@@ -9,7 +9,6 @@ import * as Social from "./social-auth";
 import * as Adverts from "./adverts";
 import * as Editorial from "./ministry-editorial";
 import * as Active from "./active";
-import * as Screening from "./content-screening";
 import * as Care from "./community-care";
 
 const security=(headers=new Headers())=>{
@@ -89,28 +88,13 @@ async function route(request:Request,env:Env,ctx?:ExecutionContext):Promise<Resp
   const current=await getSession(request,env);
   // These DELETE actions only withdraw own support or archive an owned prayer privately.
   const careWithdrawal=m==='DELETE'&&/^\/api\/prayer-items\/\d+(?:\/support)?$/.test(p);
-  if(current?.status==='restricted'&&!['/api/me','/api/me/safety','/api/me/requests','/api/auth/logout','/api/moderation/screening/mine','/api/care/preferences'].includes(p)&&!/^\/api\/moderation\/screening\/jobs\/[a-f0-9-]{36}(?:\/appeal)?$/.test(p))return error('Your account is locked pending administrator review. Open Safety & privacy to read the reason and request review.',403);
+  if(current?.status==='restricted'&&!['/api/me','/api/me/safety','/api/me/requests','/api/auth/logout','/api/care/preferences'].includes(p))return error('Your account is locked pending administrator review. Open Safety & privacy to read the reason and request review.',403);
   // Timed restrictions do not change account roles/status or release administrator locks.
-  if(current?.role==='member'&&!careWithdrawal&&Screening.installed(env)&&!['GET','HEAD','OPTIONS'].includes(m)&&!p.startsWith('/api/auth/')&&!['/api/me/requests','/api/reports','/api/notifications/read','/api/care/preferences'].includes(p)&&!/^\/api\/members\/\d+\/block$/.test(p)&&!/^\/api\/moderation\/screening\/jobs\/[a-f0-9-]{36}\/appeal$/.test(p)){
-    const restriction=await Screening.restriction(env,current.userId);if(restriction.active)return json({error:{message:restriction.expiresAt?'Posting and messaging are paused until '+restriction.expiresAt+'. You can still read and appeal in Safety & privacy.':'Posting and messaging are paused pending administrator review. Open Safety & privacy to appeal.'},restriction},423);
-  }
   if(p==='/api/care/preferences'&&['GET','PATCH'].includes(m)){const u=await me(request,env);Care.requireCare(env);return json(m==='GET'?await Care.preferences(env,u.userId):await Care.savePreferences(env,u.userId,await body(request)));}
   if(p==='/api/care/today'&&m==='GET'){const u=await me(request,env);Care.requireCare(env);return json(await Care.today(env,u.userId));}
   if(p==='/api/admin/care/readings'&&m==='GET'){const u=await requireRole(request,env,'administrator');if(!u)return error('Administrator access required.',403);Care.requireCare(env);return json(await Care.adminReadings(env));}
   {const x=p.match(/^\/api\/admin\/care\/readings\/(\d+)$/);if(x&&m==='PATCH'){const u=await requireRole(request,env,'administrator');if(!u)return error('Administrator access required.',403);Care.requireCare(env);return json(await Care.approveReading(env,u,Number(x[1]),await body(request)));}}
-  if(p==='/api/moderation/screening/mine'&&m==='GET'){const u=await me(request,env);return json(Screening.installed(env)?await Screening.mine(env,u.userId):{enabled:false,items:[],restriction:{active:false,count:0}});}
-  {const x=p.match(/^\/api\/moderation\/screening\/jobs\/([a-f0-9-]{36})$/);if(x&&m==='GET'){const u=await me(request,env);if(!Screening.installed(env))return error('Screening is not configured.',503);const item=await Screening.jobStatus(env,u,x[1]);if(item.status==='queued'&&ctx&&Screening.enabled(env))ctx.waitUntil(Screening.processJob(env,item.job_id));return json(item);}}
-  {const x=p.match(/^\/api\/moderation\/screening\/jobs\/([a-f0-9-]{36})\/appeal$/);if(x&&m==='POST'){const u=await me(request,env);if(!Screening.installed(env))return error('Screening is not configured.',503);return json(await Screening.appeal(env,u,x[1],await body(request)),201);}}
-  if(p==='/api/moderation/screening/queue'&&m==='GET'){const u=await requireRole(request,env,'moderator');if(!u)return error('Site moderator access required.',403);return json(Screening.installed(env)?await Screening.queue(env):{configured:false,mode:'off',items:[],appeals:[]});}
-  if(p==='/api/moderation/screening/run'&&m==='POST'){const u=await requireRole(request,env,'administrator');if(!u)return error('Administrator access required.',403);if(!Screening.installed(env))return error('Screening is not configured.',503);await Screening.drain(env);return json({processed:true});}
-  {const x=p.match(/^\/api\/moderation\/screening\/jobs\/([a-f0-9-]{36})\/review$/);if(x&&m==='POST'){const u=await requireRole(request,env,'moderator');if(!u)return error('Site moderator access required.',403);if(!Screening.installed(env))return error('Screening is not configured.',503);return json(await Screening.review(env,u,x[1],await body(request)));}}
-  {const x=p.match(/^\/api\/moderation\/screening\/appeals\/(\d+)\/review$/);if(x&&m==='POST'){const u=await requireRole(request,env,'administrator');if(!u)return error('Administrator access required.',403);if(!Screening.installed(env))return error('Screening is not configured.',503);return json(await Screening.reviewAppeal(env,u,Number(x[1]),await body(request)));}}
-  if(Screening.surface(p,m)&&env.MODERATION_MODE==='enforce'){
-    const u=await me(request,env);{const pending=await Screening.gate(env,u,p,m,await body(request.clone() as Request));if(pending){if(ctx)ctx.waitUntil(Screening.processJob(env,pending.id));return json({screening:pending},202);}}
-  }
-  if(p==="/api/auth/logout"&&m==="POST"){await destroySession(request,env);return json({ok:true},200,{"Set-Cookie":clearSessionCookie()});}
-
-  if(p==="/api/admin/adverts/images"&&m==="POST"){const admin=await requireRole(request,env,"administrator");if(!admin)return error("Administrator access required.",403);if(env.MODERATION_MODE==='enforce'&&!Screening.installed(env))return error('Moderation setup is incomplete.',503);if(Screening.enabled(env)){const verdict=await Screening.imageRequest(env,request.clone() as Request);if(verdict.decision!=='allow')return error('Image not published: '+verdict.explanation,422);}return json(await Adverts.uploadImage(env,admin,request),201);}
+  if(p==="/api/admin/adverts/images"&&m==="POST"){const admin=await requireRole(request,env,"administrator");if(!admin)return error("Administrator access required.",403);return json(await Adverts.uploadImage(env,admin,request),201);}
   {const match=p.match(/^\/api\/adverts\/images\/([a-f0-9-]{36})$/);if(match&&m==="GET"){const image=await Adverts.image(env,match[1]);if(!image)return error("Advert image unavailable.",404);return new Response(image.body,{headers:security(new Headers({"Content-Type":image.mime,"Cache-Control":"public, max-age=60","ETag":image.etag}))});}}
   if(p==="/api/adverts"&&m==="GET")return json(await Adverts.publicAdverts(env));
   if(p==="/api/admin/social-signin"&&m==="GET"){const admin=await requireRole(request,env,"administrator");if(!admin)return error("Administrator access required.",403);return json(await Social.settings(env,url.origin));}
@@ -218,7 +202,7 @@ async function route(request:Request,env:Env,ctx?:ExecutionContext):Promise<Resp
 
 export default {
   async scheduled(_event:ScheduledController,env:Env):Promise<void>{
-    const jobs=[['call-cleanup',()=>Calls.cleanup(env)],['screening',()=>Screening.drain(env)],['social-flow-cleanup',()=>env.DB.prepare("DELETE FROM social_login_flows WHERE expires_at<?").bind(Date.now()).run()],['community-care',()=>Care.deliverDue(env)]] as const;
+    const jobs=[['call-cleanup',()=>Calls.cleanup(env)],['social-flow-cleanup',()=>env.DB.prepare("DELETE FROM social_login_flows WHERE expires_at<?").bind(Date.now()).run()],['community-care',()=>Care.deliverDue(env)]] as const;
     const results=await Promise.allSettled(jobs.map(async([,run])=>run()));
     const failed=results.flatMap((r,i)=>r.status==='rejected'?[jobs[i][0]]:[]);
     if(failed.length)throw new Error('Scheduled tasks failed: '+failed.join(', '));
