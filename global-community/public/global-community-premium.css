@@ -1,0 +1,31 @@
+/* Account 3: readable, colourful, original social-network presentation. No AI or banner changes. */
+:root{--gc-ink:#172337;--gc-soft:#f4f7fc;--gc-line:#dce4ef}
+body{font-size:16px;line-height:1.55;color:var(--gc-ink)}
+.top .brand,.army-brand{font-size:clamp(17px,1.5vw,23px)!important;font-weight:850!important;letter-spacing:.015em!important;line-height:1.25}
+.army-brand small{font-size:12px!important;font-weight:650!important;letter-spacing:.02em!important}
+.top .navlinks a{font-size:15px!important;font-weight:750!important;padding:11px 12px!important}
+.social-layout{gap:20px}
+.social-rail,.social-sidebar{min-width:0}
+body[data-page=home] .social-rail,body[data-page=home] .social-sidebar{background:#f5f1fa;border:1px solid #e6ddea;border-radius:19px;box-shadow:0 7px 24px #1e294011;padding:16px}
+body[data-page=home] .social-rail .rail-link{min-height:58px;padding:12px 13px;font-size:16px;font-weight:750;line-height:1.3;border:1px solid transparent;border-radius:14px;color:#1b304d}
+body[data-page=home] .social-rail .rail-link:nth-of-type(5n+1){background:#e8efff}
+body[data-page=home] .social-rail .rail-link:nth-of-type(5n+2){background:#ffeaf1}
+body[data-page=home] .social-rail .rail-link:nth-of-type(5n+3){background:#e4f7ed}
+body[data-page=home] .social-rail .rail-link:nth-of-type(5n+4){background:#fff3d7}
+body[data-page=home] .social-rail .rail-link:nth-of-type(5n){background:#eee8ff}
+body[data-page=home] .social-rail .rail-link[aria-current=page]{background:#133f9a;color:#fff;border-color:#133f9a}
+body[data-page=home] .social-rail .rail-premium-icon{width:40px;height:40px;padding:8px;border-radius:12px;flex-shrink:0}
+body[data-page=home] .social-sidebar .card,body[data-page=home] .social-stream .card,body[data-page=home] .social-stream .post{border:1px solid var(--gc-line);border-radius:19px;box-shadow:0 6px 22px #10254c0e;background:#fff}
+.social-stream .card h2,.social-sidebar .card h2,.stream-heading h2{font-size:clamp(20px,1.7vw,26px)!important;font-weight:850!important;line-height:1.3}
+.social-sidebar p,.social-sidebar .item,.social-sidebar .btn{font-size:15px;line-height:1.6}
+.social-stream .post,.social-stream .card{overflow-wrap:anywhere}
+.social-stream .post p,.social-stream .post .post-body{font-size:17px;line-height:1.65}
+.composer-card{background:#fff!important;border:1px solid #dce5f1!important;box-shadow:0 8px 26px #1129500d!important}
+.composer-prompt{font-size:17px!important;font-weight:650!important;background:#f1f4f9!important;color:#33465d!important}
+.composer-shortcut{font-size:15px!important;font-weight:750!important}
+.hk-official-posts article{padding:20px;border-radius:18px!important;box-shadow:0 5px 18px #0d23400b}
+.hk-official-posts article>p{font-size:17px;line-height:1.7}
+:is(a,button,input,textarea,select):focus-visible{outline:3px solid #f1b83b!important;outline-offset:3px}
+@media(min-width:1201px){body[data-page=home] .social-layout{grid-template-columns:minmax(230px,265px) minmax(0,1fr) minmax(245px,305px)}}
+@media(max-width:760px){.top .navlinks a{font-size:14px!important}.army-brand{font-size:17px!important}.social-layout{display:block!important}body[data-page=home] .social-rail{display:flex!important;overflow-x:auto;gap:8px;padding:11px;margin-bottom:16px;scrollbar-width:thin;scroll-snap-type:x proximity}body[data-page=home] .social-rail .rail-link{flex:0 0 auto;min-height:52px;font-size:15px;padding:10px 12px;scroll-snap-align:start}body[data-page=home] .social-sidebar{display:grid;grid-template-columns:1fr;gap:12px;margin-top:16px}.composer-card{padding:17px!important}.composer-prompt{font-size:16px!important;padding:15px!important}.social-stream .post p,.social-stream .post .post-body{font-size:16px}.hk-official-posts article>p{font-size:16px}}
+@media(prefers-reduced-motion:reduce){body[data-page=home] .social-rail .rail-link{transition:none}}
