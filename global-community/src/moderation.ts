@@ -28,6 +28,8 @@ const hateOrSlur=[
 const nonChristianTerms=/\b(?:islam|muslim|quran|allah|hindu(?:ism)?|buddh(?:a|ism)|traditional\s+religion|idol\s+worship|occult\s+worship|orisha|shrine\s+worship)\b/i;
 const allowedChristianContext=/\b(?:converted|conversion|came\s+to\s+christ|accepted\s+jesus|gave\s+my\s+life\s+to\s+christ|former\s+muslim|left\s+islam|testimony|evangelism|mission(?:ary|s)?|biblical\s+teaching|christian\s+apologetics|pray\s+for|salvation\s+of)\b/i;
 const promoteOrDebate=/\b(?:join|convert\s+to|follow|promote|defend|prove|debate|argument|versus|vs\.?|better\s+than|true\s+religion|worship|praise|pray\s+to)\b/i;
+// A negated mention is not recruitment. Do not exempt an entire mixed-intent message.
+const rejectIdolatry=/^(?:please\s+)?(?:do\s+not|don['’]t|never|avoid|stop|reject|condemn)\s+(?:practi[cs](?:e|ing)\s+|promot(?:e|ing)\s+)?(?:idol\s+worship|worship(?:ping)?\s+idols?)[.!\s]*$/i;
 const targetedAbuse=/\b(?:idiot|stupid|worthless|useless|fool)\b.{0,35}\b(?:you|your|he|she|they)\b|\b(?:you|your)\b.{0,35}\b(?:idiot|stupid|worthless|useless|fool)\b/i;
 
 export function moderateText(raw:string,surface:"post"|"message"|"profile"|"space"|"group"):ModerationResult{
@@ -41,10 +43,11 @@ export function moderateText(raw:string,surface:"post"|"message"|"profile"|"spac
     ["scam_or_spiritual_financial_exploitation",scam]
   ];
   for(const [category,rules] of immediate)if(rules.some(r=>r.test(text))){
+    if(category==="explicit_pornography"&&/^(?:porn(?:ography)? is (?:wrong|sinful|harmful)|(?:do not|don['’]t|never) (?:watch|promote|share) porn(?:ography)?)[.!\s]*$/i.test(text))continue;
     if(category==="explicit_pornography"&&/\b(?:recover(?:y|ing)|overcome|overcame|delivered|addiction|avoid|against|repent|freedom from)\b/.test(text)&&!/\b(?:watch|buy|download|send|sell|link|join)\b/.test(text))return {decision:"hold",category:"sensitive_testimony_review",reasons:["Sensitive testimony needs context review."],safeExcerpt:excerpt(raw)};
     return {decision:"block",category,reasons:[category],safeExcerpt:excerpt(raw)};
   }
-  if(nonChristianTerms.test(text)&&promoteOrDebate.test(text)&&!allowedChristianContext.test(text)){
+  if(nonChristianTerms.test(text)&&promoteOrDebate.test(text)&&!allowedChristianContext.test(text)&&!rejectIdolatry.test(text)){
     return {decision:"hold",category:"non_christian_religious_promotion_or_debate",reasons:["This Christian community does not host promotion of non-Christian worship or inter-religious debate."],safeExcerpt:excerpt(raw)};
   }
   const links=(text.match(/https?:\/\//g)||[]).length;
@@ -61,4 +64,5 @@ export async function recordModeration(env:Env,userId:number|null,surface:string
     .bind(userId,surface,sourceId,result.decision,result.category,JSON.stringify(result.reasons),result.safeExcerpt,contentType||surface).run();
   await env.DB.prepare("INSERT INTO notifications(user_id,kind,title,body,href) SELECT user_id,'safety_flag','Automated safety flag','Text checks flagged an activity. Review context before taking account action.','/safety.html' FROM users WHERE role IN ('moderator','administrator','owner') AND status='active'").run();
 }
+
 
