@@ -3,6 +3,18 @@ import type {Env,ModerationResult} from "./types";
 const normalize=(value:string)=>value.normalize("NFKC").toLowerCase().replace(/[._*~\u200b]+/g," ").replace(/\s+/g," ").trim();
 const excerpt=(value:string)=>value.replace(/\s+/g," ").trim().slice(0,180);
 
+// Owner-configured terms are separated by commas, semicolons or newlines.
+// Punctuation/whitespace between letters is ignored, but matching respects word boundaries.
+function findUnapprovedTerm(raw:string,configured?:string){
+  const source=String(raw||"").normalize("NFKC").toLowerCase();
+  const terms=String(configured||"").split(/[\n;,]+/).map(value=>normalize(value).replace(/[^\p{L}\p{N}\s]/gu," ").replace(/\s+/g," ").trim()).filter(term=>term.length>=2);
+  for(const term of terms){
+    const flexible=term.split(/\s+/).map(word=>Array.from(word).join("[\\s\\p{P}\\p{S}\\u200b]*")).join("[\\s\\p{P}\\p{S}\\u200b]+");
+    if(new RegExp("(?<![\\p{L}\\p{N}])"+flexible+"(?![\\p{L}\\p{N}])","u").test(source))return term;
+  }
+  return null;
+}
+
 const severeObscenity=[
   /\bf+u+c+k+\b/i,/\bc+u+n+t+\b/i,/\bm+o+t+h+e+r+f+u+c+k+/i
 ];
@@ -32,9 +44,10 @@ const promoteOrDebate=/\b(?:join|convert\s+to|follow|promote|defend|prove|debate
 const rejectIdolatry=/^(?:please\s+)?(?:do\s+not|don['’]t|never|avoid|stop|reject|condemn)\s+(?:practi[cs](?:e|ing)\s+|promot(?:e|ing)\s+)?(?:idol\s+worship|worship(?:ping)?\s+idols?)[.!\s]*$/i;
 const targetedAbuse=/\b(?:idiot|stupid|worthless|useless|fool)\b.{0,35}\b(?:you|your|he|she|they)\b|\b(?:you|your)\b.{0,35}\b(?:idiot|stupid|worthless|useless|fool)\b/i;
 
-export function moderateText(raw:string,surface:"post"|"message"|"profile"|"space"|"group"):ModerationResult{
+export function moderateText(raw:string,surface:"post"|"message"|"profile"|"space"|"group",configuredBlockedWords?:string):ModerationResult{
   const text=normalize(String(raw||""));const reasons:string[]=[];
   if(!text)return {decision:"allow",category:"clean",reasons:[],safeExcerpt:""};
+  if(findUnapprovedTerm(raw,configuredBlockedWords))return {decision:"block",category:"unapproved_word",reasons:["unapproved_word_match"],safeExcerpt:excerpt(raw)};
   const immediate:[string,RegExp[]][]=[
     ["explicit_pornography",explicitSexual],
     ["severe_obscenity",severeObscenity],
