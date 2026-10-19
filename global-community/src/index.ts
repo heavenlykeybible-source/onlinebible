@@ -86,8 +86,6 @@ async function route(request:Request,env:Env,ctx?:ExecutionContext):Promise<Resp
     return json({ok:true,userId:Number(row.user_id),role:row.role},200,{"Set-Cookie":sessionCookie(id)});
   }
   const current=await getSession(request,env);
-  // These DELETE actions only withdraw own support or archive an owned prayer privately.
-  const careWithdrawal=m==='DELETE'&&/^\/api\/prayer-items\/\d+(?:\/support)?$/.test(p);
   if(current?.status==='restricted'&&!['/api/me','/api/me/safety','/api/me/requests','/api/auth/logout','/api/care/preferences'].includes(p))return error('Your account is locked pending administrator review. Open Safety & privacy to read the reason and request review.',403);
   // Timed restrictions do not change account roles/status or release administrator locks.
   if(p==='/api/care/preferences'&&['GET','PATCH'].includes(m)){const u=await me(request,env);Care.requireCare(env);return json(m==='GET'?await Care.preferences(env,u.userId):await Care.savePreferences(env,u.userId,await body(request)));}
