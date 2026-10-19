@@ -702,3 +702,8 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #a7
  .hk-family-promo{margin:12px auto;padding:14px;}
  .hk-family-promo nav a{max-width:100%;overflow-wrap:anywhere;}
 }
+
+
+/* Ministry motto beneath each post's sharing controls, including dynamically loaded posts. */
+.post-sharing-motto{margin:10px 0 16px;padding:10px 14px;border-block:1px solid #e5c778;background:#fffaf3;border-radius:10px;color:#7c1637;font:700 italic clamp(16px,1.4vw,20px)/1.45 Georgia,serif;text-align:center;text-wrap:balance}.post-share-bless{white-space:normal;text-wrap:balance;min-height:44px}
+.post-share-bless{background:linear-gradient(135deg,#7c1637,#52132b);color:#fff;border:1px solid #dfbb65;border-radius:14px;padding:11px 16px;box-shadow:0 3px 9px #52132b20;font-weight:700}.post-share-bless:hover{background:#581029;color:#fff}.post-share-bless:focus-visible{outline:3px solid #d4a62b;outline-offset:3px}
