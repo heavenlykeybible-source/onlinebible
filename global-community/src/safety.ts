@@ -4,7 +4,7 @@ export async function mySafety(env:Env,userId:number){
  const [requests,decisions]=await Promise.all([
  env.DB.prepare('SELECT request_id,kind,decision_id,details,status,response,created_at,reviewed_at FROM safety_requests WHERE user_id=? ORDER BY request_id DESC LIMIT 100').bind(userId).all(),
  env.DB.prepare("SELECT decision_id,action,reason,created_at FROM safety_decisions WHERE subject_user_id=? ORDER BY decision_id DESC LIMIT 100").bind(userId).all()]);
- const restrictions=await env.DB.prepare("SELECT reason,status,created_at FROM account_restrictions WHERE user_id=? ORDER BY restriction_id DESC LIMIT 20").bind(userId).all();return {requests:requests.results,decisions:decisions.results,restrictions:restrictions.results};
+ const restrictions=await env.DB.prepare("SELECT reason,status,created_at FROM account_restrictions WHERE user_id=? ORDER BY restriction_id DESC LIMIT 20").bind(userId).all();const reviewMessages=await env.DB.prepare("SELECT notification_id,title,body,href,created_at FROM notifications WHERE user_id=? AND kind='account_review_update' ORDER BY notification_id DESC LIMIT 10").bind(userId).all();return {requests:requests.results,decisions:decisions.results,restrictions:restrictions.results,reviewMessages:reviewMessages.results};
 }
 export async function submitRequest(env:Env,userId:number,input:any){
  const kind=text(input.kind,20),details=text(input.details,3000);if(!['appeal','access','deletion','correction','privacy','safety'].includes(kind)||details.length<10)throw new Error('Choose a request type and give at least 10 characters of detail.');
@@ -32,4 +32,5 @@ export async function reviewRequest(env:Env,actor:SessionUser,id:number,input:an
  await env.DB.batch(queries);
  return {status:'resolved'};
 }
+
 

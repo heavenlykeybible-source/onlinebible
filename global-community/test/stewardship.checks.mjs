@@ -48,5 +48,11 @@ test('Dual report routing, separate group review, flag decisions and administrat
  assert.equal(await A.requireRole(new Request('https://example.invalid',{headers:{Cookie:'gc_session='+cookie}}),env,'member'),null);
  await H.restrictAccount(env,user(5),2,{action:'unlock',note:'Reviewed appeal and restored access.'});assert.equal(db.prepare('SELECT status FROM users WHERE user_id=2').get().status,'active');
  assert.equal(db.prepare("SELECT COUNT(*) n FROM safety_audit WHERE action IN ('account_lock','account_unlock')").get().n,2);
+ const restored=db.prepare("SELECT title,body FROM notifications WHERE user_id=2 AND kind='account_review_update' AND href LIKE '/safety.html#review-account-%'").get();assert.equal(restored.title,'Your account has been reactivated');assert.match(restored.body,/We are pleased to inform you/);assert.match(restored.body,/Together we take Christ to the nations of the world/);
+ await assert.rejects(H.restrictAccount(env,user(5),2,{action:'unlock',note:'Retrying the same completed review.'}),/Active account lock unavailable/);assert.equal(db.prepare("SELECT COUNT(*) n FROM notifications WHERE user_id=2 AND kind='account_review_update' AND href LIKE '/safety.html#review-account-%'").get().n,1);
+ env.MODERATION_PIPELINE='enabled';for(let n=1;n<=2;n++){const id='restoration-'+n;db.prepare("INSERT INTO screening_jobs(job_id,user_id,request_hash,surface,content_text,status) VALUES(?,3,?,'post','Review fixture','block')").run(id,id);db.prepare("INSERT INTO community_strikes(user_id,job_id,evidence_hash,category,reason) VALUES(3,?,?,'commercial_promotion','Confirmed review fixture')").run(id,id);}
+ await H.restrictAccount(env,user(5),3,{action:'lock',note:'A separate administrator account restriction.'});await H.restrictAccount(env,user(5),3,{action:'unlock',note:'Personal review resolved this administrator restriction.'});const partial=db.prepare("SELECT title,body FROM notifications WHERE user_id=3 AND kind='account_review_update'").get();assert.equal(partial.title,'Your personal review is complete');assert.match(partial.body,/separate restriction still applies/);assert.doesNotMatch(partial.body,/account has been reactivated/);
+
  }finally{db.close();rmSync(dir,{recursive:true,force:true});}
 });
+
