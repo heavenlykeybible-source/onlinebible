@@ -88,8 +88,23 @@ export async function createSpace(env:Env,userId:number,input:any){
   if(mod.decision!=="allow")await recordModeration(env,userId,"space",row.space_id,mod);
   return {spaceId:Number(row.space_id),slug};
 }
+export async function updateSpace(env:Env,userId:number,spaceId:number,input:any){
+  const allowed=await env.DB.prepare("SELECT 1 FROM space_members sm JOIN spaces s ON s.space_id=sm.space_id WHERE sm.space_id=? AND sm.user_id=? AND sm.role IN ('owner','administrator') AND s.status='active'").bind(spaceId,userId).first();
+  if(!allowed)throw new Error("Space owner or administrator access required.");
+  const name=clamp(input.name,120),description=clamp(input.description,2000),website=clamp(input.website,300);
+  if(name.length<2||description.length<10)throw new Error("Space name and Christian-purpose description are required.");
+  if(!["ministry","church","christian_organization","mission_outreach","christian_business","christian_media","music_ministry","christian_project","fellowship_network","other_approved"].includes(input.category))throw new Error("Choose a valid Space category.");
+  if(website){let link:URL;try{link=new URL(website);}catch{throw new Error("Website must be a valid https or http link.");}if(!["https:","http:"].includes(link.protocol)||link.username||link.password)throw new Error("Website must be a valid https or http link.");}
+  const country=clamp(input.country,80),state=clamp(input.stateRegion,100),city=clamp(input.city,100),mod=moderateText([name,description,country,state,city].join("\n"),"space");
+  if(["block","hold"].includes(mod.decision)){await recordModeration(env,userId,"space",spaceId,mod);throw new Error("These Space details violate Community Standards.");}
+  const result=await env.DB.prepare("UPDATE spaces SET name=?,description=?,category=?,website=?,country=?,state_region=?,city=?,updated_at=datetime('now') WHERE space_id=? AND status='active' AND EXISTS(SELECT 1 FROM space_members WHERE space_id=spaces.space_id AND user_id=? AND role IN ('owner','administrator'))").bind(name,description,input.category,website||null,country||null,state||null,city||null,spaceId,userId).run();
+  if(!result.meta.changes)throw new Error("This Space could not be updated. Refresh and try again.");
+  if(mod.decision!=="allow")await recordModeration(env,userId,"space",spaceId,mod);
+  return {ok:true};
+}
 export async function listSpaces(env:Env,category?:string,userId:number|null=null){
   const r=await env.DB.prepare(`SELECT s.space_id,s.slug,s.name,s.category,s.description,s.country,s.state_region,s.city,s.verification_status,
+    (SELECT COUNT(*) FROM global_connections WHERE target_type='space' AND target_id=s.space_id) global_connections,
     EXISTS(SELECT 1 FROM space_members WHERE space_id=s.space_id AND user_id=?) can_manage
     FROM spaces s WHERE s.status='active' AND (?='' OR s.category=?) ORDER BY s.created_at DESC LIMIT 100`).bind(userId,category||'',category||'').all<any>();return r.results;
 }
@@ -510,4 +525,5 @@ export async function savePost(env:Env,userId:number,postId:number){
   if(old)await env.DB.prepare('DELETE FROM saved_posts WHERE user_id=? AND post_id=?').bind(userId,postId).run();
   else await env.DB.prepare('INSERT OR IGNORE INTO saved_posts(user_id,post_id) VALUES(?,?)').bind(userId,postId).run();return {saved:!old};
 }
+
 
