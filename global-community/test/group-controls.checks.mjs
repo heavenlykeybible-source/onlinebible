@@ -90,6 +90,15 @@ test('Messaging and groups: privacy, retry safety, posting permissions and manag
  await assert.rejects(S.readNotifications(env,1,Array(101).fill(noticeId)),/valid notifications/);
  await S.readNotifications(env,1,[noticeId,noticeId]);assert.equal(await S.unreadNotificationCount(env,1),0);
  await S.readNotifications(env,1,[]);assert.equal(await S.unreadNotificationCount(env,1),0);
+ // Chat history can be paged beyond 100 without exposing held content or another chat.
+ const chatRows=[];for(let i=0;i<105;i++)chatRows.push(Number(db.prepare("INSERT INTO messages(conversation_id,sender_user_id,body,status,moderation_state) VALUES(?,4,?,'delivered','allowed')").run(chat,'History message '+i).lastInsertRowid));
+ const latestMessages=await S.messages(env,4,chat);assert.equal(latestMessages.length,100);assert.equal(latestMessages.at(-1).message_id,chatRows.at(-1));
+ const olderMessages=await S.messages(env,4,chat,latestMessages[0].message_id);assert(olderMessages.length>0);assert(!olderMessages.some(m=>latestMessages.some(n=>n.message_id===m.message_id)));
+ await assert.rejects(S.messages(env,1,chat,latestMessages[0].message_id),/unavailable/);
+ await assert.rejects(S.messages(env,4,chat,0),/valid message history cursor/);await assert.rejects(S.messages(env,4,chat,NaN),/valid message history cursor/);
+ db.prepare("UPDATE profiles SET profile_photo_key='/media/member-four.jpg' WHERE user_id=4").run();
+ db.prepare("INSERT INTO messages(conversation_id,sender_user_id,body,status,moderation_state) VALUES(?,4,'Held private content','held','held')").run(chat);
+ const inboxRow=(await S.inbox(env,5)).find(c=>c.conversation_id===chat);assert.equal(inboxRow.last_message,'History message 104');assert.equal(inboxRow.requester_photo,'/media/member-four.jpg');
  // Pending requests are discoverable, withdrawable, and do not grant access.
  const pendingGroup=(await S.createGroup(env,1,{...input,name:'Pending membership checks',visibility:'private'})).groupId;
  await S.joinGroup(env,4,pendingGroup);

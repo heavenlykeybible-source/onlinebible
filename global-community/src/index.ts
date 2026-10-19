@@ -149,7 +149,7 @@ async function route(request:Request,env:Env):Promise<Response>{
   if(p==="/api/messages"&&m==="GET"){const u=await me(request,env);return json({items:await S.inbox(env,u.userId)});}
   if(p==="/api/messages/requests"&&m==="POST"){const u=await me(request,env),b=await body(request);return json(await S.requestConversation(env,u.userId,Number(b.recipientUserId)),201);}
   {const x=p.match(/^\/api\/messages\/(\d+)\/decision$/);if(x&&m==="POST"){const u=await me(request,env),b=await body(request);if(!["accept","decline"].includes(b.decision))return error("Choose accept or decline.");return json(await S.decideConversation(env,u.userId,Number(x[1]),b.decision==="accept"));}}
-  {const x=p.match(/^\/api\/messages\/(\d+)$/);if(x&&m==="GET"){const u=await me(request,env);return json({items:await S.messages(env,u.userId,Number(x[1]))});}}
+  {const x=p.match(/^\/api\/messages\/(\d+)$/);if(x&&m==="GET"){const u=await me(request,env);const cursor=url.searchParams.get("before"),items=await S.messages(env,u.userId,Number(x[1]),cursor===null?undefined:Number(cursor));return json({items,nextBefore:items.length===100?items[0].message_id:null});}}
   {const x=p.match(/^\/api\/messages\/(\d+)$/);if(x&&m==="POST"){const u=await me(request,env),b=await body(request);return json(await S.sendMessage(env,u.userId,Number(x[1]),String(b.body||""),b.clientRequestId),201);}}
 
   if(p==="/api/prayer-circles"&&m==="GET"){const u=await getSession(request,env);return json({items:await S.listPrayerCircles(env,u?.userId||null)});}

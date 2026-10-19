@@ -307,11 +307,14 @@ export async function sendMessage(env:Env,userId:number,id:number,bodyRaw:string
   return {messageId:Number(row?.message_id),status};
 }
 export async function inbox(env:Env,userId:number){
-  const r=await env.DB.prepare(`SELECT c.*,p1.display_name requester_name,p2.display_name recipient_name FROM conversations c JOIN profiles p1 ON p1.user_id=c.requester_user_id JOIN profiles p2 ON p2.user_id=c.recipient_user_id JOIN users u1 ON u1.user_id=c.requester_user_id JOIN users u2 ON u2.user_id=c.recipient_user_id WHERE (c.requester_user_id=? OR c.recipient_user_id=?) AND c.status!='blocked' AND u1.status='active' AND u2.status='active' AND NOT EXISTS(SELECT 1 FROM user_blocks WHERE (blocker_user_id=c.requester_user_id AND blocked_user_id=c.recipient_user_id) OR (blocker_user_id=c.recipient_user_id AND blocked_user_id=c.requester_user_id)) ORDER BY c.updated_at DESC LIMIT 100`).bind(userId,userId).all<any>();return r.results;
+  const r=await env.DB.prepare(`SELECT c.*,p1.display_name requester_name,p2.display_name recipient_name,p1.profile_photo_key requester_photo,p2.profile_photo_key recipient_photo,
+ (SELECT substr(body,1,160) FROM messages WHERE conversation_id=c.conversation_id AND status='delivered' ORDER BY message_id DESC LIMIT 1) last_message,
+ (SELECT created_at FROM messages WHERE conversation_id=c.conversation_id AND status='delivered' ORDER BY message_id DESC LIMIT 1) last_message_at FROM conversations c JOIN profiles p1 ON p1.user_id=c.requester_user_id JOIN profiles p2 ON p2.user_id=c.recipient_user_id JOIN users u1 ON u1.user_id=c.requester_user_id JOIN users u2 ON u2.user_id=c.recipient_user_id WHERE (c.requester_user_id=? OR c.recipient_user_id=?) AND c.status!='blocked' AND u1.status='active' AND u2.status='active' AND NOT EXISTS(SELECT 1 FROM user_blocks WHERE (blocker_user_id=c.requester_user_id AND blocked_user_id=c.recipient_user_id) OR (blocker_user_id=c.recipient_user_id AND blocked_user_id=c.requester_user_id)) ORDER BY c.updated_at DESC LIMIT 100`).bind(userId,userId).all<any>();return r.results;
 }
-export async function messages(env:Env,userId:number,id:number){
+export async function messages(env:Env,userId:number,id:number,before?:number){
   await conversationAccess(env,userId,id);
-  const r=await env.DB.prepare("SELECT message_id,sender_user_id,body,created_at FROM messages WHERE conversation_id=? AND status='delivered' ORDER BY message_id DESC LIMIT 100").bind(id).all<any>();return r.results.reverse();
+  const cursor=before===undefined?Number.MAX_SAFE_INTEGER:before;if(!Number.isSafeInteger(cursor)||cursor<1)throw new Error("Choose a valid message history cursor.");
+  const r=await env.DB.prepare("SELECT message_id,sender_user_id,body,created_at FROM messages WHERE conversation_id=? AND status='delivered' AND message_id<? ORDER BY message_id DESC LIMIT 100").bind(id,cursor).all<any>();return r.results.reverse();
 }
 
 export async function createPrayerCircle(env:Env,userId:number,input:any){
