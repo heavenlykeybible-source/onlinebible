@@ -88,3 +88,11 @@
 .audio-playlist-panel button:disabled{opacity:.48;cursor:not-allowed}
 .audio-playlist-panel audio:not([controls]){display:none}
 @media(max-width:550px){.audio-mixer-grid{grid-template-columns:1fr}.audio-playlist-panel{padding:12px}}
+
+/* Prevent the compact Bible header from overflowing on 320–380px phones. */
+@media(max-width:380px){
+ .mobile-kjv-page .mobile-kjv-header{flex-wrap:wrap;align-items:center}
+ .mobile-kjv-page .mobile-kjv-header .study-brand{max-width:100%}
+ .mobile-kjv-page .mobile-kjv-header nav{flex:1 1 100%;width:100%;min-width:0;overflow-x:auto;justify-content:flex-start;padding-bottom:2px}
+ .mobile-kjv-page .mobile-kjv-header nav a{flex:0 0 auto;white-space:nowrap}
+}
