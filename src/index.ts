@@ -231,8 +231,8 @@ export default {
     if(pathname==='/api/admin/media-engine/broadcast-settings' && ['GET','POST'].includes(method))return handleAdminMedia(request,env,'/api/broadcast/settings');
     if(pathname==='/api/admin/media-engine/playlist-order' && ['GET','POST'].includes(method))return handleAdminMedia(request,env,'/api/broadcast/playlist-order');
     {const m=idMatch(/^\/api\/admin\/media-engine\/playout\/(\d+)\/cancel$/);if(m&&method==='POST')return handleAdminMedia(request,env,`/api/playout/${m[1]}/cancel`);}
-    if (pathname === "/api/community/categories" && method === "GET") return handleCommunityCategories(request,env);
-    if (pathname === "/api/admin/testimonies/pending" && method === "GET") return handlePendingTestimonies(request,env);
+    if (pathname === "/api/community/categories" && method === "GET") return withRequestCors(handleCommunityCategories(request,env), request);
+    if (pathname === "/api/admin/testimonies/pending" && method === "GET") return withRequestCors(handlePendingTestimonies(request,env), request);
     {const m=idMatch(/^\/api\/admin\/media-engine\/media\/(\d+)\/preview$/);if(m&&['GET','HEAD'].includes(method))return handleAdminMedia(request,env,`/api/media/${m[1]}/preview`);}
     {const m=pathname.match(/^\/api\/admin\/media-engine\/media\/(\d+)\/multipart(?:\/(status|complete|abort|part\/\d+))?$/);if(m&&['GET','POST','PUT'].includes(method))return handleAdminMedia(request,env,pathname.replace('/api/admin/media-engine','/api'));}
     if (pathname === "/api/admin/media-engine/media" && ["GET","POST"].includes(method)) return handleAdminMedia(request,env,"/api/media");
