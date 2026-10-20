@@ -67,3 +67,11 @@ test('Android and Apple installation icons have correct PNG dimensions and safe 
  assert.match(read('public/index.html'),/apple-touch-icon.png/);
  assert.match(read('public/styles.css'),/min-height:44px/);
 });
+
+test('Bible reader header can wrap and scroll on narrow phone viewports',()=>{
+ const css=read('public/study-library.css');
+ assert.match(css,/@media\\s*\\(max-width:\\s*380px\\)/);
+ assert.match(css,/\\.mobile-kjv-page \\.mobile-kjv-header\\{flex-wrap:wrap/);
+ assert.match(css,/\\.mobile-kjv-page \\.mobile-kjv-header nav\\{[^}]*overflow-x:auto/);
+ assert.match(css,/\\.mobile-kjv-page \\.mobile-kjv-header nav a\\{[^}]*white-space:nowrap/);
+});
