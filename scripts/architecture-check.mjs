@@ -44,7 +44,7 @@ async function checkMigrationSequence(directory, expectedCount, expectedTip, lab
   }
 }
 await checkMigrationSequence("global-community/migrations", 15, 15, "Global Community");
-await checkMigrationSequence("recovery-control/migrations", 4, 4, "Recovery Control");
+await checkMigrationSequence("recovery-control/migrations", 6, 6, "Recovery Control");
 
 const prod = await readFile(join(root, ".github/workflows/cloudflare-production.yml"), "utf8");
 const account2 = await readFile(join(root, ".github/workflows/cloudflare-media-engine.yml"), "utf8");
