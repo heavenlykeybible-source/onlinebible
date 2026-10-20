@@ -131,8 +131,8 @@ export default {
     if (pathname === "/api/events" && method === "GET") return handleWebsiteEvents(request, env);
     if (pathname === "/api/blog/posts" && method === "GET") return handlePublicBlogPosts(request,env);
     {const m=idMatch(/^\/api\/blog\/posts\/([^/]+)$/);if(m&&method==="GET")return handlePublicBlogPosts(request,env,decodeURIComponent(m[1]));}
-    if (pathname === "/api/admin/blog/posts" && ["GET","POST"].includes(method)) return handleAdminBlogPosts(request,env);
-    {const m=idMatch(/^\/api\/admin\/blog\/posts\/(\d+)\/(publish)$/);if(m&&method==="POST")return handleAdminBlogPosts(request,env,Number(m[1]),m[2]);}
+    if (pathname === "/api/admin/blog/posts" && ["GET","POST","OPTIONS"].includes(method)) return handleAdminBlogPosts(request,env);
+    {const m=idMatch(/^\/api\/admin\/blog\/posts\/(\d+)\/(publish)$/);if(m&&["POST","OPTIONS"].includes(method))return handleAdminBlogPosts(request,env,Number(m[1]),m[2]);}
     if (pathname === "/api/contact" && method === "POST") return handlePublicSubmission(request, env as any, "contact");
     if (pathname === "/api/newsletter" && method === "POST") return handlePublicSubmission(request, env as any, "newsletter");
     if (pathname === "/api/partner" && method === "POST") return handlePublicSubmission(request, env as any, "partner");
