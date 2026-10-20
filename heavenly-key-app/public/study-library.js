@@ -119,12 +119,15 @@ async function bible(){
  const savedChapters=make('select');savedChapters.id='kjv-saved-chapters';savedLabel.htmlFor=savedChapters.id;
  const optionBar=make('div',null,'mobile-kjv-option-actions');
  const bookmark=action('☆ Bookmark chapter',saveBookmark);
- const copy=action('Copy chapter',copyChapter);\n const copyBible=action('Copy full Bible',copyFullBible);
+ const copy=action('Copy chapter',copyChapter);
+ const copyBible=action('Copy full Bible',copyFullBible);
  const fontStyle=action('Use classic font',toggleTypeface);
  const audio=link('Listen to this chapter →','audio-bible.html','btn secondary');
  optionBar.append(bookmark,copy,fontStyle,audio);
  extras.append(searchLabel,search,results,savedLabel,savedChapters,optionBar);
- const libraryActions=make('div',null,'mobile-kjv-library-actions');\n libraryActions.append(make('span','Whole Bible tools','mobile-kjv-library-label'),copyBible);\n const nav=make('nav',null,'mobile-kjv-nav');
+ const libraryActions=make('div',null,'mobile-kjv-library-actions');
+ libraryActions.append(make('span','Whole Bible tools','mobile-kjv-library-label'),copyBible);
+ const nav=make('nav',null,'mobile-kjv-nav');
  nav.setAttribute('aria-label','Previous and next Bible chapters');
  const prev=action('← Previous',()=>turn(-1),'mobile-kjv-nav-button');
  const next=action('Next →',()=>turn(1),'mobile-kjv-nav-button');
