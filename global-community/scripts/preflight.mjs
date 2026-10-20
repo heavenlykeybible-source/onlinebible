@@ -7,8 +7,12 @@ const requiredBindings = ['DB', 'SESSIONS', 'MEDIA', 'AI'];
 const requiredSecrets = ['SESSION_SECRET', 'PASSWORD_PEPPER', 'INTERSERVICE_SECRET'];
 
 for (const secret of requiredSecrets) {
-  if (new RegExp('^\\s*' + secret + '\\s*=', 'm').test(config)) {
-    throw new Error('Never store secret values in wrangler.toml: ' + secret);
+  const assignment = new RegExp('^\\s*' + secret + '\\s*=', 'm');
+  if (assignment.test(config)) {
+    throw new Error('Never store secret values in production wrangler.toml: ' + secret);
+  }
+  if (assignment.test(staging)) {
+    throw new Error('Never store secret values in staging wrangler.staging.toml: ' + secret);
   }
 }
 for (const binding of requiredBindings) {
