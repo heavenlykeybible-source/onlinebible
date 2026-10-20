@@ -9,6 +9,24 @@
  const post=(path,body)=>api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 
 
+
+ function previewAgentContent(record){
+  const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const safeText=[];
+  const content=record.content||{};
+  if(Array.isArray(content.fields)){
+   for(const field of content.fields.slice(0,100)){
+    if(field.type==='text'||field.type==='alt')safeText.push('<p>'+esc(field.value)+'</p>');
+    if(field.type==='visible')safeText.push('<p>Section visibility: '+esc(field.value)+'</p>');
+    if(field.type==='image')safeText.push('<p>Image reference: '+esc(field.value)+'</p>');
+    if(field.type==='link')safeText.push('<p>Link reference: '+esc(field.value)+'</p>');
+   }
+  }
+  if(Array.isArray(content.items))for(const item of content.items.slice(0,40))safeText.push('<p>Menu: '+esc(item.label)+' — '+esc(item.href)+'</p>');
+  if(content.copyright)safeText.push('<p>'+esc(content.copyright)+'</p>');
+  if(content.designer)safeText.push('<p>'+esc(content.designer.label)+' — '+esc(content.designer.href)+'</p>');
+  $('#agent-draft-preview').srcdoc='<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;"><style>body{font:16px/1.6 system-ui,sans-serif;margin:22px;color:#222}p{margin:0 0 1em;white-space:pre-wrap;overflow-wrap:anywhere}</style></head><body><h2>Private draft content</h2>'+(safeText.join('')||'<p>There is no displayable text in this draft.</p>')+'</body></html>';
+ }
  let selectedAgentDraft=null;
  async function listAgentDrafts(){
   const notice=$('#agent-drafts-status'),root=$('#agent-drafts-list');
@@ -24,6 +42,7 @@
       $('#agent-draft-meta').textContent=record.site+' · '+record.kind+'/'+record.key+' — '+record.description;
       // textContent avoids execution of untrusted AI-generated HTML.
       $('#agent-draft-content').textContent=JSON.stringify(record.content,null,2);
+      previewAgentContent(record);
       $('#agent-draft-review').hidden=false;
       $('#agent-draft-accept').disabled=record.status!=='pending';
       $('#agent-draft-reject').disabled=record.status!=='pending';
