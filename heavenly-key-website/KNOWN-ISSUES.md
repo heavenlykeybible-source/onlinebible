@@ -33,9 +33,9 @@ Both show an explicit "not connected yet" message on submit rather than
 pretending to succeed.
 
 ## 3. Content sources and widgets
-The homepage's **Recent Blog Posts** preview and footer list now load from the public Blogger JSON-in-script feed at `blog.heavenlykey.org`; they do not use an invented `/api/blog` endpoint. If the feed is unavailable or blocked by CSP/network policy, the homepage shows a fallback link to the official blog.
+The homepage's **Recent Blog Posts** preview, footer list, and internal `/blog/` pages now prefer the first-party `GET /api/blog/posts` API. The legacy Blogger feed is only a transitional fallback while the 94 legacy articles are reviewed and migrated. The new API requires migration `0040_blog_publishing.sql` and backend deployment before it can serve real content.
 
-Other content widgets without a published API contract (including Featured Sermons where applicable) must remain static or clearly indicate unavailable data. Production JavaScript must not call unimplemented `/api/sermons` or `/api/blog` endpoints. Verify each widget against the latest HTML and script source before treating this historical note as a complete inventory.
+Other content widgets without a published API contract (including Featured Sermons where applicable) must remain static or clearly indicate unavailable data. Production JavaScript must not call unimplemented `/api/sermons` endpoints.
 
 ## 4. Two Open Content Conflicts (need Project Lead decision, not a fix)
 Documented in `CONTENT-INTEGRATION-REPORT.md` §2:
@@ -48,9 +48,7 @@ article pages hosted under the same website origin and sharing the same
 navigation, design system, and content model. The current Blogger feed
 integration is a transitional source for recent-post previews only. It is
 not a second product and must not be treated as completion of the unified
-blog migration. Release acceptance requires an internal blog index and
-article routes, a verified migration inventory, working categories/search
-if included in the approved feature scope, and no broken legacy links.
+blog migration. The first-party blog index, article template, secured publisher UI, public/admin API handlers, scheduled publication worker and text/link social distribution are now implemented in the audit branch. Release acceptance still requires applying migration `0040_blog_publishing.sql`, deploying the Worker and website together, verifying provider credentials and API permissions, migrating the 94 legacy articles, checking all links, and running end-to-end tests.
 
 ## 5. Legacy teaching-article migration incomplete
 94 real teaching articles exist in the offline export. The current homepage
@@ -59,6 +57,9 @@ migrating those 94 legacy teaching articles into the website's own
 design system. The legacy migration remains outstanding and is logged as
 a Legacy Review item in `PROJECT-CHECKLIST.md` §7. Do not mark those
 94 articles migrated based only on the homepage Blogger feed.
+
+## Blog publishing and social distribution — implementation boundary
+The admin publisher can save drafts, schedule articles, publish immediately, and request automatic text/link sharing to connected Facebook, X, and LinkedIn accounts. Scheduled publication uses the Worker cron handler; it does not depend on visitors opening the site. Social sharing uses the existing encrypted account-connection and publishing queue. Instagram, TikTok and YouTube are not automatically claimed by the text-only blog workflow because their media-specific publishing requirements are not wired into this feature. Real publishing requires migration `0040_blog_publishing.sql`, an active authorized social account, provider app credentials/permissions, and a deployed Worker. No social post can be confirmed until live credentials and provider responses are tested.
 
 ## 6. Two Stat Categories Still Placeholder
 "Bibles Distributed" and "Partners & Supporters" on the homepage stats
