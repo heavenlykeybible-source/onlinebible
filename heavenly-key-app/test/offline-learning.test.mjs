@@ -16,8 +16,8 @@ test('Offline curriculum retains all 66-book survey questions and valid answer i
  for(const q of QUESTIONS){assert.ok(Number.isInteger(q.correct)&&q.correct>=0&&q.correct<q.options.length);assert.ok(q.reference&&q.explanation)}
 });
 test('Strict CSP: new learning pages contain no executable inline code or inline styles',()=>{
- for(const path of ['public/walk-offline.html','public/creation-to-eternity.html']){const html=file(path);assert.doesNotMatch(html,/<style|\\sstyle=|<script>/i);assert.ok(html.includes('offline-status.js'))}
- assert.doesNotMatch(file('public/walk-offline.js'),/fetch\\(|\\/api\\/|localStorage\\.setItem\\([^,]+,JSON\\.stringify\\(state\\)/);
+ for(const path of ['public/walk-offline.html','public/creation-to-eternity.html']){const html=file(path);assert.doesNotMatch(html,/<style|\sstyle=|<script>/i);assert.ok(html.includes('offline-status.js'))}
+ assert.doesNotMatch(file('public/walk-offline.js'),/fetch\(|\/api\/|localStorage\.setItem\([^,]+,JSON\.stringify\(state\)/);
 });
 test('App service worker reopens learning tools offline and never captures private routes',async()=>{
  const listeners={},store=new Map();let online=true;
