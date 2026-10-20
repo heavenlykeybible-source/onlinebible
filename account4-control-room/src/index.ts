@@ -5,7 +5,7 @@ import {ownerDraftQueue} from './agent-drafts.ts';
 import {AI_MODEL,PUBLIC_CMS_ORIGIN,validateDocument} from './cms-schema.ts';
 import {saveDraft,publishDraft,restoreDraft} from './cms-storage.ts';
 import {ownerSession,ownerLogin,ownerLogout,setOwnerPassword,generatedPassword} from './owner-auth.ts';
-interface Env {DB:D1Database;MEDIA:R2Bucket;AI:Ai;ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUD:string;CONNECTOR_TOKENS_SHA256?:string}
+interface Env {DB:D1Database;MEDIA:R2Bucket;AI:Ai;ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUD:string;}
 const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
 const fail=(message:string,status=400)=>json({error:message},status);
 function b64url(s:string){const p=s.replace(/-/g,"+").replace(/_/g,"/");return Uint8Array.from(atob(p+"=".repeat((4-p.length%4)%4)),c=>c.charCodeAt(0))}
@@ -39,7 +39,7 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
  // Restricted agent API authenticates with an independently provisioned scoped secret.
  // The Control Room hostname must also be protected at the Cloudflare Access edge.
  if(!ownerHost&&u.pathname.startsWith('/api/connector/v1/'))
-  return handleAgentConnector(request,{DB:env.DB,CONNECTOR_TOKENS_SHA256:env.CONNECTOR_TOKENS_SHA256||''});
+  return handleAgentConnector(request,{DB:env.DB});
  const accessActor=ownerHost?null:await authenticate(request,env);
  const actor=accessActor||(ownerHost?await ownerSession(request,env.DB):null);
  if(!u.pathname.startsWith('/api/')){
