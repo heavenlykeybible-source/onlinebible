@@ -42,6 +42,16 @@ Documented in `CONTENT-INTEGRATION-REPORT.md` §2:
 1. Homepage hero wording — approved spec copy vs. the real site's actual "REVIVAL, HOLINESS, POWER!" copy. Currently running the approved spec version.
 2. Headquarters address — "Warri, Delta State, Nigeria" (early screenshot) vs. "Nigeria, Africa" (offline export, no street address). Currently showing "Nigeria, Africa."
 
+## Product architecture: website and blog are one app
+The target is one **Heavenly Key Website & Blog App**, with the blog and
+article pages hosted under the same website origin and sharing the same
+navigation, design system, and content model. The current Blogger feed
+integration is a transitional source for recent-post previews only. It is
+not a second product and must not be treated as completion of the unified
+blog migration. Release acceptance requires an internal blog index and
+article routes, a verified migration inventory, working categories/search
+if included in the approved feature scope, and no broken legacy links.
+
 ## 5. Legacy teaching-article migration incomplete
 94 real teaching articles exist in the offline export. The current homepage
 preview is a **live, five-post Blogger feed**, which is separate from
