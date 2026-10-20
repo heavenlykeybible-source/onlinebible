@@ -28,9 +28,17 @@
   }
 
   function plain(value) {
-    const el = document.createElement('div');
-    el.innerHTML = value || '';
-    return (el.textContent || '').replace(/\s+/g, ' ').trim();
+    const text = String(value == null ? '' : value).replace(/<[^>]*>/g, ' ');
+    return text.replace(/&(#x[0-9a-f]+|#\\d+|amp|lt|gt|quot|apos|nbsp);/gi, (entity, code) => {
+      const named = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+      if (code.charAt(0) !== '#') return named[code.toLowerCase()] || entity;
+      const number = code.charAt(1).toLowerCase() === 'x'
+        ? parseInt(code.slice(2), 16)
+        : parseInt(code.slice(1), 10);
+      if (!Number.isFinite(number) || number < 0 || number > 0x10ffff ||
+          (number >= 0xd800 && number <= 0xdfff)) return '';
+      try { return String.fromCodePoint(number); } catch (_) { return ''; }
+    }).replace(/\\s+/g, ' ').trim();
   }
 
   function safePostUrl(value) {
