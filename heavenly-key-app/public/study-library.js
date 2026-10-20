@@ -308,7 +308,6 @@ async function bible(){
   status.textContent='Opening chapter…';
   chapter.value=String(selectedChapter);
   verses.replaceChildren();search.value='';results.replaceChildren();
-  audio.href='audio-bible.html?book='+encodeURIComponent(selectedBook.id)+'&chapter='+selectedChapter;
   prev.disabled=!moveBibleRef(books,selectedBook.id,selectedChapter,-1);
   next.disabled=!moveBibleRef(books,selectedBook.id,selectedChapter,1);
   const url=new URL(location.href);
