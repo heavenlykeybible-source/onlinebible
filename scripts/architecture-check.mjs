@@ -17,8 +17,8 @@ if (/catch\s*\{\s*\}/.test(mediaIndex)) {
 const rootMigrations = (await readdir(join(root, "migrations")))
   .filter((f) => /^\d{4}_.+\.sql$/.test(f))
   .sort();
-if (rootMigrations.length !== 39 || !rootMigrations.at(-1)?.startsWith("0039_")) {
-  failures.push("Root migration tip must be 0039 with exactly 39 numbered migrations.");
+if (rootMigrations.length !== 40 || !rootMigrations.at(-1)?.startsWith("0040_")) {
+  failures.push("Root migration tip must be 0040 with exactly 40 numbered migrations.");
 }
 
 const mediaMigrations = (await readdir(join(root, "media-engine/migrations")))
