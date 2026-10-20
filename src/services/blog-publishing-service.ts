@@ -1,5 +1,5 @@
 import type { Env } from "./auth-service";
-import { createPublishJobs } from "./social-management-service";
+import { createPublishJobs, publishJobResults } from "./social-management-service";
 
 export interface BlogPostInput {
   title: string;
@@ -41,7 +41,7 @@ async function enqueueSocialShare(env: Env, post: any, actorId: number): Promise
       media_ids: [],
       publish_mode: "post_now"
     }, actorId);
-    return { status: jobs.length ? "queued" : "failed", job_ids: jobs };
+    if (!jobs.length) return { status: "failed", error: "No social publishing jobs were created." };\n    const results = await publishJobResults(env, jobs);\n    const failed = results.filter((item:any) => item.status === "failed").length;\n    const done = results.filter((item:any) => item.status === "published").length;\n    const status = failed === results.length ? "failed" : failed ? "partial" : done === results.length ? "complete" : "queued";\n    return { status, job_ids: jobs, ...(failed ? { error: failed + " social destination(s) failed; review the social publishing history." } : {}) };
   } catch (error) {
     return { status: "failed", error: error instanceof Error ? error.message : "Social sharing could not be queued." };
   }
