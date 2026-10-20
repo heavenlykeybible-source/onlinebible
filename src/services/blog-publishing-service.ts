@@ -15,9 +15,8 @@ function makeSlug(value: string): string {
   return value.normalize("NFKD").toLowerCase().replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 100);
 }
-function canonicalUrl(env: Env, slug: string): string {
-  const base = "https://www.heavenlykey.org";
-  return base + "/blog/article.html?slug=" + encodeURIComponent(slug);
+function canonicalUrl(slug: string): string {
+  return "https://www.heavenlykey.org/blog/" + encodeURIComponent(slug) + "/";
 }
 function shareText(post: any, url: string, platform: string): string {
   const title = String(post.title || "").trim();
@@ -42,7 +41,7 @@ async function enqueueSocialShare(env: Env, post: any, actorId: number): Promise
   ).all<{id:string;platform:string}>();
   const rows = accounts.results || [];
   if (!rows.length) return { status: "failed", error: "No active Facebook, X, or LinkedIn publishing account is connected." };
-  const url = canonicalUrl(env, String(post.slug));
+  const url = canonicalUrl(String(post.slug));
   const jobIds:number[]=[];
   const errors:string[]=[];
   const byPlatform = new Map<string,string[]>();
