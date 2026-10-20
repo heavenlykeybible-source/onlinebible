@@ -33,6 +33,23 @@ try{
   if(!source.includes("const verseAnchorPrefix='#verse-'+selectedBook.id+'-'+selectedChapter+'-'")||!source.includes("target.scrollIntoView({block:'start',behavior:'auto'})"))failures.push({file:studyLibrary,error:'Shared verse links must retain their matching anchor and scroll to the verse after loading.'});
 }catch(e){failures.push({file:studyLibrary,error:'Unable to inspect Bible sharing controls: '+e.message});}
 
+const speakerAnnotationsPath=join(appPublic,'speaker-annotations.json');
+try{
+  const annotations=JSON.parse(await readFile(speakerAnnotationsPath,'utf8'));
+  for(const kind of ['jesus','god']){
+    if(!Array.isArray(annotations[kind]))failures.push({file:speakerAnnotationsPath,error:'Speaker annotations must include a '+kind+' array.'});
+    for(const item of annotations[kind]||[]){
+      if(!item||typeof item.book!=='string'||!Number.isInteger(item.chapter)||item.chapter<1||!Number.isInteger(item.start)||item.start<1||!Number.isInteger(item.end)||item.end<item.start){
+        failures.push({file:speakerAnnotationsPath,error:'Invalid '+kind+' speaker range: '+JSON.stringify(item)});
+      }
+    }
+  }
+  const reader=await readFile(studyLibrary,'utf8');
+  const styles=await readFile(join(appPublic,'study-library.css'),'utf8');
+  if(!reader.includes("loadJSON('speaker-annotations.json')")||!reader.includes("p.classList.add('kjv-verse--'+speaker)"))failures.push({file:studyLibrary,error:'Bible reader must load speaker annotations and apply speaker classes.'});
+  if(!styles.includes('.kjv-verse.kjv-verse--jesus{color:#c62828}')||!styles.includes('.kjv-verse.kjv-verse--god{color:#1557b0}'))failures.push({file:join(appPublic,'study-library.css'),error:'Red-letter Jesus and blue God speech styles are required.'});
+}catch(e){failures.push({file:speakerAnnotationsPath,error:'Unable to validate speaker annotations: '+e.message});}
+
 const bibleManifestPath=join(appPublic,'kjv-manifest.json');
 try{
   const manifest=JSON.parse(await readFile(bibleManifestPath,'utf8'));
