@@ -61,6 +61,17 @@ if (!packageConfig.scripts?.["preflight:staging"]?.includes("--env staging")) {
   failures.push("Staging preflight must explicitly select the staging environment.");
 }
 
+const communityStaging = await readFile(join(root, ".github/workflows/cloudflare-global-community-staging.yml"), "utf8");
+const communityPreflight = await readFile(join(root, "global-community/scripts/preflight.mjs"), "utf8");
+if (!communityStaging.includes("/workers/subdomain") ||
+    !communityStaging.includes("STAGING_ORIGIN") ||
+    !communityStaging.includes('PUBLIC_ORIGIN = \\"$STAGING_ORIGIN\\"')) {
+  failures.push("Global Community staging must resolve the account-specific workers.dev origin before deploy.");
+}
+if (!communityPreflight.includes("assignment.test(staging)")) {
+  failures.push("Global Community preflight must reject committed secrets in staging config.");
+}
+
 const prod = await readFile(join(root, ".github/workflows/cloudflare-production.yml"), "utf8");
 const account2 = await readFile(join(root, ".github/workflows/cloudflare-media-engine.yml"), "utf8");
 for (const [name, workflow] of [["Account 1", prod], ["Account 2", account2]]) {
