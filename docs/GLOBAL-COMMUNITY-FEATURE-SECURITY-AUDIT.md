@@ -34,6 +34,13 @@ The registration handler returns a distinct “This email is already registered�
 ### 5. CORS / origin contract needs reconciliation
 The auth response helper sets `Access-Control-Allow-Origin: https://www.heavenlykey.org`, while site metadata identifies `https://heavenlykey.org/` as canonical and the API client calls a separate Workers hostname. Verify the intended browser origins and credentials/cookie behavior together. Do not use wildcard CORS with credentialed sessions.
 
+### 6. Fixes committed during this audit
+
+- Registration now validates trimmed name/country values, caps email/password lengths, and avoids returning an explicit “email already registered” message. A duplicate-email race is handled with a generic account-creation response.
+- Profile and credential creation are performed in one D1 batch to avoid creating a profile without matching credentials.
+- The Worker now uses an explicit allowlist for browser request origins and no longer rejects every cross-origin state-changing request merely because the API is hosted on a different origin. OPTIONS preflight advertises credential support only for allowlisted origins.
+- These are source changes, not proof of a complete browser CORS/session flow. Response CORS headers are still inconsistent across route handlers, and the authentication helper currently emits one fixed origin. End-to-end credentialed browser testing remains required before this can be called resolved.
+
 ### 6. Security and resilience gaps to test
 - Confirm every private endpoint uses authentication and role checks, including account, Bible personalisation, groups, media, moderation and admin routes.
 - Validate JSON bodies, field lengths, malformed input and unexpected storage/database failures consistently.
