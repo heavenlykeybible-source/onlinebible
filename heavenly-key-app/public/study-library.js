@@ -122,15 +122,15 @@ async function bible(){
  const copy=action('Copy chapter',copyChapter);\n const copyBible=action('Copy full Bible',copyFullBible);
  const fontStyle=action('Use classic font',toggleTypeface);
  const audio=link('Listen to this chapter →','audio-bible.html','btn secondary');
- optionBar.append(bookmark,copy,copyBible,fontStyle,audio);
+ optionBar.append(bookmark,copy,fontStyle,audio);
  extras.append(searchLabel,search,results,savedLabel,savedChapters,optionBar);
- const nav=make('nav',null,'mobile-kjv-nav');
+ const libraryActions=make('div',null,'mobile-kjv-library-actions');\n libraryActions.append(make('span','Whole Bible tools','mobile-kjv-library-label'),copyBible);\n const nav=make('nav',null,'mobile-kjv-nav');
  nav.setAttribute('aria-label','Previous and next Bible chapters');
  const prev=action('← Previous',()=>turn(-1),'mobile-kjv-nav-button');
  const next=action('Next →',()=>turn(1),'mobile-kjv-nav-button');
  const counter=make('span',null,'mobile-kjv-ref');
  nav.append(prev,counter,next);
- area.append(toolbar,intro,status,verses,extras,nav);
+ area.append(toolbar,intro,status,verses,extras,nav,libraryActions);
  root.append(area);
  document.body.classList.add('mobile-kjv-page');
  function applyFont(){
