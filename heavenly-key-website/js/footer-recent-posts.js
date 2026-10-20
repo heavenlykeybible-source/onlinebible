@@ -1,88 +1,20 @@
-/* Read-only public Blogger feed for a compact three-post footer list. */
-(() => {
-  'use strict';
-
-  const root = document.getElementById('hk-footer-recent-posts');
-  if (!root) return;
-
-  const callback = 'hkFooterBlog_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
-  const script = document.createElement('script');
-  let done = false;
-  const timer = setTimeout(finish, 6500);
-
-  function clean() {
-    clearTimeout(timer);
-    script.onerror = null;
-    script.remove();
-    try {
-      delete window[callback];
-    } catch (_) {
-      window[callback] = undefined;
-    }
-  }
-
-  function finish() {
-    if (done) return;
-    done = true;
-    clean();
-  }
-
-  function plain(value) {
-    const text = String(value == null ? '' : value).replace(/<[^>]*>/g, ' ');
-    return text.replace(/&(#x[0-9a-f]+|#\\d+|amp|lt|gt|quot|apos|nbsp);/gi, (entity, code) => {
-      const named = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
-      if (code.charAt(0) !== '#') return named[code.toLowerCase()] || entity;
-      const number = code.charAt(1).toLowerCase() === 'x'
-        ? parseInt(code.slice(2), 16)
-        : parseInt(code.slice(1), 10);
-      if (!Number.isFinite(number) || number < 0 || number > 0x10ffff ||
-          (number >= 0xd800 && number <= 0xdfff)) return '';
-      try { return String.fromCodePoint(number); } catch (_) { return ''; }
-    }).replace(/\\s+/g, ' ').trim();
-  }
-
-  function safePostUrl(value) {
-    try {
-      const url = new URL(value);
-      const allowedHosts = ['blog.heavenlykey.org', 'www.blog.heavenlykey.org'];
-      if (url.protocol !== 'https:' || !allowedHosts.includes(url.hostname.toLowerCase())) return null;
-      return url.href;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  window[callback] = data => {
-    if (done) return;
-    const posts = (data && data.feed && data.feed.entry) || [];
-    root.replaceChildren();
-    let count = 0;
-
-    for (const post of posts) {
-      const alternate = (post.link || []).find(item => item && item.rel === 'alternate' && item.href);
-      const url = alternate && safePostUrl(alternate.href);
-      if (!url) continue;
-
-      const link = document.createElement('a');
-      link.href = url;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      link.textContent = (plain(post.title && post.title.$t) || 'Ministry message').slice(0, 75);
-      root.appendChild(link);
-
-      if (++count === 3) break;
-    }
-
-    if (!count) {
-      const message = document.createElement('p');
-      message.textContent = 'Visit our ministry blog for recent messages.';
-      root.appendChild(message);
-    }
-    finish();
-  };
-
-  script.src = 'https://blog.heavenlykey.org/feeds/posts/default?alt=json-in-script&max-results=3&callback=' + encodeURIComponent(callback);
-  script.async = true;
-  script.onerror = finish;
-  document.head.appendChild(script);
+/* Unified website footer: first-party blog first, legacy Blogger feed only during migration. */
+(function(){
+ 'use strict';
+ const root=document.getElementById('hk-footer-recent-posts');if(!root)return;
+ const API='https://api.heavenlykey.org';
+ function el(tag,text){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;}
+ async function main(){
+  try{
+   const r=await fetch(API+'/api/blog/posts?limit=3',{headers:{Accept:'application/json'}});
+   if(!r.ok)throw Error();const data=await r.json();
+   if(Array.isArray(data.items)&&data.items.length){root.replaceChildren();for(const p of data.items){const a=el('a',p.title||'Ministry message');a.href='blog/article.html?slug='+encodeURIComponent(p.slug||'');root.append(a)}return}
+  }catch(_){}
+  const cb='hkFooterLegacy_'+Date.now()+'_'+Math.floor(Math.random()*100000),script=document.createElement('script');let done=false;
+  function finish(){if(done)return;done=true;script.remove();try{delete window[cb]}catch(_){window[cb]=undefined}}
+  const timer=setTimeout(()=>{finish();if(!root.childNodes.length)root.append(el('p','Visit our ministry blog for recent messages.'))},6500);
+  window[cb]=data=>{if(done)return;clearTimeout(timer);root.replaceChildren();const entries=(data&&data.feed&&data.feed.entry)||[];let count=0;for(const p of entries){const item=(p.link||[]).find(x=>x&&x.rel==='alternate'&&x.href);if(!item)continue;try{const u=new URL(item.href);if(u.protocol!=='https:'||!['blog.heavenlykey.org','www.blog.heavenlykey.org'].includes(u.hostname.toLowerCase()))continue;const a=el('a',(p.title&&p.title.$t)||'Ministry message');a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';root.append(a);if(++count===3)break}catch(_){}}if(!count)root.append(el('p','Visit our ministry blog for recent messages.'));finish()};
+  script.async=true;script.onerror=()=>{clearTimeout(timer);finish()};script.src='https://blog.heavenlykey.org/feeds/posts/default?alt=json-in-script&max-results=3&callback='+encodeURIComponent(cb);document.head.append(script);
+ }
+ main();
 })();
