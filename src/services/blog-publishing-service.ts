@@ -19,35 +19,59 @@ function canonicalUrl(env: Env, slug: string): string {
   const base = "https://www.heavenlykey.org";
   return base + "/blog/article.html?slug=" + encodeURIComponent(slug);
 }
-function shareText(post: any, url: string): string {
-  return [String(post.title || "").trim(), String(post.excerpt || "").trim(), url,
-    "Heavenly Key Evangelistic Movement — Taking Christ to the Nations of the World."]
-    .filter(Boolean).join("\n\n").slice(0, 5000);
+function shareText(post: any, url: string, platform: string): string {
+  const title = String(post.title || "").trim();
+  const excerpt = String(post.excerpt || "").trim();
+  const signature = "Heavenly Key Evangelistic Movement — Taking Christ to the Nations of the World.";
+  if (platform === "x") {
+    // X is limited to 280 characters. Preserve the article link and title first.
+    const fixed = [title, url].filter(Boolean).join("\n");
+    const room = Math.max(0, 279 - Array.from(fixed).length);
+    const shortExcerpt = Array.from(excerpt).slice(0, Math.max(0, room - 2)).join("");
+    return [title, shortExcerpt ? shortExcerpt + "…" : "", url].filter(Boolean).join("\n").slice(0, 280);
+  }
+  return [title, excerpt, url, signature].filter(Boolean).join("\n\n").slice(0, platform === "instagram" ? 2200 : 5000);
 }
 async function enqueueSocialShare(env: Env, post: any, actorId: number): Promise<{status:string;error?:string;job_ids?:number[]}> {
   if (!post.share_to_social) return { status: "not_requested" };
-  // Only use text/link formats currently supported by the provider integration.
-  // Instagram/TikTok/YouTube require media-specific flows and are intentionally
-  // not falsely marked as published by this text-only blog distribution path.
+  // Use only text/link formats currently supported by the provider integration.
+  // Instagram/TikTok/YouTube need media-specific flows and are not represented as
+  // automated destinations by this text-only blog distribution path.
   const accounts = await env.DB.prepare(
-    "SELECT id FROM social_managed_accounts WHERE active=1 AND connection_status='connected' AND platform IN ('facebook','x','linkedin') ORDER BY platform,display_name"
-  ).all<{id:string}>();
-  const ids = (accounts.results || []).map(row => String(row.id));
-  if (!ids.length) return { status: "failed", error: "No active Facebook, X, or LinkedIn publishing account is connected." };
-  try {
-    const jobs = await createPublishJobs(env, {
-      account_ids: ids,
-      text: shareText(post, canonicalUrl(env, String(post.slug))),
-      media_ids: [],
-      publish_mode: "post_now"
-    }, actorId);
-    if (!jobs.length) return { status: "failed", error: "No social publishing jobs were created." };
-    const results = await publishJobResults(env, jobs);\n    const failed = results.filter((item:any) => item.status === "failed").length;\n    const done = results.filter((item:any) => item.status === "published").length;\n    const status = failed === results.length ? "failed" : failed ? "partial" : done === results.length ? "complete" : "queued";\n    return { status, job_ids: jobs, ...(failed ? { error: failed + " social destination(s) failed; review the social publishing history." } : {}) };
-  } catch (error) {
-    return { status: "failed", error: error instanceof Error ? error.message : "Social sharing could not be queued." };
+    "SELECT id,platform FROM social_managed_accounts WHERE active=1 AND connection_status='connected' AND platform IN ('facebook','x','linkedin') ORDER BY platform,display_name"
+  ).all<{id:string;platform:string}>();
+  const rows = accounts.results || [];
+  if (!rows.length) return { status: "failed", error: "No active Facebook, X, or LinkedIn publishing account is connected." };
+  const url = canonicalUrl(env, String(post.slug));
+  const jobIds:number[]=[];
+  const errors:string[]=[];
+  const byPlatform = new Map<string,string[]>();
+  for (const row of rows) {
+    const list = byPlatform.get(row.platform) || [];
+    list.push(String(row.id));
+    byPlatform.set(row.platform,list);
   }
+  for (const [platform, ids] of byPlatform) {
+    try {
+      const jobs = await createPublishJobs(env, {
+        account_ids: ids,
+        text: shareText(post,url,platform),
+        media_ids: [],
+        publish_mode: "post_now"
+      }, actorId);
+      jobIds.push(...jobs);
+    } catch (error) {
+      errors.push(platform + ": " + (error instanceof Error ? error.message : "publishing could not be queued"));
+    }
+  }
+  if (!jobIds.length) return { status: "failed", error: errors.join("; ") || "No social publishing jobs were created." };
+  const results = await publishJobResults(env, jobIds);
+  const failed = results.filter((item:any) => item.status === "failed").length;
+  const done = results.filter((item:any) => item.status === "published").length;
+  const status = failed === results.length ? "failed" : (failed || errors.length) ? "partial" : done === results.length ? "complete" : "queued";
+  const details = [...errors, ...(failed ? [failed + " social destination(s) failed; review the social publishing history."] : [])];
+  return { status, job_ids: jobIds, ...(details.length ? { error: details.join("; ") } : {}) };
 }
-
 export async function listPublicBlogPosts(env: Env, limit = 20) {
   const safeLimit = Math.min(Math.max(Number.isFinite(limit) ? Math.floor(limit) : 20, 1), 50);
   const result = await env.DB.prepare(
