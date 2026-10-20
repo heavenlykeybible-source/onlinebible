@@ -27,11 +27,12 @@ if (!config.includes('https://global.heavenlykey.org')) {
   throw new Error('Global community origin missing.');
 }
 const placeholders = [...config.matchAll(/REPLACE_[A-Z0-9_]+/g)].map(m => m[0]);
+const stagingPlaceholders = [...staging.matchAll(/REPLACE_[A-Z0-9_]+/g)].map(m => m[0]);
 if (release && placeholders.length) {
   throw new Error('Release blocked: unresolved Cloudflare resource placeholders: ' + [...new Set(placeholders)].join(', '));
 }
 if (release) {
   console.log('RELEASE CONFIGURATION CHECK PASSED — confirm secrets, migrations, security and live tests separately.');
 } else {
-  console.log('GLOBAL COMMUNITY DEVELOPMENT PREFLIGHT PASSED — ' + [...new Set(placeholders)].length + ' resource placeholders; deployment readiness NOT certified.');
+  console.log('GLOBAL COMMUNITY DEVELOPMENT PREFLIGHT PASSED — ' + [...new Set([...placeholders, ...stagingPlaceholders])].length + ' production/staging template placeholders; deployment readiness NOT certified.');
 }
