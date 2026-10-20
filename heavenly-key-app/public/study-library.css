@@ -114,3 +114,11 @@
 .bible-download-actions button{min-height:38px;padding:7px 10px;font-size:.78rem}
 .bible-download-actions button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:480px){.bible-download-card{align-items:flex-start;flex-direction:column}.bible-download-actions{width:100%;justify-content:flex-start}.bible-download-actions button{flex:1 1 auto}}
+
+
+/* Tiny social shortcuts beneath the sharing invitation. */
+.mobile-kjv-page .kjv-social-links{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:5px}
+.mobile-kjv-page .kjv-social-icon{display:inline-flex;align-items:center;justify-content:center;min-width:25px;min-height:24px;padding:2px 6px;border:1px solid #e1e8e3;border-radius:6px;background:#fff;color:#426252;text-decoration:none;font:600 .64rem/1.1 system-ui,-apple-system,sans-serif}
+.mobile-kjv-page .kjv-social-icon:focus-visible{outline:2px solid #16734a;outline-offset:2px}
+.mobile-kjv-page .kjv-social-wa{color:#17613e}.mobile-kjv-page .kjv-social-fb{color:#2855a5}.mobile-kjv-page .kjv-social-tg{color:#176b8a}.mobile-kjv-page .kjv-social-x{color:#222}
+.mobile-kjv-page .mobile-kjv-option-actions .btn{font-size:.82rem;padding:8px 10px}
