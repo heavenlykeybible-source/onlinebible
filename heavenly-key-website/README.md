@@ -27,8 +27,8 @@ no npm dependencies. Static files, deployable as-is to Cloudflare Pages.
 ## Structure
 ```
 /index.html              Homepage + latest blog preview
-/blog/                    Unified blog index (target route)
-/blog/<article-slug>/     Unified article pages (target route)
+/blog/index.html          Unified first-party blog index
+/blog/article.html        Article template; clean /blog/<slug>/ routes rewrite here
 /pages/*.html             10 inner pages (about, ministries, missions,
                           events, radio, resources, community, partner,
                           contact, i-said-yes)
@@ -39,6 +39,7 @@ no npm dependencies. Static files, deployable as-is to Cloudflare Pages.
   homepage-components.js  Render functions for the 8 API-driven homepage sections
   ui-components.js        Toast, modal, accordion, tabs, site-wide memory verse
   main.js                 Nav, slideshow, forms, PWA registration
+  blog-admin.js           Secured admin composer for drafts, scheduling, and social distribution
 /assets/                  Logo, icons, curated ministry photos
 /manifest.json            PWA manifest
 /service-worker.js        Offline caching (app-shell cache-first, API network-only)
@@ -71,6 +72,13 @@ no npm dependencies. Static files, deployable as-is to Cloudflare Pages.
 | `ASSET-INVENTORY.md` | Every file in `/assets/` — purpose, pages used on, placeholder vs. production, optimization status |
 | `DESIGN-TOKENS.md` | Every official color/type/spacing/radius/shadow/animation/z-index token and its real usage |
 | `FRONTEND-DEFINITION-OF-DONE.md` | The quality checklist every new page or component must satisfy |
+
+## Unified blog publishing
+- Public blog reads: `GET /api/blog/posts` and `GET /api/blog/posts/:slug`.
+- Admin publishing: `GET/POST /api/admin/blog/posts`; `POST /api/admin/blog/posts/:id/publish`.
+- Migration: `migrations/0040_blog_publishing.sql`.
+- The Worker scheduled handler publishes due articles and requests automatic text/link distribution to connected Facebook, X, and LinkedIn accounts. Instagram, TikTok and YouTube require separate media-specific work and provider approval.
+- This is source implementation only until the migration is applied and the Worker/site are deployed; social connections and real publishing must be tested with authorized accounts. The 94 legacy teaching articles are not yet claimed as migrated.
 
 ## Current Status
 > **Project B — Frontend Design Freeze**
