@@ -1,3 +1,6 @@
 # Keep the blog inside the main Heavenly Key website origin.
 # Article pages use a query slug until pretty-route rewrites are enabled by the deployment host.
 /blog /blog/index.html 200
+/blog/ /blog/index.html 200
+/blog/index.html /blog/index.html 200
+/blog/* /blog/article.html?slug=:splat 200
