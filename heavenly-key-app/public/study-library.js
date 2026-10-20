@@ -51,9 +51,9 @@ function scriptureLines(host,verses,bookId,bookName,chapterNum,onCopy,onShare,on
   copy.addEventListener('click',()=>onCopy(reference+'\n'+v));
   const share=make('button','Share to bless others','kjv-verse-action kjv-share-action');
   share.type='button';share.setAttribute('aria-label','Share '+reference+' to bless others');
-  share.addEventListener('click',()=>onShare(reference+'\n'+v,reference));
+  share.addEventListener('click',()=>onShare(reference+'\n'+v,reference,'verse-'+bookId+'-'+chapterNum+'-'+verseNum));
   tools.append(copy,share);
-  block.append(p,tools,make('small','Together we take Christ to the nations of the world.','kjv-share-tagline'),onSocialLinks(reference+'\n'+v,reference));
+  block.append(p,tools,make('small','Together we take Christ to the nations of the world.','kjv-share-tagline'),onSocialLinks(reference+'\n'+v,reference,'verse-'+bookId+'-'+chapterNum+'-'+verseNum));
   host.append(block);
  });
  const footer=make('section',null,'kjv-chapter-share');
@@ -169,12 +169,15 @@ async function bible(){
   showBookmarks();notice('Chapter saved on this phone.');
  }
  async function copyPassage(text,successMessage){
-  try{await navigator.clipboard.writeText(text);notice(successMessage);}
-  catch{notice('Copy is not available in this browser.');}
+  try{await navigator.clipboard.writeText(text);notice(successMessage);return;}
+  catch{}
+  const fallback=make('textarea');fallback.value=text;fallback.setAttribute('readonly','');fallback.style.position='fixed';fallback.style.opacity='0';document.body.append(fallback);fallback.select();
+  let copied=false;try{copied=document.execCommand('copy');}catch{}
+  fallback.remove();notice(copied?successMessage:'Copy is not available in this browser. Select the text and copy it manually.');
  }
- async function sharePassage(text,title){
+ async function sharePassage(text,title,anchor){
   const shareText=text+'\n\nShare to bless others\nTogether we take Christ to the nations of the world.';
-  const url=new URL(location.href);url.hash='';
+  const url=new URL(location.href);url.hash=anchor||'';
   try{
    if(typeof navigator.share==='function'){
     await navigator.share({title:title||'Heavenly Key Bible',text:shareText,url:url.href});
@@ -187,10 +190,10 @@ async function bible(){
    await copyPassage(shareText+'\n'+url.href,'Passage copied with the sharing message. Paste it into WhatsApp or another app.');
   }
  }
- function socialLinks(text,title){
+ function socialLinks(text,title,anchor){
   const row=make('div',null,'kjv-social-links');
   row.setAttribute('aria-label','Share on social media');
-  const page=new URL(location.href);page.hash='';
+  const page=new URL(location.href);page.hash=anchor||'';
   const payload=text+'\n\nShare to bless others\nTogether we take Christ to the nations of the world.';
   const items=[
    ['◉','https://wa.me/?text='+encodeURIComponent(payload+'\n'+page.href),'wa','WhatsApp'],
@@ -218,7 +221,7 @@ async function bible(){
    catch{
     const blob=new Blob([fullText],{type:'text/plain;charset=utf-8'});
     const downloadUrl=URL.createObjectURL(blob),download=make('a','Download full Bible text');
-    download.href=downloadUrl;download.download='heavenly-key-bible-kjv.txt';download.hidden=true;document.body.append(download);download.click();download.remove();URL.revokeObjectURL(downloadUrl);
+    download.href=downloadUrl;download.download='heavenly-key-bible-kjv.txt';download.hidden=true;document.body.append(download);download.click();download.remove();setTimeout(()=>URL.revokeObjectURL(downloadUrl),1000);
     notice('Clipboard access was blocked. A full Bible text file was downloaded instead.');
    }
   }catch(error){notice('Could not copy the full Bible: '+(error.message||'Please reconnect and try again.'));}
