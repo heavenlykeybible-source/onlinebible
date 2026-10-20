@@ -4,7 +4,8 @@ import { fileURLToPath } from "node:url";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const allowPlaceholders = process.argv.includes("--allow-placeholders");
-const targetEnv = process.env.DEPLOY_ENV || "production";
+const envFlag = process.argv.indexOf("--env");
+const targetEnv = process.env.DEPLOY_ENV || (envFlag >= 0 ? process.argv[envFlag + 1] : "production");
 const fail = [];
 const warn = [];
 
