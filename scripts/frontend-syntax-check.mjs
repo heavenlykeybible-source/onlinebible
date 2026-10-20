@@ -4,6 +4,8 @@ import { spawnSync } from 'node:child_process';
 
 const root='heavenly-key-website/js';
 const files=(await readdir(root,{recursive:true})).filter(name=>name.endsWith('.js')).map(name=>join(root,name)).sort();
+const appPublic=join('heavenly-key-app','public');
+const appFiles=(await readdir(appPublic,{recursive:true})).filter(name=>name.endsWith('.js')).map(name=>join(appPublic,name)).sort();
 const failures=[];
 for(const file of files){
   const r=spawnSync(process.execPath,['--check',file],{encoding:'utf8'});
@@ -11,6 +13,22 @@ for(const file of files){
   const source=await readFile(file,'utf8');
   if(/(?<!\$)\$\([^()\n]*\)\.forEach\(/.test(source))failures.push({file,error:'Use $(...) for multi-element iteration; $(...) returns only one element and .forEach will fail at runtime.'});
 }
+for(const file of appFiles){
+  const r=spawnSync(process.execPath,['--check',file],{encoding:'utf8'});
+  if(r.status!==0)failures.push({file,error:(r.stderr||r.stdout||'Syntax check failed').trim()});
+}
+const studyLibrary=join(appPublic,'study-library.js');
+try{
+  const source=await readFile(studyLibrary,'utf8');
+  for(const [label,pattern] of [
+    ['verse copy action',/Copy verse/],
+    ['sharing slogan',/Share to bless others/],
+    ['ministry slogan',/Together we take Christ to the nations of the world\\./],
+    ['full Bible export action',/Copy full Bible/],
+    ['verse-specific sharing anchor',/verse-\\$\\{/]
+  ])if(!pattern.test(source))failures.push({file:studyLibrary,error:'Missing Bible sharing requirement: '+label});
+}catch(e){failures.push({file:studyLibrary,error:'Unable to inspect Bible sharing controls: '+e.message});}
+
 const studioPath=join(root,'production-studio.js');
 try{
   const studio=await readFile(studioPath,'utf8');
@@ -33,5 +51,5 @@ if(failures.length){
   for(const f of failures)console.error('\n'+f.file+'\n'+f.error);
   process.exit(1);
 }
-console.log('FRONTEND SYNTAX CHECK PASSED — '+files.length+' browser JavaScript files parsed successfully.');
+console.log('FRONTEND SYNTAX CHECK PASSED — '+(files.length+appFiles.length)+' browser JavaScript files parsed successfully.');
 
