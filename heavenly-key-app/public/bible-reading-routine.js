@@ -18,6 +18,74 @@ function initRoutine(root) {
     evangelism:{label:'Evangelism and service',items:[['Matthew 28:19-20','Jesus sends His disciples to make disciples and teach His commands.','Pray for opportunities and courage to share Christ with love and truth.'],['Romans 1:16','Paul was unashamed of the gospel because it is God’s power for salvation.','Pray for boldness and clarity when speaking about the gospel.'],['Colossians 4:5-6','Wise conduct and gracious speech matter when relating to those outside the faith.','Ask God to make your words gracious, wise and helpful to others.'],['1 Timothy 2:1-4','Scripture urges prayer for all people and expresses God’s concern for salvation.','Pray for family, neighbours, leaders and people who have not heard the gospel.'],['Matthew 9:37-38','Jesus calls His followers to pray for workers for the harvest.','Pray for faithful workers and a willing heart to serve.']]},
     peace:{label:'Peace and encouragement',items:[['John 14:27','Jesus gives peace unlike the unstable peace the world offers.','Pray for Christ’s peace to guard you through today’s pressures.'],['Psalm 46:1','God is described as refuge and strength, a present help in trouble.','Bring a present difficulty to God and ask for strength to endure.'],['Isaiah 26:3','The passage connects steadfast peace with a mind stayed on God in trust.','Pray for a steady mind and trust in the Lord.'],['Romans 15:13','Paul prays that hope, joy and peace abound through trust in God.','Ask God to renew hope and help you encourage someone else.'],['2 Corinthians 1:3-4','God comforts people in affliction so that they can comfort others.','Pray to receive God’s comfort and become a comfort to someone else.']]}
   };
+
+  // Expanded, month-long studies focused on biblical purpose and spiritual revival.
+  // Devotions encourage prayerful application; they are not a substitute for the full passage.
+  GUIDED.destiny.items = [
+    ['Jeremiah 1:4-8','Before Jeremiah was born, God set him apart for a prophetic assignment. Begin purpose-seeking with God’s call, not comparison or self-promotion.','Pray for grace to hear and obey God, and courage to answer His call.'],
+    ['Psalm 139:13-16','Your life is known to God. Receive this truth with humility and ask how to use your days faithfully.','Thank God for knowing you and ask Him to guide your steps into meaningful service.'],
+    ['Ephesians 2:10','God saves by grace, and believers are created in Christ Jesus for good works prepared for them to walk in.','Ask God to show you the good works and responsibilities you should faithfully take up.'],
+    ['Romans 12:1-2','A renewed mind helps you discern God’s will instead of copying the patterns around you.','Pray for a renewed mind and willingness to surrender your plans to God.'],
+    ['Proverbs 3:5-6','Purpose is not discovered by self-confidence alone; trust the Lord and acknowledge Him in every way.','Commit your ambitions and decisions to God and ask Him to direct your path.'],
+    ['Luke 4:16-21','Jesus publicly declared the mission given to Him. His example calls us to understand our work in light of God’s word and compassion.','Ask God to shape your priorities around His truth and loving service to people.'],
+    ['Hebrews 10:7','“I come…to do thy will, O God” expresses a life submitted to the Father’s will.','Pray for a willing heart to do God’s will when it costs you comfort or recognition.'],
+    ['Psalm 40:7-8','The psalmist delights to do God’s will and keeps His law in the heart. Purpose must remain submitted to Scripture.','Ask for delight in obeying God rather than merely pursuing personal success.'],
+    ['Romans 8:28-29','God works in the lives of those who love Him toward His purpose, shaping them to become like His Son.','Pray that hardship and opportunity alike will shape Christlike character in you.'],
+    ['1 Corinthians 12:4-7','God gives different gifts for the common good. Your gifts are for service, not pride or rivalry.','Ask God to reveal how your gifts can strengthen the church and help others.'],
+    ['1 Peter 4:10-11','Use whatever gift you have received to serve others as a faithful steward of God’s grace.','Pray to identify one gift you can use faithfully to bless someone this week.'],
+    ['Esther 4:14','Esther was challenged to consider whether her position could serve a purpose beyond herself.','Ask for courage to act rightly in the place and season where God has put you.'],
+    ['Nehemiah 2:17-18','Nehemiah faced a broken situation with prayer, honest assessment and a call to rebuild together.','Pray for vision, courage and wise partners for the work that needs to be done.'],
+    ['Exodus 3:7-12','Moses’ assignment began with God seeing suffering and sending a reluctant servant with His presence.','Bring your inadequacy to God and ask for obedience and dependence on His help.'],
+    ['1 Samuel 3:9-10','Samuel learned to answer the Lord with a listening and available heart.','Pray, “Speak, Lord,” and make time to listen to Scripture and godly counsel.'],
+    ['Isaiah 6:1-8','Isaiah’s response to God’s holiness moved from confession to willing availability.','Ask God to cleanse your heart and make you ready to serve where He sends you.'],
+    ['Matthew 25:14-23','The parable of the talents commends faithful stewardship, not comparison with another person’s portion.','Pray for diligence to develop and use what God has entrusted to you.'],
+    ['Colossians 3:23-24','Ordinary work can be done wholeheartedly as service to the Lord. Meaningful living includes daily faithfulness.','Ask for integrity and excellence in your work, studies and responsibilities.'],
+    ['Ecclesiastes 9:10','The Teacher urges wholehearted effort in the work available to you. Do not waste today waiting for perfect conditions.','Pray for discipline to take the next faithful step today.'],
+    ['John 15:1-8','Fruitfulness depends on abiding in Christ; activity without fellowship with Him cannot produce lasting spiritual fruit.','Ask Jesus to keep you close to Him and make your life fruitful.'],
+    ['Philippians 3:12-14','Paul presses on toward the goal without pretending he has already arrived. Purpose includes steady growth and perseverance.','Pray for focus to leave distractions behind and keep pursuing Christ.'],
+    ['1 Timothy 4:12-16','Timothy is told to be an example and to give attention to Scripture, conduct and spiritual growth.','Ask for consistency in godly character and faithful use of your abilities.'],
+    ['2 Timothy 1:6-7','Paul urges Timothy to stir up his gift and serve without being ruled by fear.','Pray for courage, love and sound judgment as you use your gifts.'],
+    ['Galatians 6:9-10','Do not grow weary in doing good; opportunities to help others should be taken seriously.','Ask God for endurance to keep doing good even when results seem slow.'],
+    ['Micah 6:8','God calls His people to do justice, love mercy and walk humbly with Him.','Pray that your plans will reflect justice, mercy and humility.'],
+    ['Matthew 6:33','Seek God’s kingdom and righteousness first rather than making material concerns your highest pursuit.','Ask God to reorder your ambitions around His kingdom and righteousness.'],
+    ['Acts 13:1-3','The church worshipped, fasted and prayed before setting apart workers for mission. Discernment belongs in a praying community.','Pray with mature believers about your gifts, direction and next steps.'],
+    ['Romans 12:3-8','Different gifts are to be exercised humbly and faithfully within one body.','Ask for humility to know your measure and faithfully contribute to the church.'],
+    ['Philippians 2:12-16','Hold firmly to God’s word and shine as lights in a crooked generation through faithful living.','Pray that your conduct will point people to Christ and make the gospel visible.'],
+    ['Romans 8:19','Creation’s eager expectation points to the revealing of God’s children; live as one whose hope and identity are in Him.','Ask God to help you live purposefully, faithfully and expectantly as His child.']
+  ];
+  GUIDED.revival = {label:'Church revival and spiritual awakening',items:[
+    ['Habakkuk 3:2','The prophet asks God to revive His work and make it known in the midst of the years. Revival begins with earnest dependence on God.','Pray, “O Lord, revive Your work among us”; begin with your own heart and local church.'],
+    ['2 Chronicles 7:14','God calls His people to humble themselves, pray, seek Him and turn from wicked ways.','Pray for humility, repentance and healing in the church and community.'],
+    ['Acts 2:1-4','The disciples gathered and waited for the promised Holy Spirit; God empowered them to witness.','Ask God to fill His people with the Spirit’s power and boldness to testify of Christ.'],
+    ['Acts 4:29-31','The believers prayed for boldness, and they continued speaking God’s word.','Pray for courage to proclaim Christ faithfully despite opposition.'],
+    ['Revelation 2:4-5','The church at Ephesus was called to remember, repent and return to its first love.','Ask Jesus to restore your first love and renew wholehearted devotion in the church.'],
+    ['Psalm 85:4-7','The psalmist pleads for restoration and asks God to show steadfast love and salvation.','Pray for spiritual restoration, mercy and renewed joy in God’s salvation.'],
+    ['Isaiah 60:1-3','God’s people are called to arise and shine as the Lord’s glory brings light amid darkness.','Pray that the church will rise in holiness and bear witness to Christ’s light.'],
+    ['Romans 13:11-14','Paul urges believers to wake from sleep and live as people of the day.','Ask God to awaken spiritually sleepy believers and help you reject works of darkness.'],
+    ['Ephesians 5:14-17','The call to awake and walk wisely urges believers to make good use of the time.','Pray for spiritual alertness, wisdom and urgency in serving the Lord.'],
+    ['Joel 2:12-13','God calls His people to return with all their heart, with fasting, weeping and mourning.','Pray for sincere repentance that reaches the heart, not merely outward religious display.'],
+    ['Psalm 80:18-19','The psalmist asks God to revive His people so they may call upon His name.','Ask God to renew the church’s devotion and draw wandering hearts back to Him.'],
+    ['John 17:20-23','Jesus prayed for His followers’ unity and witness so the world might believe.','Pray for truth-shaped unity among believers that makes Christ known.'],
+    ['Matthew 9:36-38','Jesus saw the crowds with compassion and told His disciples to pray for workers.','Pray for compassion for the lost and for faithful labourers in the harvest.'],
+    ['2 Timothy 3:1-5','Paul warns against outward religion without its transforming power.','Ask God to deliver the church from empty form and produce genuine godliness.'],
+    ['1 Peter 1:13-16','Hope and holiness belong together; God’s people are called to be holy in all conduct.','Pray for purity and integrity in leaders, workers and congregations.'],
+    ['Acts 1:8','The Holy Spirit empowers believers to be Christ’s witnesses to the ends of the earth.','Pray for Spirit-empowered witness in your neighbourhood and beyond.'],
+    ['Isaiah 62:6-7','The passage pictures watchmen who persist in prayer and do not give God rest.','Pray faithfully for your church, its leaders, the lost and a fresh work of God.'],
+    ['Nehemiah 1:4-11','Nehemiah mourned, fasted, confessed sin and pleaded for God’s people before taking action.','Pray with confession and compassion for the spiritual condition of God’s people.'],
+    ['James 4:7-10','Drawing near to God includes resisting evil, cleansing hands and humbling oneself before Him.','Ask for humility, repentance and strength to resist temptation.'],
+    ['2 Corinthians 7:9-10','Godly sorrow produces repentance and a changed direction, not regret alone.','Pray for repentance that bears visible fruit in personal and church life.'],
+    ['Matthew 5:13-16','Jesus calls His disciples salt and light whose good works glorify the Father.','Pray that the church will be distinct in holiness and visible in loving service.'],
+    ['Mark 11:15-17','Jesus confronted corruption in the temple and upheld God’s house as a house of prayer.','Pray that worship and ministry will honour God and remain devoted to prayer.'],
+    ['1 Thessalonians 5:19-22','Believers are told not to quench the Spirit, while testing everything and holding fast to good.','Pray for spiritual sensitivity joined with biblical discernment.'],
+    ['Colossians 4:2-6','Persistent prayer and gracious, wise speech support faithful witness to outsiders.','Ask God to open doors for the word and make your witness gracious and clear.'],
+    ['Ezekiel 37:1-10','The vision of dry bones portrays God bringing life where hope seems lost.','Pray for God to breathe new spiritual life into weary congregations and communities.'],
+    ['Hosea 10:12','The prophet calls God’s people to seek the Lord and sow righteousness.','Pray for renewed pursuit of God, righteousness and the fruit of repentance.'],
+    ['Luke 24:46-49','The risen Christ commissions the proclamation of repentance and forgiveness and promises power from on high.','Pray for faithful preaching of Christ’s death and resurrection in the power of the Holy Spirit.'],
+    ['1 Corinthians 3:6-9','Servants plant and water, but God gives the increase. Revival cannot be manufactured by human effort.','Pray for faithful ministry and trust God for genuine spiritual growth.'],
+    ['Revelation 3:1-3','The church in Sardis is warned to wake up, strengthen what remains and repent.','Ask God to expose spiritual complacency and strengthen what is weak.'],
+    ['Psalm 24:3-6','Those who seek the Lord are called to clean hands and a pure heart.','Pray for clean hands, pure hearts and a church that seeks God sincerely.']
+  ]};
+
   const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const make = (tag, text, cls) => {
     const el = document.createElement(tag);
