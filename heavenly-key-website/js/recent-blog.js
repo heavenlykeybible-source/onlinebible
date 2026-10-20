@@ -6,7 +6,7 @@
  const API='https://api.heavenlykey.org';
  function node(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
  function internalCard(post){
-  const url='blog/article.html?slug='+encodeURIComponent(String(post.slug||''));
+  const url='/blog/'+encodeURIComponent(String(post.slug||''))+'/';
   const card=node('article',null,'hk-blog-card'),thumb=node('div','HK','hk-blog-thumb'),body=node('div',null,'hk-blog-card-body');
   card.append(thumb,body);
   if(post.published_at){const d=new Date(post.published_at);if(!isNaN(d.getTime()))body.append(node('span',d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}),'hk-blog-date'));}
