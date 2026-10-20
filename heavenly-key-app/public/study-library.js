@@ -187,10 +187,10 @@ async function bible(){
   const url=passageUrl(anchor);
   try{
    if(typeof navigator.share==='function'){
-    await navigator.share({title:title||'Heavenly Key Bible',text:shareText,url:url.href});
+    await navigator.share({title:title||'Heavenly Key Bible',text:shareText,url:url});
     notice('Ready to share and bless others.');
    }else{
-    await copyPassage(shareText+'\n'+url.href,'Passage copied with the sharing message. Paste it into WhatsApp or another app.');
+    await copyPassage(shareText+'\n'+url,'Passage copied with the sharing message. Paste it into WhatsApp or another app.');
    }
   }catch(error){
    if(error?.name==='AbortError')return;
@@ -203,9 +203,9 @@ async function bible(){
   const page=passageUrl(anchor);
   const payload=text+'\n\nShare to bless others\nTogether we take Christ to the nations of the world.';
   const items=[
-   ['◉','https://wa.me/?text='+encodeURIComponent(payload+'\n'+page.href),'wa','WhatsApp'],
+   ['◉','https://wa.me/?text='+encodeURIComponent(payload+'\n'+page),'wa','WhatsApp'],
    ['f','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(page),'fb','Facebook'],
-   ['➤','https://t.me/share/url?url='+encodeURIComponent(page.href)+'&text='+encodeURIComponent(payload),'tg','Telegram'],
+   ['➤','https://t.me/share/url?url='+encodeURIComponent(page)+'&text='+encodeURIComponent(payload),'tg','Telegram'],
    ['𝕏','https://twitter.com/intent/tweet?text='+encodeURIComponent(payload)+'&url='+encodeURIComponent(page.href),'x','X']
   ];
   for(const [glyph,href,kind,label] of items){
