@@ -21,6 +21,13 @@ describe("unified blog publishing contracts", () => {
     expect(text).toContain(url);
   });
 
+  it("preserves the full article link when the X post title is longer than the character budget", () => {
+    const url = "https://www.heavenlykey.org/blog/a-long-article-title/";
+    const text = formatBlogSocialText({title:"T".repeat(400),excerpt:"An excerpt"},url,"x");
+    expect(Array.from(text).length).toBeLessThanOrEqual(280);
+    expect(text.endsWith(url)).toBe(true);
+  });
+
   it("includes the article link and ministry identity in Facebook link announcements", () => {
     const url = "https://www.heavenlykey.org/blog/repentance-and-readiness/";
     const text = formatBlogSocialText({title:"Repentance and Readiness",excerpt:"A Bible teaching"},url,"facebook");
