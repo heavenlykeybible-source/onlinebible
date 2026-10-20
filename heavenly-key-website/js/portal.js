@@ -144,14 +144,25 @@
   });
   navigator.mediaDevices?.addEventListener?.('devicechange',loadOutputs);
  }
- let reconnectAttempts=0;
+ function updateMediaSession(state){
+   if(!('mediaSession' in navigator))return;
+   try{
+    if(state)navigator.mediaSession.playbackState=state;
+    if(typeof MediaMetadata==='function')navigator.mediaSession.metadata=new MediaMetadata({title:title?.textContent||'Heavenly Key Radio',artist:'Heavenly Key Evangelistic Movement',album:'Heavenly Key Radio'});
+   }catch{}
+  }
+  if(channel==='radio'&&'mediaSession' in navigator){
+   const actions={play:()=>{if(el.paused)el.play().then(()=>{userPlaying=true;syncToggle();updateMediaSession('playing')}).catch(()=>{status.textContent='Tap Play in the radio player to resume.'})},pause:()=>{el.pause();userPlaying=false;syncToggle();updateMediaSession('paused')},stop:()=>{el.pause();userPlaying=false;syncToggle();updateMediaSession('paused')},nexttrack:()=>{if(items.length)select((index+1)%items.length,true)},previoustrack:()=>{if(items.length)select((index+items.length-1)%items.length,true)}};
+   for(const [action,handler] of Object.entries(actions)){try{navigator.mediaSession.setActionHandler(action,handler)}catch{}}
+  }
+  let reconnectAttempts=0;
  function scheduleReconnect(){clearTimeout(retryTimer);if(userPlaying&&!egressMode&&navigator.onLine)retryTimer=setTimeout(async()=>{if(!userPlaying)return;signature='';await refresh();if(!el.paused)syncToggle();},Math.min(30000,2000*Math.pow(2,Math.min(reconnectAttempts++,4))));}
  function bindMediaEvents(){
   el.addEventListener('ended',()=>{if(items.length&&mode==='playlist'&&userPlaying)select((index+1)%items.length,true);});
   el.addEventListener('play',()=>{userPlaying=true;syncToggle();status.textContent='Playing';});
-  el.addEventListener('pause',()=>{if(!el.ended&&!el.error){userPlaying=false;syncToggle();}});
+  el.addEventListener('pause',()=>{if(!el.ended&&!el.error){userPlaying=false;syncToggle();updateMediaSession('paused');}});
   el.addEventListener('waiting',()=>{status.textContent='Connecting…';});
-  el.addEventListener('playing',()=>{reconnectAttempts=0;clearTimeout(retryTimer);userPlaying=true;syncToggle();status.textContent='Playing';});
+  el.addEventListener('playing',()=>{reconnectAttempts=0;clearTimeout(retryTimer);userPlaying=true;syncToggle();status.textContent='Playing';updateMediaSession('playing');});
   el.addEventListener('error',()=>{status.textContent='Connection interrupted. Reconnecting automatically…';scheduleReconnect();});
  }
  function setAudioVisual(active,programmeTitle=''){
@@ -193,7 +204,7 @@
   setAudioVisual(channel==='video'&&kind==='audio',item.title);
   let url;try{url=new URL(item.url,location.origin);}catch{return;}if(url.protocol!=='https:'&&url.origin!==location.origin)return;
   el.srcObject=null;el.muted=false;el.volume=1;el.src=url.href;el.load();el.loop=mode==='scheduled'||mode==='live'||mode==='reconnecting';
-  title.textContent=item.title;status.textContent='Ready — tap PLAY WITH SOUND';
+  title.textContent=item.title;updateMediaSession(userPlaying?'playing':'paused');status.textContent='Ready — tap PLAY WITH SOUND';
   if(play||egressMode)el.play().then(()=>{userPlaying=true;syncToggle();status.textContent=egressMode?'ON AIR':'Playing';}).catch(()=>{status.textContent=egressMode?'Connecting…':'Tap PLAY to begin.';if(egressMode)setTimeout(()=>el.play().catch(()=>{}),1200);});
  }
  async function refresh(){
@@ -212,7 +223,7 @@
    }
    if(r.transport==='livekit'){setAudioVisual(false);await connectLiveKit(r);if(wasPlaying&&!egressMode){try{await liveKitRoom.startAudio();if(liveAudioEl)await liveAudioEl.play();await el.play();userPlaying=true;syncToggle();}catch{}}return;}
    await disconnectLiveKit();el.hidden=false;
-   if(!items.length){setAudioVisual(false);el.pause();el.removeAttribute('src');el.load();userPlaying=false;syncToggle();title.textContent=channel==='radio'?'ONLINE REVIVAL RADIO':'FAITH OF OUR FATHERS TV';status.textContent='No programme is available right now.';return;}
+   if(!items.length){updateMediaSession('paused');setAudioVisual(false);el.pause();el.removeAttribute('src');el.load();userPlaying=false;syncToggle();title.textContent=channel==='radio'?'ONLINE REVIVAL RADIO':'FAITH OF OUR FATHERS TV';status.textContent='No programme is available right now.';return;}
    select(0,wasPlaying||egressMode);
   }catch(e){signature='';status.textContent=userPlaying?'Connection interrupted. Reconnecting automatically…':(e.message||'Broadcast unavailable.');scheduleReconnect();}
  }
