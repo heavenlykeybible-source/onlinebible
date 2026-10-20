@@ -93,6 +93,13 @@
  function player(panel){
  const channel=panel.dataset.broadcastPlayer,title=$('[data-programme-title]',panel),status=$('[data-player-status]',panel),list=$('[data-playlist]',panel),simple=panel.hasAttribute('data-simple-player'),audioVisual=$('[data-audio-visual]',panel),audioVisualTitle=$('[data-audio-visual-title]',panel);
  let el=$('audio,video',panel),items=[],index=0,signature='',mode='offline',liveKitRoom=null,liveAudioEl=null,youtubeId=null,youtubeFrame=null,userPlaying=false,retryTimer=null,audioVisualMode=false;
+  if(channel==='radio'&&new URLSearchParams(location.search).get('hk-player-window')==='1'&&!document.getElementById('hk-radio-popout-style')){
+   document.documentElement.classList.add('hk-radio-popout');
+   const popoutStyle=document.createElement('style');popoutStyle.id='hk-radio-popout-style';
+   popoutStyle.textContent='html.hk-radio-popout,html.hk-radio-popout body{margin:0!important;padding:0!important;background:#07152f!important}html.hk-radio-popout .top-strip,html.hk-radio-popout .site-header,html.hk-radio-popout .site-footer,html.hk-radio-popout .hk-share-bless,html.hk-radio-popout .broadcast-assistant,html.hk-radio-popout .skip-link{display:none!important}html.hk-radio-popout .broadcast-public-main{padding:8px!important;margin:0!important}html.hk-radio-popout .broadcast-public-shell{display:block!important;max-width:none!important;margin:0!important;padding:0!important}html.hk-radio-popout .broadcast-public-card{margin:0 auto!important;padding:8px!important;max-width:390px!important;box-shadow:none!important}html.hk-radio-popout .hk-radio-page-heading{font-size:20px!important;margin:4px 0 8px!important}html.hk-radio-popout .hk-radio-original-art{max-width:340px!important;width:100%!important;margin:0 auto!important}html.hk-radio-popout .hk-radio-original-picture{width:100%!important;height:auto!important;max-height:64vh!important;object-fit:contain!important}html.hk-radio-popout .hk-radio-original-transport{max-width:100%!important}html.hk-radio-popout body{overflow-x:hidden!important}';
+   document.head.append(popoutStyle);
+  }
+
  const simpleSlot=$('[data-simple-play-control]',panel);
  const playback=text('div','','broadcast-playback-controls');
  const toggle=button('▶ PLAY WITH SOUND',async()=>{
