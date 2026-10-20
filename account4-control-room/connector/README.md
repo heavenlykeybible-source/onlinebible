@@ -23,3 +23,14 @@ Example proposal shape:
 ```
 
 No endpoint can deploy. Production execution must be added in a separately owner-reviewed release with account ID verification, staging gates, immutable revision approval, least-privilege Cloudflare credentials, audit records, and rollback verification.
+
+
+## Multi-connection directory implementation (candidate)
+- `src/connection-directory.ts`: administrator-authenticated read-only list and routing-plan routes.
+- `connector/multi-connection-registry.ts`: validates owner-verified Cloudflare, GitHub and website-API identities.
+- `connector/migrations/002_provider_connections.sql`: metadata-only registry. No keys or tokens are stored in this table.
+- `public/index.html` and `public/app.js`: connection-pathway selector and plan-check UI.
+- `src/index.ts`: mounts directory routes **after** Control Room owner authentication.
+- No provider accounts are auto-provisioned; disabled/unverified connections cannot be selected.
+- Account 4 remains excluded from agent-targeted sites. Production deploy remains disabled.
+- Before merging: migrate staging, run TypeScript check and auth/security tests, provision verified account identities through owner-only workflow, set scoped credentials and activate only after owner-authorized maintenance review.
