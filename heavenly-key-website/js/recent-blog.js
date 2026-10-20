@@ -119,8 +119,8 @@
     cards.forEach(function (post) {
       var card = append('article', 'hk-blog-card', undefined, root);
       var thumb = append('div', 'hk-blog-thumb', undefined, card);
-      var imageUrl = post.thumbnail;
-      if (imageUrl && /^https:\/\//i.test(imageUrl)) {
+      var imageUrl = safeThumbnailUrl(post.thumbnail);
+      if (imageUrl) {
         var img = document.createElement('img');
         img.src = imageUrl;
         img.alt = '';
