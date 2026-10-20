@@ -38,8 +38,8 @@ function attachPlayback(){bind(audio,display);audio.addEventListener('ended',()=
 audio.addEventListener('error',()=>{display(false);reconnect()});audio.addEventListener('waiting',()=>{if(desired)notice.textContent='Buffering…'});}
 attachPlayback();
 let anchor;function returnToAnchor(){if(anchor?.isConnected){anchor.replaceWith(root);anchor=null}}
-$('.hkr-bubble').onclick=()=>{if(!mount){anchor=document.createComment('radio launcher position');root.before(anchor);document.body.append(root)}root.classList.remove('hkr-mini');$('.hkr-bubble').setAttribute('aria-expanded','true');button.focus()};
-$('.hkr-min').onclick=()=>{if(mount)return;returnToAnchor();root.classList.add('hkr-mini');$('.hkr-bubble').setAttribute('aria-expanded','false');$('.hkr-bubble').focus()};
+$('.hkr-bubble').onclick=()=>{if(!mount){anchor=document.createComment('radio launcher position');root.before(anchor);document.body.append(root)}root.classList.remove('hkr-mini','hkr-tiny');$('.hkr-bubble').setAttribute('aria-expanded','true');button.focus()};
+$('.hkr-min').onclick=()=>{if(mount)return;returnToAnchor();root.classList.add('hkr-mini','hkr-tiny');$('.hkr-bubble').setAttribute('aria-expanded','false');$('.hkr-bubble').setAttribute('aria-label',desired?'Restore Heavenly Key Radio — audio continues':'Open Heavenly Key Radio');$('.hkr-bubble').focus()};
 $('.hkr-close').onclick=()=>{stop();if(!mount){returnToAnchor();root.classList.add('hkr-mini');$('.hkr-bubble').setAttribute('aria-expanded','false');$('.hkr-bubble').focus()}};
 root.addEventListener('keydown',e=>{if(e.key==='Escape')$('.hkr-close').click()});
 window.addEventListener('pagehide',stop);
