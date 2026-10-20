@@ -37,7 +37,34 @@ async function getBook(book){
 function action(label,fn,cls='btn secondary'){const b=make('button',label,cls);b.type='button';b.addEventListener('click',fn);return b;}
 function link(label,href,cls='btn secondary'){const a=make('a',label,cls);a.href=href;return a;}
 const heading=(title,text)=>{root.append(make('h2',title));if(text)root.append(make('p',text,'study-subtitle'));};
-function scriptureLines(host,verses){host.replaceChildren();verses.forEach((v,i)=>{const p=make('p',null,'kjv-verse');p.append(make('sup',String(i+1)),document.createTextNode(' '+v));host.append(p);});}
+function scriptureLines(host,verses,bookId,bookName,chapterNum,onCopy,onShare,onCopyChapter,onShareChapter){
+ host.replaceChildren();
+ verses.forEach((v,i)=>{
+  const verseNum=i+1,reference=bookName+' '+chapterNum+':'+verseNum+' (KJV)';
+  const block=make('div',null,'kjv-verse-block');
+  const p=make('p',null,'kjv-verse');
+  p.id='verse-'+bookId+'-'+chapterNum+'-'+verseNum;
+  p.append(make('sup',String(verseNum)),document.createTextNode(' '+v));
+  const tools=make('div',null,'kjv-verse-actions');
+  const copy=make('button','Copy','kjv-verse-action');
+  copy.type='button';copy.setAttribute('aria-label','Copy '+reference);
+  copy.addEventListener('click',()=>onCopy(reference+'\n'+v));
+  const share=make('button','Share to bless others','kjv-verse-action kjv-share-action');
+  share.type='button';share.setAttribute('aria-label','Share '+reference+' to bless others');
+  share.addEventListener('click',()=>onShare(reference+'\n'+v,reference));
+  tools.append(copy,share);
+  block.append(p,tools,make('small','Together we take Christ to the nations of the world.','kjv-share-tagline'));
+  host.append(block);
+ });
+ const footer=make('section',null,'kjv-chapter-share');
+ footer.append(make('strong','Share this chapter to bless others'),make('p','Together we take Christ to the nations of the world.','kjv-share-tagline'));
+ const actions=make('div',null,'kjv-chapter-actions');
+ const copyChapter=make('button','Copy chapter','kjv-verse-action');
+ copyChapter.type='button';copyChapter.addEventListener('click',onCopyChapter);
+ const shareChapter=make('button','Share to bless others','kjv-verse-action kjv-share-action');
+ shareChapter.type='button';shareChapter.addEventListener('click',onShareChapter);
+ actions.append(copyChapter,shareChapter);footer.append(actions);host.append(footer);
+}
 function bookSelect(){
  const select=make('select');select.setAttribute('aria-label','Choose KJV Bible book');
  for(const b of books){const op=make('option',b.name);op.value=b.id;select.append(op);}
@@ -140,13 +167,34 @@ async function bible(){
   savePref('hk-study-chapter-bookmarks-v1',entries.slice(-100));
   showBookmarks();notice('Chapter saved on this phone.');
  }
+ async function copyPassage(text,successMessage){
+  try{await navigator.clipboard.writeText(text);notice(successMessage);}
+  catch{notice('Copy is not available in this browser.');}
+ }
+ async function sharePassage(text,title){
+  const shareText=text+'\n\nShare to bless others\nTogether we take Christ to the nations of the world.';
+  const url=new URL(location.href);url.hash='';
+  try{
+   if(typeof navigator.share==='function'){
+    await navigator.share({title:title||'Heavenly Key Bible',text:shareText,url:url.href});
+    notice('Ready to share and bless others.');
+   }else{
+    await copyPassage(shareText+'\n'+url.href,'Passage copied with the sharing message. Paste it into WhatsApp or another app.');
+   }
+  }catch(error){
+   if(error?.name==='AbortError')return;
+   await copyPassage(shareText+'\n'+url.href,'Passage copied with the sharing message. Paste it into WhatsApp or another app.');
+  }
+ }
  async function copyChapter(){
   if(!loaded)return;
   const content=loaded.chapters[currentChapter-1].map((v,i)=>(i+1)+'. '+v).join('\n');
-  try{
-   await navigator.clipboard.writeText(currentBook.name+' '+currentChapter+' (KJV)\n'+content);
-   notice('Chapter copied.');
-  }catch{notice('Copy is not available in this browser.');}
+  await copyPassage(currentBook.name+' '+currentChapter+' (KJV)\n'+content,'Chapter copied.');
+ }
+ async function shareChapter(){
+  if(!loaded)return;
+  const content=loaded.chapters[currentChapter-1].map((v,i)=>(i+1)+'. '+v).join('\n');
+  await sharePassage(currentBook.name+' '+currentChapter+' (KJV)\n'+content,currentBook.name+' '+currentChapter+' (KJV)');
  }
  function refreshChapters(){
   chapter.replaceChildren();
@@ -207,7 +255,7 @@ async function bible(){
    const data=await getBook(selectedBook);
    if(id!==loadSerial)return;
    loaded=data;
-   scriptureLines(verses,data.chapters[selectedChapter-1]);
+   scriptureLines(verses,data.chapters[selectedChapter-1],selectedBook.id,selectedBook.name,selectedChapter,text=>copyPassage(text,'Verse copied.'),(text,title)=>sharePassage(text,title),copyChapter,shareChapter);
    status.textContent='';
    notice('KJV — '+selectedBook.name+' '+selectedChapter);
   }catch(error){
