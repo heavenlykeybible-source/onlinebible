@@ -27,6 +27,8 @@ export function withSecurityHeaders(response: Response, origin?: string): Respon
     "https://global.heavenlykey.org",
     "https://bible.heavenlykey.org",
     "https://app.heavenlykey.org",
+      "https://heavenlykey.alldaywow247.workers.dev",
+      "https://heavenlykey-staging.alldaywow247.workers.dev",
   ]);
   if (origin && trustedOrigins.has(origin)) {
     headers.set("Access-Control-Allow-Origin", origin);
