@@ -8,6 +8,55 @@
  async function api(path,init){const response=await fetch(path,init);let data;try{data=await response.json()}catch{throw Error('Sign in to the Control Room, then reload this page.')}if(!response.ok)throw Error(data.error||'The request could not be completed.');return data}
  const post=(path,body)=>api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 
+
+ let selectedAgentDraft=null;
+ async function listAgentDrafts(){
+  const notice=$('#agent-drafts-status'),root=$('#agent-drafts-list');
+  notice.textContent='Loading proposed drafts…';root.replaceChildren();$('#agent-draft-review').hidden=true;selectedAgentDraft=null;
+  try{
+   const data=await api('/api/agent-drafts?site='+encodeURIComponent($('#site').value));
+   for(const item of (data.items||[])){
+    const b=document.createElement('button');b.type='button';b.style.margin='4px';
+    b.textContent='#'+item.id+' '+item.kind+'/'+item.entry_key+' · '+item.status;
+    b.onclick=async()=>{
+     try{
+      const record=await api('/api/agent-drafts/'+encodeURIComponent(item.id));selectedAgentDraft=record;
+      $('#agent-draft-meta').textContent=record.site+' · '+record.kind+'/'+record.key+' — '+record.description;
+      // textContent avoids execution of untrusted AI-generated HTML.
+      $('#agent-draft-content').textContent=JSON.stringify(record.content,null,2);
+      $('#agent-draft-review').hidden=false;
+      $('#agent-draft-accept').disabled=record.status!=='pending';
+      $('#agent-draft-reject').disabled=record.status!=='pending';
+      notice.textContent='Review content carefully. Accepting does not publish.';
+     }catch(e){notice.textContent=e.message}
+    };
+    root.append(b);
+   }
+   if(!data.items?.length)notice.textContent='No agent drafts for this website.';
+   else notice.textContent=data.items.length+' draft(s). Select one to review.';
+  }catch(e){notice.textContent=e.message}
+ }
+ $('#agent-drafts-refresh').onclick=listAgentDrafts;
+ $('#agent-draft-reject').onclick=async()=>{
+  if(!selectedAgentDraft)return;
+  try{await post('/api/agent-drafts/'+selectedAgentDraft.id,{action:'reject'});await listAgentDrafts();}
+  catch(e){$('#agent-drafts-status').textContent=e.message}
+ };
+ $('#agent-draft-accept').onclick=async()=>{
+  if(!selectedAgentDraft)return;
+  const record=selectedAgentDraft,notice=$('#agent-drafts-status');
+  if(record.site!==$('#site').value){notice.textContent='Choose the matching website first.';return}
+  if(!window.confirm('Save this AI proposal as a PRIVATE draft for '+record.site+'/'+record.kind+'/'+record.key+'? This overwrites the current private draft only after a version check. It will NOT publish.'))return;
+  try{
+   const params=new URLSearchParams({site:record.site,kind:record.kind,key:record.key});
+   const latest=await api('/api/entry?'+params);
+   // The user must explicitly review the current revision before accepting.
+   if(latest.entry?.version&& !window.confirm('The existing draft is version '+latest.entry.version+'. Replace that private draft with the proposed changes?'))return;
+   const result=await post('/api/agent-drafts/'+record.id,{action:'accept',expectedVersion:latest.entry?.version||0});
+   notice.textContent='Saved private draft version '+result.privateDraftVersion+'. Review in the page editor before publishing.';
+   await listAgentDrafts();$('#agent-drafts-status').textContent='Saved privately. Open the selected page and review before publishing.';
+  }catch(e){notice.textContent=e.message}
+ };
  // A connection selector never exposes provider credentials, accepts arbitrary URLs or deploys.
  let knownConnections=[];
  const connectionSite=()=>$('#site').value;
