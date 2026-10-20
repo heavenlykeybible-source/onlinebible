@@ -175,9 +175,16 @@ async function bible(){
   let copied=false;try{copied=document.execCommand('copy');}catch{}
   fallback.remove();notice(copied?successMessage:'Copy is not available in this browser. Select the text and copy it manually.');
  }
+ function passageUrl(anchor){
+  const url=new URL(location.href);
+  url.searchParams.set('book',currentBook.id);
+  url.searchParams.set('chapter',String(currentChapter));
+  url.hash=anchor||'';
+  return url.href;
+ }
  async function sharePassage(text,title,anchor){
   const shareText=text+'\n\nShare to bless others\nTogether we take Christ to the nations of the world.';
-  const url=new URL(location.href);url.hash=anchor||'';
+  const url=passageUrl(anchor);
   try{
    if(typeof navigator.share==='function'){
     await navigator.share({title:title||'Heavenly Key Bible',text:shareText,url:url.href});
@@ -193,11 +200,11 @@ async function bible(){
  function socialLinks(text,title,anchor){
   const row=make('div',null,'kjv-social-links');
   row.setAttribute('aria-label','Share on social media');
-  const page=new URL(location.href);page.hash=anchor||'';
+  const page=passageUrl(anchor);
   const payload=text+'\n\nShare to bless others\nTogether we take Christ to the nations of the world.';
   const items=[
    ['◉','https://wa.me/?text='+encodeURIComponent(payload+'\n'+page.href),'wa','WhatsApp'],
-   ['f','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(page.href),'fb','Facebook'],
+   ['f','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(page),'fb','Facebook'],
    ['➤','https://t.me/share/url?url='+encodeURIComponent(page.href)+'&text='+encodeURIComponent(payload),'tg','Telegram'],
    ['𝕏','https://twitter.com/intent/tweet?text='+encodeURIComponent(payload)+'&url='+encodeURIComponent(page.href),'x','X']
   ];
