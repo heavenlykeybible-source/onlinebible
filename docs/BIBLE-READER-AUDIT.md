@@ -55,3 +55,24 @@ Run on real browsers/devices before calling the reader production-ready:
 2. Complete the browser/device matrix above; source inspection alone cannot establish real-device pass status.
 3. Have Heavenly Key's responsible Bible teacher/pastor review the doctrine entries and reading-plan reflections against the movement's current approved Statement of Faith.
 4. Re-check the source of the KJV compilation and applicable distribution rights before public release.
+
+
+## Installation compatibility finding
+
+The current web app manifest and Apple touch-icon link reference SVG-only icons. Some install surfaces, especially iOS/iPadOS Home Screen icon handling, are more reliable with a conventional PNG touch icon and raster 192px/512px manifest icons. This remains a compatibility risk to resolve before claiming fully verified installation on iPhone/iPad and all Android launchers. The present source-level check confirms that the referenced SVG files exist, not that every operating system accepts them as install icons.
+
+## Device test record (not yet executed on physical devices)
+
+| Device/browser | Result | Required verification |
+|---|---|---|
+| Android / Chrome | Not run | Install prompt or browser-menu install, launch icon, standalone display, reader navigation, offline reopen |
+| Android / Samsung Internet | Not run | Add to Home screen flow, layout, downloads, offline reopen |
+| iPhone / Safari | Not run | Share → Add to Home Screen, icon appearance, standalone launch, safe areas, font scaling |
+| iPad / Safari | Not run | Home Screen install, portrait/landscape, split-screen and larger text |
+| Windows / Chrome or Edge | Not run | Install action, standalone window, keyboard and zoom |
+| macOS / Safari and Chrome | Not run | Add to Dock/install flow, icon, navigation and zoom |
+| Firefox desktop/mobile | Not run | Browser fallback, responsive reader, search, bookmarks and sharing |
+| Offline / airplane mode | Not run | Reopen previously saved book, navigate saved chapters, handle uncached books gracefully |
+| Service-worker update | Not run | Install a new shell version and confirm saved Bible books/private stores remain intact |
+
+The newly extended `npm run check` adds a full 66-book data integrity pass and PWA manifest/icon existence checks. It has been committed but was not executed in this session because the repository's local Node environment and physical-device browsers are not available here. Do not treat added checks as passing until someone runs them.
