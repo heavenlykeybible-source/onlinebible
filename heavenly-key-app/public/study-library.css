@@ -126,3 +126,17 @@
 .mobile-kjv-page .mobile-kjv-library-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:9px 2px 2px;border-top:1px solid #e7edf0}
 .mobile-kjv-page .mobile-kjv-library-label{font:500 .72rem/1.3 system-ui,-apple-system,sans-serif;color:#78847d}
 .mobile-kjv-page .mobile-kjv-library-actions button{font-size:.75rem;min-height:30px;padding:5px 9px}
+
+
+/* Bible speaker-colour guide and semantic styles for verified speaker annotations. */
+.mobile-kjv-page .kjv-color-legend{display:grid;gap:5px;max-width:540px;margin:12px auto 3px;padding:10px 12px;border:1px solid #dfe6ef;border-radius:10px;background:#f9fbff;text-align:left;color:#34445a;font:400 .78rem/1.4 system-ui,-apple-system,sans-serif}
+.mobile-kjv-page .kjv-color-legend>strong{font-size:.8rem;color:#243b5b}
+.mobile-kjv-page .kjv-color-key{display:flex;align-items:center;gap:8px;margin:0}
+.mobile-kjv-page .kjv-color-swatch{display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:3px 7px;border-radius:6px;background:#fff;font-weight:800}
+.mobile-kjv-page .kjv-color-swatch-jesus{color:#c62828;border:1px solid #efcaca}
+.mobile-kjv-page .kjv-color-swatch-god{color:#1557b0;border:1px solid #c8d9f2}
+.mobile-kjv-page .kjv-color-description{color:#35445a}
+.mobile-kjv-page .kjv-color-note{color:#68768a;font-size:.68rem}
+.mobile-kjv-page .kjv-verse.kjv-verse--jesus{color:#c62828}
+.mobile-kjv-page .kjv-verse.kjv-verse--god{color:#1557b0}
+.mobile-kjv-page .kjv-verse.kjv-verse--jesus.kjv-verse--god{color:#c62828}
