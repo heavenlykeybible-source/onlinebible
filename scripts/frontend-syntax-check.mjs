@@ -21,11 +21,11 @@ const studyLibrary=join(appPublic,'study-library.js');
 try{
   const source=await readFile(studyLibrary,'utf8');
   for(const [label,pattern] of [
-    ['verse copy action',/Copy verse/],
+    ['verse copy action',/aria-label','Copy /],
     ['sharing slogan',/Share to bless others/],
-    ['ministry slogan',/Together we take Christ to the nations of the world\\./],
+    ['ministry slogan',/Together we take Christ to the nations of the world\./],
     ['full Bible export action',/Copy full Bible/],
-    ['verse-specific sharing anchor',/verse-\\$\\{/]
+    ['verse-specific sharing anchor',/id='verse-'/]
   ])if(!pattern.test(source))failures.push({file:studyLibrary,error:'Missing Bible sharing requirement: '+label});
 }catch(e){failures.push({file:studyLibrary,error:'Unable to inspect Bible sharing controls: '+e.message});}
 
