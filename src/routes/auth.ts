@@ -31,6 +31,11 @@ export function withSecurityHeaders(response: Response, origin?: string): Respon
   if (origin && trustedOrigins.has(origin)) {
     headers.set("Access-Control-Allow-Origin", origin);
     headers.set("Access-Control-Allow-Credentials", "true");
+  } else if (!origin) {
+    // Preserve the existing canonical www behavior for legacy route helpers
+    // that have not yet been upgraded to pass their Request through.
+    headers.set("Access-Control-Allow-Origin", "https://www.heavenlykey.org");
+    headers.set("Access-Control-Allow-Credentials", "true");
   }
   headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
   headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
