@@ -53,4 +53,29 @@ for(const [label,pattern] of [
 ])if(!pattern.test(readerStyles))throw Error('Bible reader responsive check failed: '+label+'.');
 if(!/aria-live=["']polite["']/.test(readFileSync(join(biblePublic,'bible.html'),'utf8')))throw Error('Bible reader must announce loading/status updates accessibly.');
 
+
+/* PWA installation metadata and all-book KJV integrity checks. */
+const pwaManifest=JSON.parse(readFileSync(join(biblePublic,'manifest.webmanifest'),'utf8'));
+if(pwaManifest.display!=='standalone'||pwaManifest.start_url!=='/'||pwaManifest.scope!=='/')throw Error('PWA install metadata must keep standalone display and root scope.');
+if(!Array.isArray(pwaManifest.icons)||!pwaManifest.icons.some(icon=>icon.sizes==='192x192')||!pwaManifest.icons.some(icon=>icon.sizes==='512x512'))throw Error('PWA manifest needs 192px and 512px app icons.');
+for(const icon of pwaManifest.icons){
+ const target=join(biblePublic,icon.src.replace(/^\//,''));
+ if(!existsSync(target))throw Error('PWA manifest icon is missing: '+icon.src);
+}
+const kjvManifest=JSON.parse(readFileSync(join(biblePublic,'kjv-manifest.json'),'utf8'));
+if(!Array.isArray(kjvManifest.books)||kjvManifest.books.length!==66)throw Error('KJV manifest must contain all 66 books.');
+let checkedChapters=0,checkedVerses=0;
+for(const book of kjvManifest.books){
+ const path=join(biblePublic,book.path);
+ if(!existsSync(path))throw Error('Missing KJV book data: '+book.path);
+ const data=JSON.parse(readFileSync(path,'utf8'));
+ if(data.book!==book.name||!Array.isArray(data.chapters)||data.chapters.length!==book.chapters)throw Error('KJV book metadata/chapter count mismatch: '+book.name);
+ for(let i=0;i<data.chapters.length;i++){
+  const verses=data.chapters[i];
+  if(!Array.isArray(verses)||verses.length===0||verses.some(v=>typeof v!=='string'||!v.trim()))throw Error('Invalid verse data in '+book.name+' chapter '+(i+1)+'.');
+  checkedChapters++;checkedVerses+=verses.length;
+ }
+}
+if(checkedChapters!==kjvManifest.totalChapters||checkedVerses!==kjvManifest.totalVerses)throw Error('KJV totals do not match the manifest: '+checkedChapters+' chapters / '+checkedVerses+' verses.');
+
 console.log('All app scripts, module dependencies and local page/assets links verified.');
