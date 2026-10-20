@@ -4,11 +4,26 @@ import { fileURLToPath } from "node:url";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const allowPlaceholders = process.argv.includes("--allow-placeholders");
-const targetEnv = process.env.DEPLOY_ENV || "production";
+const envFlag = process.argv.indexOf("--env");
+const targetEnv = envFlag >= 0 ? process.argv[envFlag + 1] : (process.env.DEPLOY_ENV || "production");
 const fail = [];
 const warn = [];
+if (!["production", "staging"].includes(targetEnv)) throw new Error("Preflight target must be production or staging.");
 
 const wrangler = await readFile(join(root, "wrangler.toml"), "utf8");
+const stagingMarker = "[env.staging]";
+const stagingOffset = wrangler.indexOf(stagingMarker);
+const stagingEnd = stagingOffset >= 0 ? wrangler.indexOf("\n[[r2_buckets]]", stagingOffset) : -1;
+const productionBucketStart = stagingOffset >= 0 ? wrangler.indexOf("\n[[r2_buckets]]", stagingOffset) : -1;
+const productionBucketEnd = productionBucketStart >= 0 ? wrangler.indexOf("\n[triggers]", productionBucketStart) : -1;
+const productionConfig = stagingOffset >= 0
+  ? wrangler.slice(0, stagingOffset) + (productionBucketStart >= 0
+      ? wrangler.slice(productionBucketStart, productionBucketEnd >= 0 ? productionBucketEnd : undefined)
+      : "")
+  : wrangler;
+const stagingConfig = stagingOffset >= 0
+  ? wrangler.slice(stagingOffset, stagingEnd >= 0 ? stagingEnd : undefined)
+  : "";
 const requiredProductionBindings = [
   "DB", "SESSIONS_KV", "RATE_LIMIT_KV", "LIVE_STATUS_KV", "MEDIA_R2"
 ];
@@ -19,11 +34,12 @@ const requiredSecrets = [
   "SESSION_SECRET", "PASSWORD_PEPPER", "ENCRYPTION_KEY", "MEDIA_ENGINE_SHARED_SECRET"
 ];
 
+if (stagingOffset < 0) fail.push("Missing [env.staging] configuration section.");
 for (const binding of requiredProductionBindings) {
-  if (!wrangler.includes(`binding = "${binding}"`)) fail.push(`Missing production binding: ${binding}`);
+  if (!productionConfig.includes(`binding = "${binding}"`)) fail.push(`Missing production binding: ${binding}`);
 }
 for (const binding of requiredStagingBindings) {
-  if (!wrangler.includes(`binding = "${binding}"`)) fail.push(`Missing staging binding: ${binding}`);
+  if (!stagingConfig.includes(`binding = "${binding}"`)) fail.push(`Missing staging binding inside [env.staging]: ${binding}`);
 }
 for (const secret of requiredSecrets) {
   if (!wrangler.includes(`"${secret}"`)) warn.push(`Note: secret '${secret}' is not declared in wrangler.toml — ensure it's set via 'wrangler secret put' for the target environment.`);
@@ -54,8 +70,8 @@ const nums = migrations.map(f => Number(f.slice(0, 4)));
 for (let i = 0; i < nums.length; i++) {
   if (nums[i] !== i + 1) fail.push(`Migration sequence gap at ${String(i + 1).padStart(4, "0")}.`);
 }
-if (nums.length !== 39 || nums[nums.length - 1] !== 39) {
-  fail.push(`Expected migration 0039 as the current schema tip; found ${nums.length ? String(nums[nums.length - 1]).padStart(4, "0") : "none"}.`);
+if (nums.length !== 40 || nums[nums.length - 1] !== 40) {
+  fail.push(`Expected migration 0040 as the current schema tip; found ${nums.length ? String(nums[nums.length - 1]).padStart(4, "0") : "none"}.`);
 }
 
 async function walk(dir) {

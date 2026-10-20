@@ -88,3 +88,55 @@
 .audio-playlist-panel button:disabled{opacity:.48;cursor:not-allowed}
 .audio-playlist-panel audio:not([controls]){display:none}
 @media(max-width:550px){.audio-mixer-grid{grid-template-columns:1fr}.audio-playlist-panel{padding:12px}}
+
+
+/* Quiet, WhatsApp-familiar verse actions: visible when needed, never competing with Scripture. */
+.mobile-kjv-page .kjv-verse-block{padding:0 0 9px;margin:0 0 12px;border-bottom:1px solid #edf0f2}
+.mobile-kjv-page .kjv-verse-block .kjv-verse{margin:0 0 4px}
+.mobile-kjv-page .kjv-verse-actions,.mobile-kjv-page .kjv-chapter-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mobile-kjv-page .kjv-verse-action{appearance:none;border:1px solid #dce8df;background:#fff;color:#285943;border-radius:7px;padding:5px 9px;min-height:32px;font:600 .75rem/1.25 system-ui,-apple-system,sans-serif;cursor:pointer}
+.mobile-kjv-page .kjv-verse-action:focus-visible{outline:2px solid #16734a;outline-offset:2px}
+.mobile-kjv-page .kjv-share-action{border-color:#d3e7da;background:#f3faf5;color:#17613e}
+.mobile-kjv-page .kjv-share-tagline{display:block;margin-top:3px;color:#738078;font:400 .68rem/1.35 system-ui,-apple-system,sans-serif}
+.mobile-kjv-page .kjv-chapter-share{margin:14px 0 4px;padding:10px 0 2px;border-top:1px solid #e4ebe6;color:#244f3c;font:400 .82rem/1.4 system-ui,-apple-system,sans-serif}
+.mobile-kjv-page .kjv-chapter-share>strong{font-size:.85rem}
+.mobile-kjv-page .kjv-chapter-share>p{margin:3px 0 7px}
+@media(max-width:420px){.mobile-kjv-page .kjv-verse-actions{gap:4px}.mobile-kjv-page .kjv-verse-action{padding:5px 7px;font-size:.72rem}}
+
+
+/* Separate offline library: compact list that stays outside the Scripture reading view. */
+.bible-download-list{display:grid;gap:8px;margin-top:14px}
+.bible-download-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;background:#fff;border:1px solid #dfe8e2;border-radius:10px}
+.bible-download-details{display:grid;gap:3px;min-width:0}
+.bible-download-details strong{color:#183f2d;font-size:.96rem}
+.bible-download-details small{color:#65766c;font-size:.78rem}
+.bible-download-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.bible-download-actions button{min-height:38px;padding:7px 10px;font-size:.78rem}
+.bible-download-actions button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:480px){.bible-download-card{align-items:flex-start;flex-direction:column}.bible-download-actions{width:100%;justify-content:flex-start}.bible-download-actions button{flex:1 1 auto}}
+
+
+/* Tiny social shortcuts beneath the sharing invitation. */
+.mobile-kjv-page .kjv-social-links{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:5px}
+.mobile-kjv-page .kjv-social-icon{display:inline-flex;align-items:center;justify-content:center;min-width:25px;min-height:24px;padding:2px 6px;border:1px solid #e1e8e3;border-radius:6px;background:#fff;color:#426252;text-decoration:none;font:600 .64rem/1.1 system-ui,-apple-system,sans-serif}
+.mobile-kjv-page .kjv-social-icon:focus-visible{outline:2px solid #16734a;outline-offset:2px}
+.mobile-kjv-page .kjv-social-wa{color:#17613e}.mobile-kjv-page .kjv-social-fb{color:#2855a5}.mobile-kjv-page .kjv-social-tg{color:#176b8a}.mobile-kjv-page .kjv-social-x{color:#222}
+.mobile-kjv-page .mobile-kjv-option-actions .btn{font-size:.82rem;padding:8px 10px}
+
+.mobile-kjv-page .mobile-kjv-library-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:9px 2px 2px;border-top:1px solid #e7edf0}
+.mobile-kjv-page .mobile-kjv-library-label{font:500 .72rem/1.3 system-ui,-apple-system,sans-serif;color:#78847d}
+.mobile-kjv-page .mobile-kjv-library-actions button{font-size:.75rem;min-height:30px;padding:5px 9px}
+
+
+/* Bible speaker-colour guide and semantic styles for verified speaker annotations. */
+.mobile-kjv-page .kjv-color-legend{display:grid;gap:5px;max-width:540px;margin:12px auto 3px;padding:10px 12px;border:1px solid #dfe6ef;border-radius:10px;background:#f9fbff;text-align:left;color:#34445a;font:400 .78rem/1.4 system-ui,-apple-system,sans-serif}
+.mobile-kjv-page .kjv-color-legend>strong{font-size:.8rem;color:#243b5b}
+.mobile-kjv-page .kjv-color-key{display:flex;align-items:center;gap:8px;margin:0}
+.mobile-kjv-page .kjv-color-swatch{display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:3px 7px;border-radius:6px;background:#fff;font-weight:800}
+.mobile-kjv-page .kjv-color-swatch-jesus{color:#c62828;border:1px solid #efcaca}
+.mobile-kjv-page .kjv-color-swatch-god{color:#1557b0;border:1px solid #c8d9f2}
+.mobile-kjv-page .kjv-color-description{color:#35445a}
+.mobile-kjv-page .kjv-color-note{color:#68768a;font-size:.68rem}
+.mobile-kjv-page .kjv-verse.kjv-verse--jesus{color:#c62828}
+.mobile-kjv-page .kjv-verse.kjv-verse--god{color:#1557b0}
+.mobile-kjv-page .kjv-verse.kjv-verse--jesus.kjv-verse--god{color:#c62828}

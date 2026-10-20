@@ -64,8 +64,19 @@ jobs:
           test -n "$D1_ID"
           test -n "$KV_ID"
           npx --yes wrangler@4.145.0 r2 bucket create heavenly-key-global-community-media-staging >/dev/null 2>&1 || true
+
+          # A workers.dev URL includes the account's assigned subdomain. Resolve it
+          # instead of assuming the worker name alone is a valid hostname.
+          curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" \
+            > /tmp/account3-workers-subdomain.json
+          SUBDOMAIN=$(node -e 'const r=require("/tmp/account3-workers-subdomain.json");process.stdout.write(r.success===true?(r.result?.subdomain||""):"")')
+          [[ "$SUBDOMAIN" =~ ^[a-z0-9-]+$ ]] || { echo '::error::Could not resolve a valid Account 3 workers.dev subdomain.'; exit 1; }
+          STAGING_ORIGIN="https://heavenly-key-global-community-staging.${SUBDOMAIN}.workers.dev"
+
           cp wrangler.staging.toml wrangler.staging.deploy.toml
           sed -i "s/REPLACE_ACCOUNT3_STAGING_D1_ID/$D1_ID/g;s/REPLACE_ACCOUNT3_STAGING_KV_ID/$KV_ID/g" wrangler.staging.deploy.toml
+          sed -i "s|^PUBLIC_ORIGIN = .*|PUBLIC_ORIGIN = \"$STAGING_ORIGIN\"|" wrangler.staging.deploy.toml
       - name: Apply Account 3 staging migrations only
         working-directory: global-community
         run: npx --yes wrangler@4.145.0 d1 migrations apply heavenly-key-global-community-db-staging --remote --config wrangler.staging.deploy.toml
