@@ -77,12 +77,13 @@ export async function handleAgentConnector(request:Request,env:ConnectorEnv): Pr
     if (!(request.headers.get("content-type")||"").toLowerCase().startsWith("application/json")) return reject("JSON required",415);
     if (Number(request.headers.get("content-length")||0)>130000)return reject("Too large",413);
     const raw=await request.text();if(raw.length>130000)return reject("Too large",413);
-    try{
-      const draft=JSON.parse(raw) as Record<string,unknown>;
-      if(typeof draft.site!=="string"||!identity.sites.has(draft.site))return reject("Site permission denied",403);
-      return await submitAgentDraft(env,draft,identity.id);
-    }
-    catch {return reject("Draft handoff is unavailable",503);}
+    let draft:unknown;
+    try { draft=JSON.parse(raw); }catch{return reject("Invalid JSON",400);}
+    if(!draft||typeof draft!=="object"||Array.isArray(draft))return reject("Invalid draft",400);
+    const site=(draft as Record<string,unknown>).site;
+    if(typeof site!=="string"||!identity.sites.has(site))return reject("Site permission denied",403);
+    try{return await submitAgentDraft(env,draft,identity.id);}
+    catch{return reject("Draft handoff is unavailable",503);}
   }
   if (path === "/api/connector/v1/proposals" && request.method === "GET") {
     const site = new URL(request.url).searchParams.get("site");
@@ -100,12 +101,13 @@ export async function handleAgentConnector(request:Request,env:ConnectorEnv): Pr
     let data: Proposal;
     try { data=validate(JSON.parse(raw)); } catch(e) { return reject(e instanceof Error ? e.message : "Invalid JSON"); }
     if (!identity.sites.has(data.site)) return reject("Site permission denied",403);
-    const result = await env.DB.prepare(
-      "INSERT INTO cms_connector_proposals(site,revision,summary,changed_paths,submitted_by,status) VALUES(?,?,?,?,?,'pending') RETURNING id"
-    ).bind(data.site,data.revision,data.summary,JSON.stringify(data.changedPaths),identity.id).first<{id:number}>();
-    await env.DB.prepare("INSERT INTO cms_audit(actor,action,target) VALUES(?,?,?)")
-      .bind(identity.id,"agent-proposal-submitted",data.site+":"+result?.id).run();
-    return json({id:result?.id,site:data.site,status:"pending",requiresOwnerApproval:true,executed:false},201);
+    const result=await env.DB.batch([
+      env.DB.prepare("INSERT INTO cms_connector_proposals(site,revision,summary,changed_paths,submitted_by,status) VALUES(?,?,?,?,?,'pending')")
+        .bind(data.site,data.revision,data.summary,JSON.stringify(data.changedPaths),identity.id),
+      env.DB.prepare("INSERT INTO cms_audit(actor,action,target) VALUES(?,?,?)")
+        .bind(identity.id,"agent-proposal-submitted",data.site+":"+data.revision)
+    ]);
+    return json({id:result[0].meta.last_row_id,site:data.site,status:"pending",requiresOwnerApproval:true,executed:false},201);
   }
   return reject("Not found",404);
 }
