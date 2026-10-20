@@ -53,7 +53,7 @@ function scriptureLines(host,verses,bookId,bookName,chapterNum,onCopy,onShare,on
   share.type='button';share.setAttribute('aria-label','Share '+reference+' to bless others');
   share.addEventListener('click',()=>onShare(reference+'\n'+v,reference));
   tools.append(copy,share);
-  block.append(p,tools,make('small','Together we take Christ to the nations of the world.','kjv-share-tagline'),onSocialLinks(reference+'\\n'+v,reference));
+  block.append(p,tools,make('small','Together we take Christ to the nations of the world.','kjv-share-tagline'),onSocialLinks(reference+'\n'+v,reference));
   host.append(block);
  });
  const footer=make('section',null,'kjv-chapter-share');
@@ -188,9 +188,9 @@ async function bible(){
   const row=make('div',null,'kjv-social-links');
   row.setAttribute('aria-label','Share on social media');
   const page=new URL(location.href);page.hash='';
-  const payload=text+'\\n\\nShare to bless others\\nTogether we take Christ to the nations of the world.';
+  const payload=text+'\n\nShare to bless others\nTogether we take Christ to the nations of the world.';
   const items=[
-   ['WhatsApp','https://wa.me/?text='+encodeURIComponent(payload+'\\n'+page.href),'wa'],
+   ['WhatsApp','https://wa.me/?text='+encodeURIComponent(payload+'\n'+page.href),'wa'],
    ['Facebook','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(page.href),'fb'],
    ['Telegram','https://t.me/share/url?url='+encodeURIComponent(page.href)+'&text='+encodeURIComponent(payload),'tg'],
    ['X','https://twitter.com/intent/tweet?text='+encodeURIComponent(payload)+'&url='+encodeURIComponent(page.href),'x']
@@ -208,9 +208,9 @@ async function bible(){
    for(let i=0;i<books.length;i++){
     const b=books[i];notice('Preparing full Bible: '+(i+1)+' of '+books.length+' books — '+b.name);
     const data=await getBook(b);
-    parts.push(b.name.toUpperCase()+'\\n'+data.chapters.map((chapter,ci)=>'CHAPTER '+(ci+1)+'\\n'+chapter.map((v,vi)=>(vi+1)+'. '+v).join('\\n')).join('\\n\\n'));
+    parts.push(b.name.toUpperCase()+'\n'+data.chapters.map((chapter,ci)=>'CHAPTER '+(ci+1)+'\n'+chapter.map((v,vi)=>(vi+1)+'. '+v).join('\n')).join('\n\n'));
    }
-   await copyPassage(parts.join('\\n\\n'),'Full KJV Bible copied to clipboard.');
+   await copyPassage(parts.join('\n\n'),'Full KJV Bible copied to clipboard.');
   }catch(error){notice('Could not copy the full Bible: '+(error.message||'Please reconnect and try again.'));}
   finally{copyBible.disabled=false;copyBible.textContent='Copy full Bible';}
  }
