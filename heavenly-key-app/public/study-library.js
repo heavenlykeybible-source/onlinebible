@@ -139,8 +139,7 @@ async function bible(){
  const copy=action('Copy chapter',copyChapter);
  const copyBible=action('Copy full Bible',copyFullBible);
  const fontStyle=action('Use classic font',toggleTypeface);
- const audio=link('Listen to this chapter →','audio-bible.html','btn secondary');
- optionBar.append(bookmark,copy,fontStyle,audio);
+ optionBar.append(bookmark,copy,fontStyle);
  extras.append(searchLabel,search,results,savedLabel,savedChapters,optionBar);
  const libraryActions=make('div',null,'mobile-kjv-library-actions');
  libraryActions.append(make('span','Whole Bible tools','mobile-kjv-library-label'),copyBible);
