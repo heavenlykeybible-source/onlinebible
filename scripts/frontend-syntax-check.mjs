@@ -118,6 +118,10 @@ try{
   for(const [label,pattern] of [
     ['routine settings saved locally',/hk-bible-reading-routine-v1/],
     ['local reading progress',/hk-bible-reading-progress-v1/],
+    ['automated Read and Pray plan',/Automated Read and Pray daily plan/],
+    ['topic-based prayer focus options',/destiny:\{label:'Purpose and calling'/],
+    ['short daily devotion and prayer point',/Today’s short devotion[\s\S]*?Prayer point/],
+    ['monthly date-based passage selection',/new Date\(\)\.getDate\(\)/],
     ['selected reminder time',/type='time'/],
     ['weekday scheduling',/Reading days/],
     ['browser notification permission requested by user',/Notification\.requestPermission\(\)/],
@@ -129,7 +133,7 @@ try{
     ['reading completion action',/Mark today’s reading complete/],
     ['no sign-in requirement',/no account is needed/]
   ])if(!pattern.test(routine))failures.push({file:readingRoutinePath,error:'Missing Bible reading routine requirement: '+label});
-  if(!styles.includes('.brr-card')||!styles.includes('.brr-primary'))failures.push({file:join(appPublic,'bible-reading-routine.css'),error:'Reading routine responsive card styles are missing.'});
+  if(!styles.includes('.brr-card')||!styles.includes('.brr-primary')||!styles.includes('.brr-devotion'))failures.push({file:join(appPublic,'bible-reading-routine.css'),error:'Reading routine responsive card styles are missing.'});
   if(!page.includes('id="bible-reading-routine"')||!page.includes('bible-reading-routine.css')||!page.includes('bible-reading-routine.js'))failures.push({file:join(appPublic,'bible.html'),error:'Bible reading routine must be connected to the Bible reader page.'});
 }catch(e){failures.push({file:readingRoutinePath,error:'Unable to validate Bible reading routine: '+e.message});}
 
