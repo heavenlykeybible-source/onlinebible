@@ -21,6 +21,23 @@ test('mobile app has installable PWA shell and all navigable sections',()=>{
  assert.match(js,/data-screen/);
  assert.match(js,/serviceWorker\.register\("\/sw\.js"\)/);
 });
+test('PWA provides PNG icons for Android installation and Apple Home Screen',()=>{
+ const manifest=JSON.parse(get('public/manifest.webmanifest'));
+ const html=get('public/index.html'),sw=get('public/sw.js');
+ for(const [src,size] of [['/icons/icon-192.png','192x192'],['/icons/icon-512.png','512x512']]){
+  assert.ok(manifest.icons.some(icon=>icon.src===src&&icon.sizes===size&&icon.type==='image/png'),src+' manifest entry missing');
+  const bytes=readFileSync(new URL('../public'+src,import.meta.url));
+  assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10],src+' must be a valid PNG file');
+  assert.ok(sw.includes("'"+src+"'"),src+' must be included in offline shell');
+ }
+ const apple='/icons/apple-touch-icon.png';
+ assert.ok(html.includes('rel="apple-touch-icon" sizes="180x180" href="'+apple+'"'));
+ const appleBytes=readFileSync(new URL('../public'+apple,import.meta.url));
+ assert.deepEqual([...appleBytes.subarray(0,8)],[137,80,78,71,13,10,26,10]);
+ assert.ok(sw.includes("'"+apple+"'"),'Apple touch icon must be included in offline shell');
+ assert.equal(manifest.display,'standalone');
+});
+
 test('mobile community and media shortcuts only use verified HTTPS ministry pages',()=>{
  const html=get('public/index.html');
  for(const page of ['community.html','radio.html','video.html','grdpc.html']){
