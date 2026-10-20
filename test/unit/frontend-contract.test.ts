@@ -72,6 +72,8 @@ describe("frontend contract", () => {
     expect(worker).toContain("return withRequestCors(handleListGroups(request, env), request)");
     expect(worker).toContain("return withRequestCors(handleCreateGroupPost(request, env, Number(m[1])), request)");
     expect(worker).toContain("return withRequestCors(handleCountReactions(request, env), request)");
+    expect(worker).toContain("return withRequestCors(handleCommunityCategories(request,env), request)");
+    expect(worker).toContain("return withRequestCors(handlePendingTestimonies(request,env), request)");
   });
 
 });
