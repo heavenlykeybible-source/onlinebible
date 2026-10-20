@@ -13,6 +13,11 @@ Reviewed branch: feature/simple-bible-sharing-20261020
 - Updated the core deployment preflight and architecture gate to expect the 0040 schema tip.
 - Expanded frontend syntax validation to include JavaScript in heavenly-key-app/public and checks for the Bible sharing controls.
 - Added the Workers AI binding to the community staging configuration and added a preflight check that production and staging both declare their required bindings.
+- Corrected Bible share URLs so they preserve the selected book/chapter and the verse anchor, and made shared links scroll to the intended verse after the chapter loads.
+- Added regression assertions for share URL context, anchor navigation, and stale URL-object access.
+- Expanded the independent frontend audit to parse every public app JavaScript file and validate the KJV manifest, safe book paths, per-book chapter counts, verse data, and the 66-book / 1,189-chapter / 31,102-verse totals.
+- Strengthened the core deployment preflight so production bindings are checked separately from the `[env.staging]` resource declarations instead of letting production resources satisfy staging checks.
+- Expanded the architecture gate to check migration continuity for Global Community and Recovery Control as well as the core and Media Engine.
 
 The migration filenames and sequence were inspected from the source tree. A full SQL migration replay and foreign-key integrity check have **not** been rerun during this review; the previous 101-table result below was from an earlier snapshot and is not asserted for this branch.
 
