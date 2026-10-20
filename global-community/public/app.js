@@ -12,7 +12,8 @@ async function api(path,method="GET",body){
  if(controller)init.signal=controller.signal;
  try{
   let r;try{r=await fetch(path,init);}catch(e){throw Error(e.name==="AbortError"?"The connection is taking too long. Please try again.":"Network unavailable. Check your connection and try again.");}
-  let d={};try{d=await r.json();}catch(e){if(controller?.signal.aborted)throw Error("The connection is taking too long. Please try again.");}
+  let d;try{d=await r.json();}catch(e){if(controller?.signal.aborted)throw Error("The connection is taking too long. Please try again.");throw Error("The service returned an invalid response. Please refresh or contact support.");}
+  if(!d||typeof d!=="object"||Array.isArray(d))throw Error("The service returned an invalid response. Please refresh or contact support.");
   if(!r.ok)throw Error(d?.error?.message||("Request failed (HTTP "+r.status+")."));return d;
  }finally{if(timer!==null)clearTimeout(timer);}
 }
@@ -70,7 +71,7 @@ function openHeavenlyKeyAi({action='search',topic='',content='',apply=null}={}){
  use.addEventListener('click',()=>{if(out.value&&apply){apply(out.value);d.close();}});
  close.addEventListener('click',()=>d.close());
  f.addEventListener('submit',async e=>{e.preventDefault();ask.disabled=true;msg.textContent='Preparing your suggestion…';try{
- const reply=await fetch('https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev/v1/assistant',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',body:JSON.stringify({message:(kind.value.replace(/_/g,' ')+': '+subject.value+'\n'+input.value).slice(0,2000)}),signal:AbortSignal.timeout(30000)});const response=await reply.json();if(!reply.ok)throw Error(response.error||'AI is temporarily unavailable.');const res={available:true,draft:response.response};
+ const res=await api('/api/community-ai','POST',{action:kind.value,topic:subject.value,content:input.value});
  out.value=res.available?res.draft:'';copy.disabled=use.disabled=!res.available;
  msg.textContent=res.available?'AI suggestion only. Verify the references and wording.':res.message||'AI service is unavailable.';
  }catch(e){out.value='';copy.disabled=use.disabled=true;msg.textContent=e.message;}finally{ask.disabled=false;}});
@@ -385,7 +386,7 @@ async function refreshThread(){
 function renderThread(id){
  if(activeConversation!==id)return;const history=threadHost.querySelector('.chat-history'),wasBottom=!history.dataset.rendered||history.scrollHeight-history.scrollTop-history.clientHeight<80,top=history.scrollTop,query=chatQuery.trim().toLocaleLowerCase(),items=(chatBodies.get(id)||[]).filter(m=>!query||m.body.toLocaleLowerCase().includes(query));
  history.replaceChildren();let day='';for(const m of items){const date=dateTime(m.created_at),key=date.toLocaleDateString();if(key!==day){day=key;history.append(el('div',key===new Date().toLocaleDateString()?'Today':date.toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'}),'chat-day'));}
- const mine=m.sender_user_id===session.user.userId,bubble=el('div',null,'message-bubble'+(mine?' sent':' received')),options=el('details',null,'message-options'),summary=el('summary','⋯'),report=el('button','Report message','btn secondary');summary.setAttribute('aria-label','Message options');report.type='button';report.addEventListener('click',()=>{options.open=false;reportPost({post_id:m.message_id,reportTargetType:'message'},bubble);});options.append(summary,report);bubble.append(options,el('p',m.body));const stamp=el('time',date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));stamp.dateTime=date.toISOString();bubble.append(stamp);history.append(bubble);}
+ const mine=m.sender_user_id===session.user.userId,bubble=el('div',null,'message-bubble'+(mine?' sent':' received')),options=el('details',null,'message-options'),summary=el('summary','⋯'),report=el('button','Report message','btn secondary');summary.setAttribute('aria-label','Message options');report.type='button';report.addEventListener('click',()=>{options.open=false;reportPost({post_id:m.message_id,reportTargetType:'message'},bubble);});options.append(summary,report);bubble.dataset.messageId=String(m.message_id);bubble.append(options,el('p',m.body));const stamp=el('time',date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));stamp.dateTime=date.toISOString();bubble.append(stamp);history.append(bubble);}
  if(!items.length)history.append(el('p',query?'No matching messages in the latest 100.':'Conversation accepted. Say hello.','chat-empty'));history.dataset.rendered='true';
  if(wasBottom||query)history.scrollTop=history.scrollHeight;else{history.scrollTop=top;threadHost.querySelector('.chat-latest').hidden=false;}
 }
