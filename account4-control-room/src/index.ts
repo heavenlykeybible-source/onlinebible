@@ -1,4 +1,5 @@
 import {SITES,planDeployment} from './deployment-engine.ts';
+import {handleConnectionDirectory} from './connection-directory.ts';
 import {AI_MODEL,PUBLIC_CMS_ORIGIN,validateDocument} from './cms-schema.ts';
 import {saveDraft,publishDraft,restoreDraft} from './cms-storage.ts';
 import {ownerSession,ownerLogin,ownerLogout,setOwnerPassword,generatedPassword} from './owner-auth.ts';
@@ -50,6 +51,7 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
    try{await env.DB.prepare('SELECT 1 FROM cms_entries LIMIT 1').first();cms='ready';await env.DB.prepare('SELECT 1 FROM cms_publications LIMIT 1').first();publishing='ready'}catch{}
    return json({cms,publishing,ai:env.AI?'connected':'unavailable',media:env.MEDIA?'connected':'unavailable',publicService:PUBLIC_CMS_ORIGIN,note:'Publish makes an approved snapshot available to the connected website renderer. AI inference is tested by sending a prompt.'});
   }
+  if(u.pathname.startsWith('/api/connections/'))return handleConnectionDirectory(request,env);
   if(u.pathname==='/api/deploy/sites'&&request.method==='GET')return json({sites:SITES,executionEnabled:false,contentPublishingEnabled:true});
   if(u.pathname==='/api/deploy/plan'&&request.method==='POST')return json({plan:planDeployment(await body(request,4096))});
   if(u.pathname==='/api/entry'&&request.method==='GET'){
