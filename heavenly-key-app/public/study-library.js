@@ -105,6 +105,14 @@ async function bible(){
  const label=make('p','KING JAMES VERSION · HOLY SCRIPTURE','mobile-kjv-eyebrow');
  const title=make('h2',null,'mobile-kjv-title');
  intro.append(label,title);
+ const colorLegend=make('section',null,'kjv-color-legend');
+ colorLegend.setAttribute('aria-label','Bible text colour guide');
+ const jesusKey=make('p',null,'kjv-color-key');
+ jesusKey.append(make('span','Red','kjv-color-swatch kjv-color-swatch-jesus'),make('span','Words spoken by Jesus','kjv-color-description'));
+ const godKey=make('p',null,'kjv-color-key');
+ godKey.append(make('span','Blue','kjv-color-swatch kjv-color-swatch-god'),make('span','Direct speech of God the Father','kjv-color-description'));
+ colorLegend.append(make('strong','Scripture colour guide'),jesusKey,godKey,make('small','Colouring is applied only where verified speaker annotations are available. The KJV text files currently provide verse text without speaker labels.','kjv-color-note'));
+ intro.append(colorLegend);
  const status=make('p',null,'mobile-kjv-status');
  status.setAttribute('role','status');status.setAttribute('aria-live','polite');
  const verses=make('article',null,'kjv-reader mobile-kjv-verses');
