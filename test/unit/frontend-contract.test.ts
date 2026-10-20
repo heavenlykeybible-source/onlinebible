@@ -5,9 +5,12 @@ import { join } from "node:path";
 describe("frontend contract", () => {
   it("keeps the approved Heavenly Key homepage ministry gateways and four-slide portrait experience", async () => {
     const root = process.cwd();
-    const [home, admin] = await Promise.all([
+    const [home, admin, login, register, reset] = await Promise.all([
       readFile(join(root, "heavenly-key-website/index.html"), "utf8"),
       readFile(join(root, "heavenly-key-website/pages/admin.html"), "utf8"),
+      readFile(join(root, "heavenly-key-website/pages/login.html"), "utf8"),
+      readFile(join(root, "heavenly-key-website/pages/register.html"), "utf8"),
+      readFile(join(root, "heavenly-key-website/pages/reset-password.html"), "utf8"),
     ]);
 
     expect(home).toContain("Faith of Our Fathers TV");
@@ -29,6 +32,12 @@ describe("frontend contract", () => {
 
     expect(admin).toContain("Watch Faith Of Our Fathers TV Webcast");
     expect(admin).toContain("ONLINE REVIVAL RADIO");
+    expect(login).toContain("/api/auth/login");
+    expect(login).toContain("Forgot password?");
+    expect(register).toContain("/api/auth/register");
+    expect(register).toContain("Create your account");
+    expect(reset).toContain("/api/auth/password-reset/request");
+    expect(reset).toContain("/api/auth/password-reset/complete");
   });
 
   it("keeps the public community experience focused on fellowship, prayer, testimonies and groups", async () => {
