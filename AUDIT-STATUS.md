@@ -10,6 +10,7 @@ Reviewed branch: feature/simple-bible-sharing-20261020
 - Media Engine: 5 numbered SQL migrations, 0001–0005.
 - Recovery Control: 6 numbered SQL migrations, 0001–0006.
 - Corrected a duplicate core migration number by moving the idempotent website AI inbox schema to migration 0040. Existing migration contents were not edited.
+- Added the new 0040 migration to the protected-state hash baseline so the immutable-state gate recognizes it and guards it against later edits.
 - Updated the core deployment preflight and architecture gate to expect the 0040 schema tip.
 - Expanded frontend syntax validation to include JavaScript in heavenly-key-app/public and checks for the Bible sharing controls.
 - Added the Workers AI binding to the community staging configuration and added a preflight check that production and staging both declare their required bindings.
