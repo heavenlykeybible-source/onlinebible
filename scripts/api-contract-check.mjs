@@ -65,8 +65,12 @@ if (!headers.includes("connect-src") || !headers.includes("https://heavenlykey.a
 }
 
 const authRoute = await readFile(join(root, "src/routes/auth.ts"), "utf8");
-if (!authRoute.includes('Access-Control-Allow-Origin", "https://www.heavenlykey.org"')) {
-  failures.push("API CORS must allow the canonical website origin.");
+if (
+  !authRoute.includes('headers.set("Access-Control-Allow-Origin", origin)') ||
+  !authRoute.includes("trustedOrigins.has(origin)") ||
+  !authRoute.includes('"https://www.heavenlykey.org"')
+) {
+  failures.push("API CORS must use the exact trusted-origin allowlist and allow the canonical website origin.");
 }
 if (!index.includes('method === "OPTIONS"')) {
   failures.push("Worker must handle CORS OPTIONS preflight.");
