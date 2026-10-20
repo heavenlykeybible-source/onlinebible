@@ -88,3 +88,17 @@
 .audio-playlist-panel button:disabled{opacity:.48;cursor:not-allowed}
 .audio-playlist-panel audio:not([controls]){display:none}
 @media(max-width:550px){.audio-mixer-grid{grid-template-columns:1fr}.audio-playlist-panel{padding:12px}}
+
+
+/* Quiet, WhatsApp-familiar verse actions: visible when needed, never competing with Scripture. */
+.mobile-kjv-page .kjv-verse-block{padding:0 0 9px;margin:0 0 12px;border-bottom:1px solid #edf0f2}
+.mobile-kjv-page .kjv-verse-block .kjv-verse{margin:0 0 4px}
+.mobile-kjv-page .kjv-verse-actions,.mobile-kjv-page .kjv-chapter-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mobile-kjv-page .kjv-verse-action{appearance:none;border:1px solid #dce8df;background:#fff;color:#285943;border-radius:7px;padding:5px 9px;min-height:32px;font:600 .75rem/1.25 system-ui,-apple-system,sans-serif;cursor:pointer}
+.mobile-kjv-page .kjv-verse-action:focus-visible{outline:2px solid #16734a;outline-offset:2px}
+.mobile-kjv-page .kjv-share-action{border-color:#d3e7da;background:#f3faf5;color:#17613e}
+.mobile-kjv-page .kjv-share-tagline{display:block;margin-top:3px;color:#738078;font:400 .68rem/1.35 system-ui,-apple-system,sans-serif}
+.mobile-kjv-page .kjv-chapter-share{margin:14px 0 4px;padding:10px 0 2px;border-top:1px solid #e4ebe6;color:#244f3c;font:400 .82rem/1.4 system-ui,-apple-system,sans-serif}
+.mobile-kjv-page .kjv-chapter-share>strong{font-size:.85rem}
+.mobile-kjv-page .kjv-chapter-share>p{margin:3px 0 7px}
+@media(max-width:420px){.mobile-kjv-page .kjv-verse-actions{gap:4px}.mobile-kjv-page .kjv-verse-action{padding:5px 7px;font-size:.72rem}}
