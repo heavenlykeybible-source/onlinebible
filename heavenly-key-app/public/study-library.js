@@ -297,7 +297,9 @@ async function bible(){
   next.disabled=!moveBibleRef(books,selectedBook.id,selectedChapter,1);
   const url=new URL(location.href);
   url.searchParams.set('book',selectedBook.id);url.searchParams.set('chapter',String(selectedChapter));
-  history.replaceState(null,'',url.pathname+url.search);
+  const verseAnchorPrefix='#verse-'+selectedBook.id+'-'+selectedChapter+'-';
+  if(url.hash&&!url.hash.startsWith(verseAnchorPrefix))url.hash='';
+  history.replaceState(null,'',url.pathname+url.search+url.hash);
   savePref('hk-kjv-last-ref-v1',{book:selectedBook.id,chapter:selectedChapter});
   try{
    const data=await getBook(selectedBook);
@@ -305,6 +307,10 @@ async function bible(){
    loaded=data;
    scriptureLines(verses,data.chapters[selectedChapter-1],selectedBook.id,selectedBook.name,selectedChapter,text=>copyPassage(text,'Verse copied.'),(text,title,anchor)=>sharePassage(text,title,anchor),copyChapter,shareChapter,socialLinks);
    status.textContent='';
+   if(url.hash){
+    const target=document.getElementById(decodeURIComponent(url.hash.slice(1)));
+    if(target)target.scrollIntoView({block:'start',behavior:'auto'});
+   }
    notice('KJV — '+selectedBook.name+' '+selectedChapter);
   }catch(error){
    if(id!==loadSerial)return;
