@@ -120,11 +120,9 @@ async function bible(){
  const optionBar=make('div',null,'mobile-kjv-option-actions');
  const bookmark=action('☆ Bookmark chapter',saveBookmark);
  const copy=action('Copy chapter',copyChapter);
- const offline=action('Save this book offline',()=>setOffline(true));
- const remove=action('Remove offline copy',()=>setOffline(false));
  const fontStyle=action('Use classic font',toggleTypeface);
  const audio=link('Listen to this chapter →','audio-bible.html','btn secondary');
- optionBar.append(bookmark,copy,offline,remove,fontStyle,audio);
+ optionBar.append(bookmark,copy,fontStyle,audio);
  extras.append(searchLabel,search,results,savedLabel,savedChapters,optionBar);
  const nav=make('nav',null,'mobile-kjv-nav');
  nav.setAttribute('aria-label','Previous and next Bible chapters');
