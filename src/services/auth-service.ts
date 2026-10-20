@@ -183,24 +183,17 @@ export interface RegisterResult {
 export async function registerUser(env: Env, input: RegisterInput): Promise<RegisterResult> {
   if (!env.PASSWORD_PEPPER) return { success:false, error:"Sign-in is not configured. Please contact the ministry." };
   // Validation — the Worker validates for safety, the frontend validates for UX (Handbook §4)
-  if (!input.name || input.name.length < 2 || input.name.length > 60) {
+  if (typeof input.name !== "string" || input.name.trim().length < 2 || input.name.trim().length > 60) {
     return { success: false, error: "Name must be between 2 and 60 characters." };
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email)) {
+  if (typeof input.email !== "string" || input.email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email)) {
     return { success: false, error: "Please provide a valid email address." };
   }
-  if (input.password.length < 8 || !/\d/.test(input.password)) {
+  if (typeof input.password !== "string" || input.password.length < 8 || input.password.length > 128 || !/\d/.test(input.password)) {
     return { success: false, error: "Password must be at least 8 characters and include a number." };
   }
-  if (!input.country) {
+  if (typeof input.country !== "string" || !input.country.trim() || input.country.trim().length > 100) {
     return { success: false, error: "Country is required." };
-  }
-
-  const existing = await env.DB.prepare("SELECT user_id FROM users WHERE email = ?")
-    .bind(input.email)
-    .first();
-  if (existing) {
-    return { success: false, error: "This email is already registered." };
   }
 
   const memberRole = await env.DB.prepare("SELECT role_id FROM roles WHERE role_name = 'Member'").first<{ role_id: number }>();
@@ -219,7 +212,7 @@ export async function registerUser(env: Env, input: RegisterInput): Promise<Regi
     const created = await env.DB.batch([
       env.DB.prepare(
         `INSERT INTO users (name, email, country, role_id, status) VALUES (?, ?, ?, ?, 'active') RETURNING user_id`
-      ).bind(input.name, input.email, input.country, memberRole.role_id),
+      ).bind(input.name.trim(), input.email, input.country.trim(), memberRole.role_id),
       env.DB.prepare(
         `INSERT INTO auth (user_id, password_hash, password_salt, email_verified)
          SELECT user_id, ?, ?, 0 FROM users WHERE email = ?`
@@ -246,6 +239,7 @@ export interface LoginResult {
 
 export async function loginUser(env: Env, email: string, password: string): Promise<LoginResult> {
   if (!env.PASSWORD_PEPPER) return { success:false, error:"Sign-in is not configured. Please contact the ministry." };
+  if (typeof email !== "string" || email.length > 254 || typeof password !== "string" || password.length > 128) return { success:false, error:"Email or password is incorrect." };
   const row = await env.DB.prepare(
     `SELECT u.user_id, a.password_hash, a.password_salt, a.failed_login_attempts, a.locked_until
      FROM users u JOIN auth a ON a.user_id = u.user_id
