@@ -34,6 +34,9 @@ export interface Env {
   LINKEDIN_CLIENT_SECRET?: string;
   SOCIAL_OAUTH_REDIRECT_URL?: string;
   PUBLIC_SITE_URL?: string;
+  /** Resend transactional email credentials for account recovery/verification. */
+  RESEND_API_KEY?: string;
+  AUTH_EMAIL_FROM?: string;
   /** Provider-neutral Heavenly Key AI gateway. Missing credentials disable only that provider. */
   AI_DEFAULT_PROVIDER?: string;
   OPENAI_API_KEY?: string;
@@ -165,6 +168,79 @@ export async function changePassword(env: Env, userId: number, currentPassword: 
 }
 
 
+// ---------- Password recovery ----------
+
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return bufferToHex(digest);
+}
+
+export async function requestPasswordReset(env: Env, email: string): Promise<{ success: boolean; configured?: boolean }> {
+  // The caller always returns the same public message for existing and unknown accounts.
+  if (!env.RESEND_API_KEY || !env.AUTH_EMAIL_FROM || !env.PASSWORD_PEPPER) {
+    return { success: false, configured: false };
+  }
+  const row = await env.DB.prepare(
+    "SELECT u.user_id, u.name, u.email FROM users u JOIN auth a ON a.user_id=u.user_id WHERE u.email=? AND u.status='active'"
+  ).bind(email).first<{ user_id: number; name: string; email: string }>();
+  if (!row) return { success: true };
+
+  const token = bufferToHex(crypto.getRandomValues(new Uint8Array(32)).buffer);
+  const tokenHash = await sha256Hex(token);
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString().slice(0, 19).replace("T", " ");
+  await env.DB.prepare(
+    "UPDATE auth SET reset_token=?, reset_token_expires_at=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?"
+  ).bind(tokenHash, expiresAt, row.user_id).run();
+
+  const siteBase = (env.PUBLIC_SITE_URL || "https://www.heavenlykey.org").replace(/\/+$/, "");
+  const resetUrl = siteBase + "/pages/reset-password.html?token=" + encodeURIComponent(token);
+  let response: Response | null = null;
+  try {
+    response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: env.AUTH_EMAIL_FROM,
+        to: [row.email],
+        subject: "Reset your Heavenly Key account password",
+        text: "Hello " + row.name + ",\n\nUse this one-time link within 30 minutes to reset your Heavenly Key account password:\n" + resetUrl + "\n\nIf you did not request this, you can ignore this email.\n\nHeavenly Key Evangelistic Movement",
+      }),
+    });
+  } catch {
+    // Network errors must invalidate the token just like provider HTTP errors.
+    response = null;
+  }
+  if (!response?.ok) {
+    // Do not leave a valid token behind when email delivery fails.
+    await env.DB.prepare("UPDATE auth SET reset_token=NULL, reset_token_expires_at=NULL WHERE user_id=? AND reset_token=?")
+      .bind(row.user_id, tokenHash).run();
+    return { success: true, configured: true };
+  }
+  return { success: true };
+}
+
+export async function completePasswordReset(env: Env, token: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
+  if (!env.PASSWORD_PEPPER) return { success: false, error: "Password security is not configured." };
+  if (typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token)) return { success: false, error: "This reset link is invalid or has expired." };
+  if (typeof newPassword !== "string" || newPassword.length < 8 || newPassword.length > 128 || !/\d/.test(newPassword)) {
+    return { success: false, error: "Password must be 8–128 characters and include a number." };
+  }
+  const tokenHash = await sha256Hex(token);
+  const row = await env.DB.prepare(
+    "SELECT user_id FROM auth WHERE reset_token=? AND reset_token_expires_at > datetime('now')"
+  ).bind(tokenHash).first<{ user_id: number }>();
+  if (!row) return { success: false, error: "This reset link is invalid or has expired." };
+
+  const salt = generateSalt();
+  const passwordHash = await hashPassword(newPassword, salt, env.PASSWORD_PEPPER);
+  const result = await env.DB.prepare(
+    "UPDATE auth SET password_hash=?, password_salt=?, failed_login_attempts=0, locked_until=NULL, reset_token=NULL, reset_token_expires_at=NULL, updated_at=CURRENT_TIMESTAMP WHERE user_id=? AND reset_token=? AND reset_token_expires_at > datetime('now')"
+  ).bind(passwordHash, salt, row.user_id, tokenHash).run();
+  if (!result.meta || result.meta.changes !== 1) return { success: false, error: "This reset link is invalid or has expired." };
+  await revokeAllUserSessions(env, row.user_id);
+  return { success: true };
+}
+
 // ---------- Registration / Login business logic ----------
 
 export interface RegisterInput {
@@ -183,24 +259,17 @@ export interface RegisterResult {
 export async function registerUser(env: Env, input: RegisterInput): Promise<RegisterResult> {
   if (!env.PASSWORD_PEPPER) return { success:false, error:"Sign-in is not configured. Please contact the ministry." };
   // Validation — the Worker validates for safety, the frontend validates for UX (Handbook §4)
-  if (!input.name || input.name.length < 2 || input.name.length > 60) {
+  if (typeof input.name !== "string" || input.name.trim().length < 2 || input.name.trim().length > 60) {
     return { success: false, error: "Name must be between 2 and 60 characters." };
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email)) {
+  if (typeof input.email !== "string" || input.email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email)) {
     return { success: false, error: "Please provide a valid email address." };
   }
-  if (input.password.length < 8 || !/\d/.test(input.password)) {
+  if (typeof input.password !== "string" || input.password.length < 8 || input.password.length > 128 || !/\d/.test(input.password)) {
     return { success: false, error: "Password must be at least 8 characters and include a number." };
   }
-  if (!input.country) {
+  if (typeof input.country !== "string" || !input.country.trim() || input.country.trim().length > 100) {
     return { success: false, error: "Country is required." };
-  }
-
-  const existing = await env.DB.prepare("SELECT user_id FROM users WHERE email = ?")
-    .bind(input.email)
-    .first();
-  if (existing) {
-    return { success: false, error: "This email is already registered." };
   }
 
   const memberRole = await env.DB.prepare("SELECT role_id FROM roles WHERE role_name = 'Member'").first<{ role_id: number }>();
@@ -211,27 +280,31 @@ export async function registerUser(env: Env, input: RegisterInput): Promise<Regi
   const salt = generateSalt();
   const passwordHash = await hashPassword(input.password, salt, env.PASSWORD_PEPPER);
 
-  const userResult = await env.DB.prepare(
-    `INSERT INTO users (name, email, country, role_id, status) VALUES (?, ?, ?, ?, 'active') RETURNING user_id`
-  )
-    .bind(input.name, input.email, input.country, memberRole.role_id)
-    .first<{ user_id: number }>();
-
-  if (!userResult) {
-    return { success: false, error: "Failed to create account." };
+  // Create the profile and its credentials in one D1 batch. D1 batches are
+  // transactional: if either insert fails, neither half-account is committed.
+  // The auth insert selects the newly-created row by normalized email so it
+  // cannot accidentally attach credentials to an unrelated user ID.
+  try {
+    const created = await env.DB.batch([
+      env.DB.prepare(
+        `INSERT INTO users (name, email, country, role_id, status) VALUES (?, ?, ?, ?, 'active') RETURNING user_id`
+      ).bind(input.name.trim(), input.email, input.country.trim(), memberRole.role_id),
+      env.DB.prepare(
+        `INSERT INTO auth (user_id, password_hash, password_salt, email_verified)
+         SELECT user_id, ?, ?, 0 FROM users WHERE email = ?`
+      ).bind(passwordHash, salt, input.email),
+    ]);
+    const userId = (created[0]?.results?.[0] as { user_id?: number } | undefined)?.user_id;
+    if (!userId || !created[1]?.success) {
+      return { success: false, error: "Unable to create the account. Please try again." };
+    }
+    // Email verification remains a separate launch requirement until a real
+    // transactional email provider is configured and the verification flow exists.
+    return { success: true, userId };
+  } catch {
+    // Do not expose database internals or leak account data to the client.
+    return { success: false, error: "Unable to create the account. Please try again." };
   }
-
-  await env.DB.prepare(
-    `INSERT INTO auth (user_id, password_hash, password_salt, email_verified) VALUES (?, ?, ?, 0)`
-  )
-    .bind(userResult.user_id, passwordHash, salt)
-    .run();
-
-  // NOTE: email verification dispatch is a separate concern (transactional email
-  // provider — Volume 3 §1 flags this as an open implementation decision) —
-  // intentionally not blocking registration on it here.
-
-  return { success: true, userId: userResult.user_id };
 }
 
 export interface LoginResult {
@@ -242,6 +315,7 @@ export interface LoginResult {
 
 export async function loginUser(env: Env, email: string, password: string): Promise<LoginResult> {
   if (!env.PASSWORD_PEPPER) return { success:false, error:"Sign-in is not configured. Please contact the ministry." };
+  if (typeof email !== "string" || email.length > 254 || typeof password !== "string" || password.length > 128) return { success:false, error:"Email or password is incorrect." };
   const row = await env.DB.prepare(
     `SELECT u.user_id, a.password_hash, a.password_salt, a.failed_login_attempts, a.locked_until
      FROM users u JOIN auth a ON a.user_id = u.user_id

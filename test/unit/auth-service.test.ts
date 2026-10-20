@@ -20,6 +20,8 @@ import {
   getSessionUserId,
   revokeSession,
   revokeAllUserSessions,
+  requestPasswordReset,
+  completePasswordReset,
 } from "../../src/services/auth-service";
 
 describe("password hashing", () => {
@@ -82,6 +84,26 @@ describe("sessions (KV-backed, genuinely revocable)", () => {
   it("rejects a session ID that was never issued", async () => {
     const env = { SESSIONS_KV: makeTestKv() } as any;
     expect(await getSessionUserId(env, "never-issued")).toBeNull();
+  });
+});
+
+
+describe("password recovery validation", () => {
+  it("does not query accounts or send mail when recovery email is not configured", async () => {
+    const result = await requestPasswordReset({} as any, "member@example.org");
+    expect(result).toEqual({ success: false, configured: false });
+  });
+
+  it("rejects malformed reset tokens before touching the database", async () => {
+    const result = await completePasswordReset({ PASSWORD_PEPPER: "test-pepper" } as any, "not-a-token", "newpassword1");
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("invalid or has expired");
+  });
+
+  it("enforces password policy before touching the database", async () => {
+    const result = await completePasswordReset({ PASSWORD_PEPPER: "test-pepper" } as any, "a".repeat(64), "short");
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("8–128 characters");
   });
 });
 

@@ -65,11 +65,26 @@ if (!headers.includes("connect-src") || !headers.includes("https://heavenlykey.a
 }
 
 const authRoute = await readFile(join(root, "src/routes/auth.ts"), "utf8");
-if (!authRoute.includes('Access-Control-Allow-Origin", "https://www.heavenlykey.org"')) {
-  failures.push("API CORS must allow the canonical website origin.");
+if (
+  !authRoute.includes('headers.set("Access-Control-Allow-Origin", origin)') ||
+  !authRoute.includes("trustedOrigins.has(origin)") ||
+  !authRoute.includes('"https://www.heavenlykey.org"') ||
+  !authRoute.includes('"https://heavenlykey.alldaywow247.workers.dev"') ||
+  !authRoute.includes('"https://heavenlykey-staging.alldaywow247.workers.dev"')
+) {
+  failures.push("API CORS must use the exact trusted-origin allowlist and allow the canonical website origin.");
 }
 if (!index.includes('method === "OPTIONS"')) {
   failures.push("Worker must handle CORS OPTIONS preflight.");
+}
+
+if (
+  !index.includes("const withRequestCors = async (responsePromise: Promise<Response>, incomingRequest: Request)") ||
+  !index.includes("return withRequestCors(handleCreateDiscussion(request, env), request)") ||
+  !index.includes("return withRequestCors(handleListGroups(request, env), request)") ||
+  !index.includes("return withRequestCors(handleCreateGroupPost(request, env, Number(m[1])), request)")
+) {
+  failures.push("Community and group API responses must apply request-aware exact-origin CORS.");
 }
 
 if (failures.length) {

@@ -5,9 +5,12 @@ import { join } from "node:path";
 describe("frontend contract", () => {
   it("keeps the approved Heavenly Key homepage ministry gateways and four-slide portrait experience", async () => {
     const root = process.cwd();
-    const [home, admin] = await Promise.all([
+    const [home, admin, login, register, reset] = await Promise.all([
       readFile(join(root, "heavenly-key-website/index.html"), "utf8"),
       readFile(join(root, "heavenly-key-website/pages/admin.html"), "utf8"),
+      readFile(join(root, "heavenly-key-website/pages/login.html"), "utf8"),
+      readFile(join(root, "heavenly-key-website/pages/register.html"), "utf8"),
+      readFile(join(root, "heavenly-key-website/pages/reset-password.html"), "utf8"),
     ]);
 
     expect(home).toContain("Faith of Our Fathers TV");
@@ -29,6 +32,12 @@ describe("frontend contract", () => {
 
     expect(admin).toContain("Watch Faith Of Our Fathers TV Webcast");
     expect(admin).toContain("ONLINE REVIVAL RADIO");
+    expect(login).toContain("/api/auth/login");
+    expect(login).toContain("Forgot password?");
+    expect(register).toContain("/api/auth/register");
+    expect(register).toContain("Create your account");
+    expect(reset).toContain("/api/auth/password-reset/request");
+    expect(reset).toContain("/api/auth/password-reset/complete");
   });
 
   it("keeps the public community experience focused on fellowship, prayer, testimonies and groups", async () => {
@@ -42,6 +51,10 @@ describe("frontend contract", () => {
     expect(community).toContain('data-feed="prayer"');
     expect(community).toContain('data-feed="testimony"');
     expect(community).toContain('data-feed="groups"');
+    expect(community).toContain("/api/auth/profile");
+    expect(community).toContain("/api/auth/logout");
+    expect(community).toContain('id="logout-button"');
+    expect(community).toContain('id="member-status"');
     expect(community).toContain("Open Community Feed");
     expect(community).toContain("Prayer Centre");
     expect(community).not.toContain("Watch Faith Of Our Fathers TV Webcast");
@@ -49,4 +62,18 @@ describe("frontend contract", () => {
     expect(community).not.toContain("Global Revival &amp; Destiny Prayer Cry");
     expect(community).toContain('href="admin.html?view=community"');
   });
+  it("applies request-aware CORS to community and group API responses", async () => {
+    const root = process.cwd();
+    const worker = await readFile(join(root, "src/index.ts"), "utf8");
+    expect(worker).toContain("const withRequestCors = async (responsePromise: Promise<Response>, incomingRequest: Request)");
+    expect(worker).toContain('headers.set("Access-Control-Allow-Origin", corsOrigin)');
+    expect(worker).toContain('headers.delete("Access-Control-Allow-Origin")');
+    expect(worker).toContain("return withRequestCors(handleCreateDiscussion(request, env), request)");
+    expect(worker).toContain("return withRequestCors(handleListGroups(request, env), request)");
+    expect(worker).toContain("return withRequestCors(handleCreateGroupPost(request, env, Number(m[1])), request)");
+    expect(worker).toContain("return withRequestCors(handleCountReactions(request, env), request)");
+    expect(worker).toContain("return withRequestCors(handleCommunityCategories(request,env), request)");
+    expect(worker).toContain("return withRequestCors(handlePendingTestimonies(request,env), request)");
+  });
+
 });

@@ -2,7 +2,7 @@ name: Heavenly Key CI
 
 on:
   push:
-    branches: [main, fix/community-disable-all-ai-20261019]
+    branches: [main, fix/community-disable-all-ai-20261019, audit/global-community-launch-readiness-20261020]
   workflow_dispatch:
 
 permissions:

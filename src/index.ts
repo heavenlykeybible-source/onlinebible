@@ -7,7 +7,7 @@ import {handleCommunityPlayer} from "./routes/community-player";
  * no business logic lives here.
  */
 import { handleGroupAdmin } from "./routes/group-admin";
-import { handleRegister, handleLogin, handleLogout, handleProfile, handleChangePassword } from "./routes/auth";
+import { handleRegister, handleLogin, handleLogout, handleProfile, handleChangePassword, handleRequestPasswordReset, handleCompletePasswordReset } from "./routes/auth";
 import {
   handleCreatePrayer, handleListPrayers, handleListPrayerAudio, handlePrayerRespond,
   handleSubmitTestimony, handleListTestimonies,
@@ -84,25 +84,60 @@ export default {
     const method = request.method;
     const idMatch = (pattern: RegExp) => pathname.match(pattern);
 
+    // Exact-origin allowlist for browser clients. Never reflect arbitrary Origin
+    // values: session cookies and credentialed requests require an explicit trust boundary.
+    const trustedOrigins = new Set([
+      "https://heavenlykey.org",
+      "https://www.heavenlykey.org",
+      "https://global.heavenlykey.org",
+      "https://bible.heavenlykey.org",
+      "https://app.heavenlykey.org",
+      "https://heavenlykey.alldaywow247.workers.dev",
+      "https://heavenlykey-staging.alldaywow247.workers.dev",
+    ]);
+    const requestOrigin = request.headers.get("Origin");
+    const corsOrigin = requestOrigin && trustedOrigins.has(requestOrigin) ? requestOrigin : null;
+
+    const withRequestCors = async (responsePromise: Promise<Response>, incomingRequest: Request): Promise<Response> => {
+      const response = await responsePromise;
+      const headers = new Headers(response.headers);
+      const origin = incomingRequest.headers.get("Origin");
+      headers.set("Vary", "Origin");
+      // Route helpers in older modules use a canonical fallback origin. Replace
+      // that fallback at the Worker boundary with the actual explicitly trusted
+      // request origin; never reflect an untrusted Origin value.
+      if (origin && corsOrigin) {
+        headers.set("Access-Control-Allow-Origin", corsOrigin);
+        headers.set("Access-Control-Allow-Credentials", "true");
+      } else {
+        headers.delete("Access-Control-Allow-Origin");
+        headers.delete("Access-Control-Allow-Credentials");
+      }
+      return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+    };
+
     if (method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: {
-          "Access-Control-Allow-Origin": "https://www.heavenlykey.org",
-          "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
-          "Access-Control-Max-Age": "86400",
-          "Vary": "Origin",
-        },
+      const headers = new Headers({
+        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Max-Age": "86400",
+        "Vary": "Origin",
       });
+      if (corsOrigin) {
+        headers.set("Access-Control-Allow-Origin", corsOrigin);
+        headers.set("Access-Control-Allow-Credentials", "true");
+      }
+      return new Response(null, { status: 204, headers });
     }
 
     if(pathname.startsWith('/api/')&&request.headers.get('Content-Type')?.includes('application/json')&&!['GET','HEAD','OPTIONS'].includes(method)){
       try{const body=await request.clone().json();if(!body||Array.isArray(body)||typeof body!=='object')throw new Error();}
       catch{return Response.json({error:{message:'Send a valid JSON object.'}},{status:400});}
     }
-    if(pathname.startsWith('/api/')&&!['GET','HEAD','OPTIONS'].includes(method)){
-      const origin=request.headers.get('Origin');if(origin&&origin!==url.origin)return Response.json({error:{message:'Use the website to perform this action.'}},{status:403});
+    if (pathname.startsWith("/api/") && !["GET", "HEAD", "OPTIONS"].includes(method)) {
+      if (requestOrigin && !corsOrigin) {
+        return Response.json({ error: { message: "Use an approved Heavenly Key website to perform this action." } }, { status: 403 });
+      }
     }
     if (pathname === "/api/broadcast/community-player" && method === "GET") return handleCommunityPlayer(request);
     if (pathname === "/api/homepage-updates" && method === "GET") return handleHomepageUpdates(request, env);
@@ -196,8 +231,8 @@ export default {
     if(pathname==='/api/admin/media-engine/broadcast-settings' && ['GET','POST'].includes(method))return handleAdminMedia(request,env,'/api/broadcast/settings');
     if(pathname==='/api/admin/media-engine/playlist-order' && ['GET','POST'].includes(method))return handleAdminMedia(request,env,'/api/broadcast/playlist-order');
     {const m=idMatch(/^\/api\/admin\/media-engine\/playout\/(\d+)\/cancel$/);if(m&&method==='POST')return handleAdminMedia(request,env,`/api/playout/${m[1]}/cancel`);}
-    if (pathname === "/api/community/categories" && method === "GET") return handleCommunityCategories(request,env);
-    if (pathname === "/api/admin/testimonies/pending" && method === "GET") return handlePendingTestimonies(request,env);
+    if (pathname === "/api/community/categories" && method === "GET") return withRequestCors(handleCommunityCategories(request,env), request);
+    if (pathname === "/api/admin/testimonies/pending" && method === "GET") return withRequestCors(handlePendingTestimonies(request,env), request);
     {const m=idMatch(/^\/api\/admin\/media-engine\/media\/(\d+)\/preview$/);if(m&&['GET','HEAD'].includes(method))return handleAdminMedia(request,env,`/api/media/${m[1]}/preview`);}
     {const m=pathname.match(/^\/api\/admin\/media-engine\/media\/(\d+)\/multipart(?:\/(status|complete|abort|part\/\d+))?$/);if(m&&['GET','POST','PUT'].includes(method))return handleAdminMedia(request,env,pathname.replace('/api/admin/media-engine','/api'));}
     if (pathname === "/api/admin/media-engine/media" && ["GET","POST"].includes(method)) return handleAdminMedia(request,env,"/api/media");
@@ -211,34 +246,36 @@ export default {
     if (pathname === "/api/auth/logout" && method === "POST") return handleLogout(request, env);
     if (pathname === "/api/auth/profile" && method === "GET") return handleProfile(request, env);
     if (pathname === "/api/auth/change-password" && method === "POST") return handleChangePassword(request, env);
+    if (pathname === "/api/auth/password-reset/request" && method === "POST") return handleRequestPasswordReset(request, env);
+    if (pathname === "/api/auth/password-reset/complete" && method === "POST") return handleCompletePasswordReset(request, env);
     if (pathname === "/api/admin/users" && method === "GET") return handleAdminUsers(request, env);
     { const m=idMatch(/^\/api\/admin\/users\/(\d+)\/role$/); if(m&&method==="POST") return handleAdminUserRole(request,env,Number(m[1])); }
 
     // ---------- Module 2: Community ----------
-    if (pathname === "/api/prayer" && method === "POST") return handleCreatePrayer(request, env);
-    if (pathname === "/api/prayer" && method === "GET") return handleListPrayers(request, env);
-    { const m = idMatch(/^\/api\/prayer\/(\d+)\/respond$/); if (m && method === "POST") return handlePrayerRespond(request, env, Number(m[1])); }
+    if (pathname === "/api/prayer" && method === "POST") return withRequestCors(handleCreatePrayer(request, env), request);
+    if (pathname === "/api/prayer" && method === "GET") return withRequestCors(handleListPrayers(request, env), request);
+    { const m = idMatch(/^\/api\/prayer\/(\d+)\/respond$/); if (m && method === "POST") return withRequestCors(handlePrayerRespond(request, env, Number(m[1])), request); }
 
-    if (pathname === "/api/testimonies" && method === "POST") return handleSubmitTestimony(request, env);
-    if (pathname === "/api/testimonies" && method === "GET") return handleListTestimonies(request, env);
-    { const m = idMatch(/^\/api\/testimonies\/(\d+)\/approve$/); if (m && method === "POST") return handleApproveTestimony(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/testimonies\/(\d+)\/feature$/); if (m && method === "POST") return handleFeatureTestimony(request, env, Number(m[1])); }
+    if (pathname === "/api/testimonies" && method === "POST") return withRequestCors(handleSubmitTestimony(request, env), request);
+    if (pathname === "/api/testimonies" && method === "GET") return withRequestCors(handleListTestimonies(request, env), request);
+    { const m = idMatch(/^\/api\/testimonies\/(\d+)\/approve$/); if (m && method === "POST") return withRequestCors(handleApproveTestimony(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/testimonies\/(\d+)\/feature$/); if (m && method === "POST") return withRequestCors(handleFeatureTestimony(request, env, Number(m[1])), request); }
 
-    if (pathname === "/api/questions" && method === "POST") return handleAskQuestion(request, env);
-    { const m = idMatch(/^\/api\/questions\/(\d+)$/); if (m && method === "GET") return handleGetQuestion(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/questions\/(\d+)\/answers$/); if (m && method === "POST") return handleSubmitAnswer(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/answers\/(\d+)\/recommend$/); if (m && method === "POST") return handleMarkRecommendedAnswer(request, env, Number(m[1])); }
+    if (pathname === "/api/questions" && method === "POST") return withRequestCors(handleAskQuestion(request, env), request);
+    { const m = idMatch(/^\/api\/questions\/(\d+)$/); if (m && method === "GET") return withRequestCors(handleGetQuestion(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/questions\/(\d+)\/answers$/); if (m && method === "POST") return withRequestCors(handleSubmitAnswer(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/answers\/(\d+)\/recommend$/); if (m && method === "POST") return withRequestCors(handleMarkRecommendedAnswer(request, env, Number(m[1])), request); }
 
-    if (pathname === "/api/discussions" && method === "POST") return handleCreateDiscussion(request, env);
-    if (pathname === "/api/discussions" && method === "GET") return handleListDiscussions(request, env);
+    if (pathname === "/api/discussions" && method === "POST") return withRequestCors(handleCreateDiscussion(request, env), request);
+    if (pathname === "/api/discussions" && method === "GET") return withRequestCors(handleListDiscussions(request, env), request);
 
-    if (pathname === "/api/comments" && method === "POST") return handleAddComment(request, env);
-    if (pathname === "/api/comments" && method === "GET") return handleListComments(request, env);
-    if (pathname === "/api/reactions" && method === "POST") return handleToggleReaction(request, env);
+    if (pathname === "/api/comments" && method === "POST") return withRequestCors(handleAddComment(request, env), request);
+    if (pathname === "/api/comments" && method === "GET") return withRequestCors(handleListComments(request, env), request);
+    if (pathname === "/api/reactions" && method === "POST") return withRequestCors(handleToggleReaction(request, env), request);
 
-    { const m = idMatch(/^\/api\/follow\/(\d+)$/); if (m && method === "POST") return handleFollow(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/follow\/(\d+)$/); if (m && method === "DELETE") return handleUnfollow(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/block\/(\d+)$/); if (m && method === "POST") return handleBlock(request, env, Number(m[1])); }
+    { const m = idMatch(/^\/api\/follow\/(\d+)$/); if (m && method === "POST") return withRequestCors(handleFollow(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/follow\/(\d+)$/); if (m && method === "DELETE") return withRequestCors(handleUnfollow(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/block\/(\d+)$/); if (m && method === "POST") return withRequestCors(handleBlock(request, env, Number(m[1])), request); }
 
     // ---------- Module 3: Spiritual Resources ----------
     { const m = idMatch(/^\/api\/bible\/([^/]+)\/(\d+)$/); if (m && method === "GET") return handleGetChapter(request, env, decodeURIComponent(m[1]), Number(m[2])); }
@@ -272,15 +309,15 @@ export default {
     { const m = idMatch(/^\/api\/admin\/counselling\/(\d+)\/message$/); if (m && method === "GET") return handleViewCounsellingMessage(request, env as any, Number(m[1])); }
 
     // ---------- Module 5: Groups & Fellowship ----------
-    if (pathname === "/api/groups" && method === "POST") return handleCreateGroup(request, env);
-    if (pathname === "/api/groups" && method === "GET") return handleListGroups(request, env);
-    { const m = idMatch(/^\/api\/groups\/(\d+)\/join$/); if (m && method === "POST") return handleJoinGroup(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/groups\/join-requests\/(\d+)\/approve$/); if (m && method === "POST") return handleApproveJoinRequest(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/groups\/(\d+)\/posts$/); if (m && method === "POST") return handleCreateGroupPost(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/groups\/(\d+)\/posts$/); if (m && method === "GET") return handleListGroupPosts(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/groups\/(\d+)\/polls$/); if (m && method === "POST") return handleCreatePoll(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/polls\/(\d+)\/vote$/); if (m && method === "POST") return handleVotePoll(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/polls\/(\d+)\/results$/); if (m && method === "GET") return handlePollResults(request, env, Number(m[1])); }
+    if (pathname === "/api/groups" && method === "POST") return withRequestCors(handleCreateGroup(request, env), request);
+    if (pathname === "/api/groups" && method === "GET") return withRequestCors(handleListGroups(request, env), request);
+    { const m = idMatch(/^\/api\/groups\/(\d+)\/join$/); if (m && method === "POST") return withRequestCors(handleJoinGroup(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/groups\/join-requests\/(\d+)\/approve$/); if (m && method === "POST") return withRequestCors(handleApproveJoinRequest(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/groups\/(\d+)\/posts$/); if (m && method === "POST") return withRequestCors(handleCreateGroupPost(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/groups\/(\d+)\/posts$/); if (m && method === "GET") return withRequestCors(handleListGroupPosts(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/groups\/(\d+)\/polls$/); if (m && method === "POST") return withRequestCors(handleCreatePoll(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/polls\/(\d+)\/vote$/); if (m && method === "POST") return withRequestCors(handleVotePoll(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/polls\/(\d+)\/results$/); if (m && method === "GET") return withRequestCors(handlePollResults(request, env, Number(m[1])), request); }
 
     // ---------- Module 6: Community Administration ----------
     if (pathname === "/api/admin/moderation-actions" && method === "POST") return handleIssueModerationAction(request, env);
@@ -342,7 +379,7 @@ export default {
     if (pathname === "/api/mrm/my-tasks" && method === "GET") return handleMyTasks(request, env);
     { const m = idMatch(/^\/api\/broadcast\/campaigns\/(\d+)\/distribution-status$/); if (m && method === "GET") return handleGetDistributionStatus(request, env, Number(m[1])); }
 
-    if (pathname === "/api/reactions/count" && method === "GET") return handleCountReactions(request, env);
+    if (pathname === "/api/reactions/count" && method === "GET") return withRequestCors(handleCountReactions(request, env), request);
 
     // ---------- Remaining gap-sweep routes ----------
     if (pathname === "/api/social-accounts" && method === "POST") return handleConnectAccount(request, env as any);
