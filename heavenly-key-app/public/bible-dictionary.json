@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "notice": "Original concise study definitions prepared for Heavenly Key Bible. This is a growing reference aid, not a substitute for reading Scripture in context.",
+  "notice": "Original concise study definitions prepared for Heavenly Key Bible. Where a topic is doctrinal, entries reflect Heavenly Key's published Statement of Faith; read the cited Scripture passages in context. This is a growing reference aid, not a substitute for Scripture or pastoral review.",
   "entries": [
     {
       "term": "Atonement",
@@ -14,11 +14,11 @@
     },
     {
       "term": "Baptism",
-      "definition": "A public act associated with repentance, faith, and identification with Jesus Christ; compare the passages to understand its context.",
+      "definition": "Water baptism is an act of obedience after reconciliation with God. Heavenly Key's published Statement of Faith specifies one immersion in the name of the Father, the Son and the Holy Ghost; compare the passages in context.",
       "refs": [
         "Matthew 28:19",
         "Acts 2:38",
-        "Romans 6:3-4"
+        "Romans 6:3-5"
       ],
       "aliases": []
     },
@@ -262,11 +262,12 @@
     },
     {
       "term": "Sanctification",
-      "definition": "Being set apart for God and growing in holiness; Scripture describes both belonging to God and ongoing transformation.",
+      "definition": "Heavenly Key's Statement of Faith teaches entire sanctification as a definite act of God's grace subsequent to the new birth, received by faith through the sanctifying work of Jesus Christ. This grace calls the believer to a life of holiness; it is not earned by self-effort.",
       "refs": [
         "John 17:17",
-        "1 Thessalonians 4:3",
-        "Hebrews 10:14"
+        "1 Thessalonians 5:23-24",
+        "Hebrews 10:10-14",
+        "Hebrews 12:14"
       ],
       "aliases": []
     },
@@ -309,6 +310,87 @@
         "James 3:17"
       ],
       "aliases": []
+    },
+    {
+      "term": "Entire Sanctification",
+      "definition": "Heavenly Key's Statement of Faith describes entire sanctification as a definite act of God's grace after the new birth, received by faith through Christ's sanctifying blood. Holiness of life and purity of heart are central responses to God's grace.",
+      "refs": [
+        "Luke 1:74-75",
+        "John 17:17",
+        "1 Thessalonians 5:23-24",
+        "Hebrews 10:10-14",
+        "1 Peter 1:14-16"
+      ],
+      "aliases": [
+        "entire sanctification",
+        "holiness"
+      ]
+    },
+    {
+      "term": "Holy Ghost Baptism",
+      "definition": "The promised empowerment of the Holy Spirit for witness and service. Heavenly Key's published Statement of Faith affirms the Deeper Life teaching that the initial evidence is speaking a language not previously learned, as the Spirit gives utterance; this must not be coached or manufactured.",
+      "refs": [
+        "Luke 24:49",
+        "Acts 1:5-8",
+        "Acts 2:1-18",
+        "Acts 10:44-46",
+        "1 Corinthians 12:1-14:40"
+      ],
+      "aliases": [
+        "baptism in the Holy Ghost",
+        "baptism in the Holy Spirit"
+      ]
+    },
+    {
+      "term": "Restitution",
+      "definition": "Making appropriate amends for wrongs, including returning what was taken, repaying what is owed, and correcting falsehood or harm where possible, so as to pursue a clear conscience before God and people.",
+      "refs": [
+        "Numbers 5:6-8",
+        "Luke 19:8-9",
+        "Acts 24:16",
+        "James 5:16"
+      ],
+      "aliases": []
+    },
+    {
+      "term": "Lord's Supper",
+      "definition": "The ordinance instituted by Jesus to proclaim His death until He comes. Heavenly Key's Statement of Faith calls believers to partake reverently, examine themselves, and use unleavened bread and the fruit of the vine.",
+      "refs": [
+        "Matthew 26:26-29",
+        "Luke 22:17-20",
+        "1 Corinthians 11:23-30"
+      ],
+      "aliases": [
+        "communion"
+      ]
+    },
+    {
+      "term": "Personal Evangelism",
+      "definition": "The calling of believers to share the good news of Jesus Christ with compassion, truthfulness and a life that reflects the gospel.",
+      "refs": [
+        "Matthew 28:19-20",
+        "Mark 16:15",
+        "Acts 1:8",
+        "Romans 1:16"
+      ],
+      "aliases": [
+        "evangelism",
+        "soulwinning"
+      ]
+    },
+    {
+      "term": "Rapture",
+      "definition": "Heavenly Key's published Statement of Faith teaches that Christ will gather His people to Himself before the Great Tribulation. This is the movement's doctrinal position; read the cited passages in context and distinguish the text from interpretive conclusions.",
+      "refs": [
+        "John 14:1-3",
+        "1 Corinthians 15:51-58",
+        "1 Thessalonians 4:13-18",
+        "1 Thessalonians 5:4-9"
+      ],
+      "aliases": [
+        "catching away",
+        "second coming"
+      ]
     }
   ]
 }
