@@ -12,7 +12,8 @@ async function api(path,method="GET",body){
  if(controller)init.signal=controller.signal;
  try{
   let r;try{r=await fetch(path,init);}catch(e){throw Error(e.name==="AbortError"?"The connection is taking too long. Please try again.":"Network unavailable. Check your connection and try again.");}
-  let d={};try{d=await r.json();}catch(e){if(controller?.signal.aborted)throw Error("The connection is taking too long. Please try again.");}
+  let d;try{d=await r.json();}catch(e){if(controller?.signal.aborted)throw Error("The connection is taking too long. Please try again.");throw Error("The service returned an invalid response. Please refresh or contact support.");}
+  if(!d||typeof d!=="object"||Array.isArray(d))throw Error("The service returned an invalid response. Please refresh or contact support.");
   if(!r.ok)throw Error(d?.error?.message||("Request failed (HTTP "+r.status+")."));return d;
  }finally{if(timer!==null)clearTimeout(timer);}
 }
@@ -52,31 +53,6 @@ function designCard(title,body,scripture,raw,category){let settings;try{settings
 function expandableText(text,limit=700,label="Read more"){const wrap=el("div",null,"post-text"),p=el("p",text.length>limit?text.slice(0,limit)+"…":text);wrap.append(p);if(text.length>limit){const b=el("button",label,"read-more");b.type="button";b.setAttribute("aria-expanded","false");b.addEventListener("click",()=>{const open=b.getAttribute("aria-expanded")==="true";p.textContent=open?text.slice(0,limit)+"…":text;b.textContent=open?label:"Show less";b.setAttribute("aria-expanded",String(!open));});wrap.append(b);}return wrap;}
 function videoPost(url){const wrap=el("div",null,"linked-video");try{const v=DC.parseVideoLink(url),original=el("a","Open original video","btn secondary");original.href=v.url;original.target="_blank";original.rel="noopener noreferrer";if(v.canEmbed){const play=el("button","▶ Play "+(v.provider==="youtube"?"YouTube":"Facebook")+" video","btn primary");play.type="button";play.addEventListener("click",()=>{const frame=el("iframe");frame.title=v.provider+" video player";frame.src=v.embedUrl;frame.allow="autoplay; encrypted-media; fullscreen; picture-in-picture";frame.allowFullscreen=true;frame.referrerPolicy="strict-origin-when-cross-origin";frame.loading="lazy";wrap.prepend(frame);play.remove();});wrap.append(play);}wrap.append(original,el("small","The video is hosted by its original platform. If playback is unavailable, open the original."));}catch{wrap.append(el("p","This video link is unavailable."));}return wrap;}
 
-/** One AI service for search and post writing. Member review is always required. */
-function openHeavenlyKeyAi({action='search',topic='',content='',apply=null}={}){
- const d=el('dialog',null,'hk-ai-dialog'),f=el('form',null,'stack');
- d.append(el('h2','Heavenly Key AI · Writing Help'),el('p','One Christ-centered assistant for search, cards and articles. Please verify Bible references.','muted'));
- const actions=[['search','Ask about this topic'],['card_idea','Design Card message'],['article_outline','Article outline'],['article_polish','Improve my article'],['caption','Video / post caption'],['scripture_ideas','Scripture suggestions']];
- const kind=field(f,'What would you like help with?','action','select',{options:actions});
- const subject=field(f,'Topic','topic','text',{maxLength:100});
- const input=field(f,'Your text · optional','content','textarea',{maxLength:4500});
- const out=el('textarea');out.rows=9;out.readOnly=true;out.placeholder='Your AI suggestion will appear here.';out.setAttribute('aria-label','AI writing suggestion');
- kind.value=action;subject.value=topic;input.value=content;
- const msg=el('p','','status');msg.setAttribute('role','status');
- const row=el('div',null,'actions'),ask=el('button','Ask Heavenly Key AI','btn primary'),copy=el('button','Copy','btn secondary'),use=el('button','Use in draft','btn secondary'),close=el('button','Close','btn secondary');
- ask.type='submit';copy.type=use.type=close.type='button';copy.disabled=use.disabled=true;
- if(!apply)use.hidden=true;
- copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(out.value);msg.textContent='Copied. Review before sharing.';}catch{msg.textContent='Select and copy the text manually.';}});
- use.addEventListener('click',()=>{if(out.value&&apply){apply(out.value);d.close();}});
- close.addEventListener('click',()=>d.close());
- f.addEventListener('submit',async e=>{e.preventDefault();ask.disabled=true;msg.textContent='Preparing your suggestion…';try{
- const reply=await fetch('https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev/v1/assistant',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'omit',body:JSON.stringify({message:(kind.value.replace(/_/g,' ')+': '+subject.value+'\n'+input.value).slice(0,2000)}),signal:AbortSignal.timeout(30000)});const response=await reply.json();if(!reply.ok)throw Error(response.error||'AI is temporarily unavailable.');const res={available:true,draft:response.response};
- out.value=res.available?res.draft:'';copy.disabled=use.disabled=!res.available;
- msg.textContent=res.available?'AI suggestion only. Verify the references and wording.':res.message||'AI service is unavailable.';
- }catch(e){out.value='';copy.disabled=use.disabled=true;msg.textContent=e.message;}finally{ask.disabled=false;}});
- row.append(ask,copy,use,close);f.append(row,msg,out);d.append(f);document.body.append(d);
- d.addEventListener('close',()=>d.remove(),{once:true});d.showModal();subject.focus();
-}
 function reportPost(post,host){let panel=host.querySelector("[data-report-form]");if(panel){panel.remove();return;}panel=el("section",null,"report-panel");panel.dataset.reportForm="1";panel.append(el("h3","Report this post"),el("p","Community health is everyone’s responsibility. Report anything against our Christ-centered values immediately and respectfully. Reports go to site administrators and moderators. Group reports also go first to the group managers, with a copy for site staff."),communityRules());const f=el("form",null,"stack"),reason=field(f,"Which rule does this post violate?","reason","select",{options:DC.REPORT_REASONS}),details=field(f,"Explain briefly · optional","details","textarea",{maxLength:1200}),b=el("button","Send report","btn wine"),cancel=el("button","Cancel","btn secondary"),st=el("p","","status");st.setAttribute("role","status");b.type="submit";cancel.type="button";cancel.addEventListener("click",()=>panel.remove());f.append(b,cancel,st);f.addEventListener("submit",async e=>{e.preventDefault();if(!requireSignIn())return;b.disabled=true;try{const result=await api("/api/reports","POST",{targetType:post.reportTargetType||"post",targetId:post.post_id,reason:reason.value,details:details.value});status(st,result.groupId?"Report received by group managers and site staff for review.":"Report received by site administrators and moderators for review.");b.textContent="Report sent";}catch(err){status(st,err.message);b.disabled=false;}});panel.append(f);host.append(panel);reason.focus();}
 function renderPost(p){const x=el("article",null,"post");x.dataset.postId=p.post_id;const name=p.space_name||p.profile_name||"Community member",head=el("header",null,"post-header"),identity=el("div",null,"post-identity");if(p.author_user_id&&!p.space_name){const author=el("a",name,"post-author");author.href="profile.html?id="+p.author_user_id;identity.append(author);}else identity.append(el("strong",name));identity.append(el("small",(DC.CATEGORIES.find(([id])=>id===p.design_category)?.[1]||p.post_type.replaceAll("_"," "))+" · "+dateTime(p.created_at).toLocaleString()));head.append(memberAvatar(name,p.profile_photo_url||p.avatar_url||p.profilePhotoUrl),identity);if(p.group_name){const g=el("a",p.group_name,"post-context");g.href="groups.html?id="+p.group_id;identity.append(g);}const menu=el("details",null,"post-menu");menu.append(el("summary","•••"));menu.querySelector("summary").setAttribute("aria-label","Post options");head.append(menu);x.append(head);let settings=null;try{settings=p.design_settings?JSON.parse(p.design_settings):null;}catch{}
 if(p.post_format==="video_link"){if(p.title)x.append(el("h3",p.title));x.append(videoPost(p.video_url),expandableText(p.body));if(p.scripture)x.append(el("p",p.scripture));}
@@ -117,13 +93,6 @@ starter.addEventListener('change',()=>{
  if(guide.id==='reviver-card')category.value='reviver';if(guide.id==='salvation-card')category.value='salvation';
  renderPreview();
 });
-const aiHelp=el('button','✦ Heavenly Key AI · Help me write','btn secondary hk-ai-composer');
-aiHelp.type='button';aiHelp.addEventListener('click',()=>openHeavenlyKeyAi({
- action:format.value==='video_link'?'caption':format.value==='article'?'article_outline':'card_idea',
- topic:title.value||DC.CATEGORIES.find(([id])=>id===category.value)?.[1]||'Faith',
- content:body.value,
- apply:result=>{body.value=result.slice(0,format.value==='article'?30000:10000);renderPreview();}
-}));f.append(aiHelp);
 const videoHelp=el('small','Paste a YouTube video, Shorts or Live link. No upload is required.','video-help');video.parentElement.append(videoHelp);
 video.addEventListener('input',()=>video.setCustomValidity(''));
 video.addEventListener('change',()=>{
@@ -174,7 +143,6 @@ async function discoverProfiles(box,q=""){
  const item=el("div",null,"item");item.append(el("strong",p.display_name),el("p",p.bio||p.ministry_calling||"Christian community member"),el("small",[p.city,p.country].filter(Boolean).join(", ")+(p.connection_count!==null&&p.connection_count!==undefined?" · "+p.connection_count+" Global Connections":"")));
  const open=el("a","Open profile","btn secondary");open.href="profile.html?id="+p.user_id;item.append(open);list.append(item);}
  if(!list.querySelector('.item'))list.append(el("p","No matching members found. Try another name or calling.","muted"));
- if(q.trim()){const suggest=el('button','✦ Ask Heavenly Key AI about “'+q.trim().slice(0,55)+'”','hk-ai-search-suggestion');suggest.type='button';suggest.addEventListener('click',()=>openHeavenlyKeyAi({action:'search',topic:q.trim().slice(0,100)}));list.append(suggest);}
  }catch{if(box.dataset.discoveryRequest===request)list.replaceChildren(el("p","We couldn’t load members. Please try Search again.","muted"));}
  finally{if(box.dataset.discoveryRequest===request)list.setAttribute("aria-busy","false");}
 }
@@ -350,7 +318,7 @@ async function mountMessages(){
  chatLayout.append(inboxHost,threadHost);stream.append(chatLayout);threadHost.append(card('A place for meaningful conversations','Choose a chat or find a member. New conversations need the recipient’s approval.'),el('p','Text messaging · calls and voice notes are unavailable','chat-privacy'));
  aside.append(card('You are in control','Accept or decline requests. Report a message using its options menu, or block a member from their profile.'));
  await messageList();const selected=Number(new URLSearchParams(location.search).get('conversation')||0);if(selected)await openConversation(selected);
- let refreshing=false;messageTimer=setInterval(async()=>{if(document.hidden||refreshing)return;refreshing=true;try{await messageList();if(activeConversation)await refreshThread();}catch{}finally{refreshing=false;}},15000);
+ let refreshing=false;messageTimer=setInterval(async()=>{if(document.hidden||refreshing)return;refreshing=true;try{await messageList();if(activeConversation)await refreshThread();}catch{}finally{refreshing=false;}},5000);
  window.addEventListener('pagehide',()=>{clearInterval(messageTimer);chatDrafts.clear();chatBodies.clear();chatRetries.clear();},{once:true});
 }
 async function messageList(){const d=await api('/api/messages');inboxItems=d.items||[];if(activeConversation&&!inboxItems.some(c=>c.conversation_id===activeConversation&&c.status==='accepted')){activeConversation=null;chatLayout.classList.remove('chat-open');threadHost.replaceChildren(card('Conversation unavailable','This conversation is no longer open.'));}renderInbox();}
@@ -384,8 +352,8 @@ async function refreshThread(){
 }
 function renderThread(id){
  if(activeConversation!==id)return;const history=threadHost.querySelector('.chat-history'),wasBottom=!history.dataset.rendered||history.scrollHeight-history.scrollTop-history.clientHeight<80,top=history.scrollTop,query=chatQuery.trim().toLocaleLowerCase(),items=(chatBodies.get(id)||[]).filter(m=>!query||m.body.toLocaleLowerCase().includes(query));
- history.replaceChildren();let day='';for(const m of items){const date=dateTime(m.created_at),key=date.toLocaleDateString();if(key!==day){day=key;history.append(el('div',key===new Date().toLocaleDateString()?'Today':date.toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'}),'chat-day'));}
- const mine=m.sender_user_id===session.user.userId,bubble=el('div',null,'message-bubble'+(mine?' sent':' received')),options=el('details',null,'message-options'),summary=el('summary','⋯'),report=el('button','Report message','btn secondary');summary.setAttribute('aria-label','Message options');report.type='button';report.addEventListener('click',()=>{options.open=false;reportPost({post_id:m.message_id,reportTargetType:'message'},bubble);});options.append(summary,report);bubble.append(options,el('p',m.body));const stamp=el('time',date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));stamp.dateTime=date.toISOString();bubble.append(stamp);history.append(bubble);}
+ history.replaceChildren();let day='';for(const m of items){const date=dateTime(m.created_at),validDate=Number.isFinite(date.getTime()),key=validDate?date.toLocaleDateString():'Date unavailable';if(key!==day){day=key;history.append(el('div',!validDate?'Date unavailable':key===new Date().toLocaleDateString()?'Today':date.toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'}),'chat-day'));}
+ const mine=m.sender_user_id===session.user.userId,bubble=el('div',null,'message-bubble'+(mine?' sent':' received')),options=el('details',null,'message-options'),summary=el('summary','⋯'),report=el('button','Report message','btn secondary');summary.setAttribute('aria-label','Message options');report.type='button';report.addEventListener('click',()=>{options.open=false;reportPost({post_id:m.message_id,reportTargetType:'message'},bubble);});options.append(summary,report);bubble.dataset.messageId=String(m.message_id);bubble.append(options,el('p',m.body));const stamp=el('time',validDate?date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'');if(validDate)stamp.dateTime=date.toISOString();bubble.append(stamp);history.append(bubble);}
  if(!items.length)history.append(el('p',query?'No matching messages in the latest 100.':'Conversation accepted. Say hello.','chat-empty'));history.dataset.rendered='true';
  if(wasBottom||query)history.scrollTop=history.scrollHeight;else{history.scrollTop=top;threadHost.querySelector('.chat-latest').hidden=false;}
 }

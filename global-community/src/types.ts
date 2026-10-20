@@ -1,5 +1,4 @@
 export interface Env {
-  AI?: {run(model:string, args:{messages:{role:string;content:string}[];max_tokens:number;temperature:number}):Promise<{response?:string}>};
   DB: D1Database;
   SESSIONS: KVNamespace;
   MEDIA: R2Bucket;

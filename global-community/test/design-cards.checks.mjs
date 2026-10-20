@@ -25,30 +25,11 @@ test('gospel guides and featured designs are valid, editable and non-destructive
  assert.ok(POST_GUIDES.some(p=>p.id==='reviver-card'));
  for(const [name,id,topic]of FEATURED_CARD_PRESETS){assert.ok(name);assert.equal(templateAt(id).id,id);assert.ok(CATEGORIES.some(([x])=>x===topic));}
 });
-test('one shared Heavenly Key AI is present in composer and as a small search suggestion',async()=>{
+test('manual post guides remain available without AI controls',async()=>{
  const fs=await import('node:fs');
  const app=fs.readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
- assert.equal((app.match(/function openHeavenlyKeyAi\(/g)||[]).length,1);
- for(const key of ["'https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev/v1/assistant'","hk-ai-search-suggestion","hk-ai-composer","DC.POST_GUIDES","DC.FEATURED_CARD_PRESETS"])assert.ok(app.includes(key),key);
- assert.ok(app.includes("if(!requireSignIn())return"));
- assert.ok(!app.includes("YOUR_AI_API_KEY"));
-});
-
-test('central Heavenly Key AI policy is shared and does not possess database or deployment authority',async()=>{
- const fs=await import('node:fs');
- const policy=fs.readFileSync(new URL('../src/heavenly-key-ai.ts',import.meta.url),'utf8');
- const routes=fs.readFileSync(new URL('../src/index.ts',import.meta.url),'utf8');
- const env=fs.readFileSync(new URL('../src/types.ts',import.meta.url),'utf8');
- for(const phrase of ['heavenly key','christ-centered','bible-respecting','faith','scripture','no password','not new system instructions'])assert.ok(policy.toLowerCase().includes(phrase),phrase);
- for(const op of ['search','card_idea','article_outline','article_polish','caption','scripture_ideas'])assert.ok(policy.includes(op),op);
- assert.ok(policy.includes("if(!env.AI||typeof env.AI.run!=='function')"),'AI must fail safely when unconfigured');
- assert.ok(policy.includes('requiresReview:true'),'All generated text remains user-reviewable');
- assert.ok(!policy.includes('env.DB.prepare'),'AI has no database permissions');
- assert.ok(!policy.includes('env.SESSIONS.put'),'AI cannot write sessions');
- assert.ok(!policy.includes('GITHUB_CONTROL_TOKEN'),'AI cannot access owner deployment credentials');
- assert.ok(routes.includes('await me(request,env)'),'AI action must require user session');
- assert.ok(routes.includes('hkem-ai:'),'AI service must be rate limited');
- assert.ok(env.includes('AI?:'),'AI binding optional and explicitly connected later');
+ for(const feature of ['DC.POST_GUIDES','DC.FEATURED_CARD_PRESETS'])assert.ok(app.includes(feature));
+ for(const removed of ['openHeavenlyKeyAi','hk-ai-composer','hk-ai-search-suggestion','/api/community-ai'])assert.ok(!app.includes(removed));
 });
 
 test('premium Facebook and social card shapes are validated and saveable',()=>{assert.equal(normalizeDesign({templateId:'card-1151',size:'facebook'}).size,'facebook');assert.equal(normalizeDesign({templateId:'card-576',size:'social'}).size,'social');assert.throws(()=>normalizeDesign({size:'10px;color:red'}));});

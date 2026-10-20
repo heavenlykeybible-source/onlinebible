@@ -1,28 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {stripTypeScriptTypes} from 'node:module';
-const source=stripTypeScriptTypes(readFileSync(new URL('../src/heavenly-key-ai.ts',import.meta.url),'utf8'),{mode:'transform'});
-const ai=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
-test('confidential writing never reaches the AI provider',async()=>{
- let calls=0;
- const env={AI:{run:async()=>{calls++;return {response:'draft'};}}};
- for(const content of ['Email me at person@example.com','Call +234 803 123 4567','password: private-value','4111 1111 1111 1111']){
-  await assert.rejects(ai.communityAiDraft(env,{action:'caption',content}),/Remove/);
+import vm from 'node:vm';
+const get=path=>readFileSync(new URL(path,import.meta.url),'utf8');
+test('removed AI endpoint returns Gone before touching services',async()=>{
+ const source=get('../src/index.ts');
+ const start=source.indexOf('  const url=new URL(request.url),p=url.pathname,m=request.method;');
+ const end=source.indexOf('  if(m==="OPTIONS")',start);
+ const handler=vm.runInNewContext('(async function(request){'+source.slice(start,end)+'})',{
+  URL,error:(message,status)=>({message,status})
+ });
+ for(const pathname of ['/api/community-ai','/api/ai/draft']){
+  const result=await handler({url:'https://example.invalid'+pathname,method:'POST'});
+  assert.equal(result.status,410);
  }
- assert.equal(calls,0);
+ assert.doesNotMatch(source,/communityAiDraft|validateAiDraftRequest/);
 });
-test('missing, failing and empty providers return an unavailable result',async()=>{
- const input={action:'caption',topic:'Prayer and faith'};
- for(const env of [{},{AI:{run:async()=>{throw Error('private provider error');}}},{AI:{run:async()=>({response:''})}}]){
-  const result=await ai.communityAiDraft(env,input);
-  assert.equal(result.available,false);
-  assert.ok(!JSON.stringify(result).includes('private provider error'));
- }
-});
-test('successful generation remains a bounded draft requiring member review',async()=>{
- const result=await ai.communityAiDraft({AI:{run:async()=>({response:'x'.repeat(6000)})}},{action:'caption',topic:'Prayer'});
- assert.equal(result.available,true);
- assert.equal(result.requiresReview,true);
- assert.equal(result.draft.length,5200);
+test('AI widgets cannot call providers, including the CMS widget',()=>{
+ const cms=get('../public/cms-runtime-20261015.js'),assistant=get('../public/heavenly-key-assistant.js');
+ assert.doesNotMatch(cms,/function assistant\(|\/v1\/assistant/);
+ assert.doesNotMatch(assistant,/fetch\(|createElement|setInterval/);
 });
