@@ -100,5 +100,8 @@ Before marking launch-ready, run and record:
 - Wired password recovery handlers into the Worker router. Public reset-request responses are neutral for existing and unknown accounts; requests and completions are rate-limited.
 - Made auth route responses origin-aware for the explicit trusted-origin allowlist. The shared legacy response helpers used by other route modules are not yet fully origin-aware.
 - Extended the frontend contract test to require the login, registration, and reset pages and their expected API endpoints.
+- Added unit-test cases for missing email configuration, malformed reset tokens and password-policy rejection.
+- Hardened recovery email failure handling so both provider HTTP failures and network exceptions clear the stored one-time token.
+- Updated the API contract checker to recognize the exact-origin CORS allowlist rather than requiring a single hard-coded response origin.
 
 **Verification status remains unchanged:** these changes were committed to the audit branch but the Vitest suite, TypeScript compiler, API contract checks, frontend syntax/link checks, email delivery, and browser/device flows have not been executed in this environment. Do not treat source changes as a passing test run.
