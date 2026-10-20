@@ -7,7 +7,7 @@ import {handleCommunityPlayer} from "./routes/community-player";
  * no business logic lives here.
  */
 import { handleGroupAdmin } from "./routes/group-admin";
-import { handleRegister, handleLogin, handleLogout, handleProfile, handleChangePassword } from "./routes/auth";
+import { handleRegister, handleLogin, handleLogout, handleProfile, handleChangePassword, handleRequestPasswordReset, handleCompletePasswordReset } from "./routes/auth";
 import {
   handleCreatePrayer, handleListPrayers, handleListPrayerAudio, handlePrayerRespond,
   handleSubmitTestimony, handleListTestimonies,
@@ -226,6 +226,8 @@ export default {
     if (pathname === "/api/auth/logout" && method === "POST") return handleLogout(request, env);
     if (pathname === "/api/auth/profile" && method === "GET") return handleProfile(request, env);
     if (pathname === "/api/auth/change-password" && method === "POST") return handleChangePassword(request, env);
+    if (pathname === "/api/auth/password-reset/request" && method === "POST") return handleRequestPasswordReset(request, env);
+    if (pathname === "/api/auth/password-reset/complete" && method === "POST") return handleCompletePasswordReset(request, env);
     if (pathname === "/api/admin/users" && method === "GET") return handleAdminUsers(request, env);
     { const m=idMatch(/^\/api\/admin\/users\/(\d+)\/role$/); if(m&&method==="POST") return handleAdminUserRole(request,env,Number(m[1])); }
 
