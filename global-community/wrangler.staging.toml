@@ -2,11 +2,11 @@ name = "heavenly-key-global-community-staging"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 workers_dev = true
+keep_vars = true
+routes = []
 
 [ai]
 binding = "AI"
-keep_vars = true
-routes = []
 
 [assets]
 directory = "./public"
