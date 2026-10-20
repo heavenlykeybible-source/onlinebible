@@ -111,6 +111,39 @@
  toggle.className='broadcast-toggle-button';
  function syncToggle(){const active=userPlaying&&(youtubeFrame||!el.paused);toggle.textContent=active?'❚❚ PAUSE':'▶ PLAY WITH SOUND';toggle.setAttribute('aria-pressed',String(Boolean(active)));}
  if(simpleSlot)simpleSlot.append(playback);else panel.insertBefore(playback,list);playback.append(toggle);playback.hidden=egressMode;
+ // Bluetooth audio normally follows the operating system's selected output. Where a browser
+ // exposes setSinkId(), offer an optional output selector; never require Web Bluetooth.
+ let selectedOutputId='',outputSelect=null,outputStatus=null;
+ if(channel==='radio'&&!egressMode){
+  const outputWrap=text('div','','broadcast-output-picker');
+  const outputLabel=text('label','Audio output ','broadcast-output-label');
+  outputSelect=document.createElement('select');outputSelect.setAttribute('aria-label','Audio output device');
+  const defaultOption=text('option','System default audio output');defaultOption.value='';outputSelect.append(defaultOption);
+  outputLabel.append(outputSelect);outputStatus=text('p','Bluetooth headphones/speakers use your device audio settings.','broadcast-output-status');
+  outputWrap.append(outputLabel,outputStatus);playback.append(outputWrap);
+  const supportsSink=typeof el?.setSinkId==='function';
+  if(!supportsSink){outputSelect.hidden=true;outputLabel.hidden=true;outputStatus.textContent='Audio follows your phone or computer audio output. Connect Bluetooth in your device settings, then press Play.';}
+  async function loadOutputs(){
+   if(!supportsSink||!navigator.mediaDevices?.enumerateDevices)return;
+   try{
+    const devices=await navigator.mediaDevices.enumerateDevices();
+    const outputs=devices.filter(d=>d.kind==='audiooutput');
+    const current=selectedOutputId||outputSelect.value;
+    outputSelect.replaceChildren();const fallback=text('option','System default audio output');fallback.value='';outputSelect.append(fallback);
+    for(const device of outputs){const option=text('option',device.label||('Audio output '+(outputSelect.options.length)),device.deviceId==='default'?'':'');option.value=device.deviceId==='default'?'':device.deviceId;outputSelect.append(option);}
+    outputSelect.value=current;
+    outputStatus.textContent=outputs.length>1?'Choose a listed speaker or headset. Bluetooth devices appear only when the browser exposes them.':'For Bluetooth, pair the device in your phone/computer settings; this browser currently exposes only the default output.';
+   }catch{outputStatus.textContent='Audio follows your device settings. Pair Bluetooth from system settings if no output choices are listed.';}
+  }
+  outputSelect.addEventListener('focus',loadOutputs);outputSelect.addEventListener('pointerdown',loadOutputs);
+  outputSelect.addEventListener('change',async()=>{
+   const sink=outputSelect.value;
+   if(typeof el?.setSinkId!=='function'){outputStatus.textContent='Use your phone/computer audio settings to select Bluetooth.';return;}
+   try{await el.setSinkId(sink);selectedOutputId=sink;outputStatus.textContent=sink?'Audio output changed.':'Using system default audio output.';}
+   catch{outputStatus.textContent='Could not switch output in this browser. Select the Bluetooth device in your system audio settings.';outputSelect.value=selectedOutputId;}
+  });
+  navigator.mediaDevices?.addEventListener?.('devicechange',loadOutputs);
+ }
  let reconnectAttempts=0;
  function scheduleReconnect(){clearTimeout(retryTimer);if(userPlaying&&!egressMode&&navigator.onLine)retryTimer=setTimeout(async()=>{if(!userPlaying)return;signature='';await refresh();if(!el.paused)syncToggle();},Math.min(30000,2000*Math.pow(2,Math.min(reconnectAttempts++,4))));}
  function bindMediaEvents(){
