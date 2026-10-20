@@ -47,7 +47,7 @@ function validate(input: unknown): Proposal {
   if (typeof d.summary !== "string" || !d.summary.trim() || d.summary.length > 1000) throw Error("Invalid change summary");
   if (!Array.isArray(d.changedPaths) || d.changedPaths.length > 50 || !d.changedPaths.length ||
       !d.changedPaths.every(p => typeof p === "string" && p.length < 200 && /^[a-zA-Z0-9_./-]+$/.test(p) && !p.includes("..") && !p.startsWith("/"))) throw Error("Invalid changed paths");
-  const protectedPath = /^(?:recovery-control\/|\.github\/workflows\/(?:account4-|cloudflare-)|account4-control-room\/|wrangler\.toml$|\.env|secrets?\/)/i;
+  const protectedPath = /(?:^|\/)(?:wrangler(?:\.[^/]+)?\.toml|\.env(?:\.[^/]+)?|secrets?|credentials?)(?:\/|$)|^(?:recovery-control\/|\.github\/workflows\/|account4-control-room\/)/i;
   if (d.changedPaths.some(p => protectedPath.test(p))) throw Error("Protected Control Room or deployment configuration");
   return {site:d.site,revision:d.revision,summary:d.summary.trim(),changedPaths:d.changedPaths as string[]};
 }
