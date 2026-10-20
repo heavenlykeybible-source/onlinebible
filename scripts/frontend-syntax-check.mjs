@@ -80,6 +80,35 @@ try{
   if(verseCount!==manifest.totalVerses)failures.push({file:bibleManifestPath,error:'KJV verse total mismatch: expected '+manifest.totalVerses+', found '+verseCount+'.'});
 }catch(e){failures.push({file:bibleManifestPath,error:'Unable to validate KJV manifest: '+e.message});}
 
+const studyToolsPath=join(appPublic,'bible-study-tools.js');
+try{
+  const dictionary=JSON.parse(await readFile(join(appPublic,'bible-dictionary.json'),'utf8'));
+  if(!Array.isArray(dictionary.entries)||dictionary.entries.length<1)failures.push({file:join(appPublic,'bible-dictionary.json'),error:'Bible dictionary must contain entries.'});
+  const manifest=JSON.parse(await readFile(bibleManifestPath,'utf8'));
+  const bookNames=new Set((manifest.books||[]).map(book=>book.name.toLowerCase()));
+  for(const entry of dictionary.entries||[]){
+    if(typeof entry.term!=='string'||!entry.term.trim()||typeof entry.definition!=='string'||!entry.definition.trim()||!Array.isArray(entry.refs)||entry.refs.length===0){
+      failures.push({file:join(appPublic,'bible-dictionary.json'),error:'Every dictionary entry needs a term, definition, and Scripture references.'});continue;
+    }
+    for(const ref of entry.refs){
+      const match=String(ref).match(/^(.+?)\\s+\\d+/);
+      if(!match||(!bookNames.has(match[1].toLowerCase())&&match[1].toLowerCase()!=='psalm'))failures.push({file:join(appPublic,'bible-dictionary.json'),error:'Unrecognized Bible book in dictionary reference: '+ref});
+    }
+  }
+  const tools=await readFile(studyToolsPath,'utf8');
+  const styles=await readFile(join(appPublic,'bible-study-tools.css'),'utf8');
+  const page=await readFile(join(appPublic,'bible.html'),'utf8');
+  for(const [label,pattern] of [
+    ['dictionary lookup',/data-panel="dictionary"/],
+    ['Bible concordance',/data-panel="concordance"/],
+    ['green cross-reference section',/data-panel="crossrefs"/],
+    ['preacher notes',/data-panel="notes"/],
+    ['local-only notes storage',/heavenlykey-preacher-notes-v1/]
+  ])if(!pattern.test(tools))failures.push({file:studyToolsPath,error:'Missing Bible study tool: '+label});
+  if(!styles.includes('.bst-ref{color:#16803c'))failures.push({file:join(appPublic,'bible-study-tools.css'),error:'Scripture cross-reference links must be green.'});
+  if(!page.includes('id="bible-study-tools"')||!page.includes('bible-study-tools.css')||!page.includes('bible-study-tools.js'))failures.push({file:join(appPublic,'bible.html'),error:'Bible study tools must be connected to the Bible reader page.'});
+}catch(e){failures.push({file:studyToolsPath,error:'Unable to validate Bible study tools: '+e.message});}
+
 const studioPath=join(root,'production-studio.js');
 try{
   const studio=await readFile(studioPath,'utf8');
