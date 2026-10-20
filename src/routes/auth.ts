@@ -54,7 +54,7 @@ function jsonResponse(data: unknown, status = 200, extraHeaders: Record<string, 
 }
 
 function requestJsonResponse(request: Request, data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
-  return requestJsonResponse(request, data, status, extraHeaders, request.headers.get("Origin") ?? undefined);
+  return jsonResponse(data, status, extraHeaders, request.headers.get("Origin") ?? undefined);
 }
 
 export async function handleRegister(request: Request, env: Env): Promise<Response> {
@@ -137,7 +137,7 @@ export async function handleRequestPasswordReset(request: Request, env: Env): Pr
     return requestJsonResponse(request, { error: { message: "Enter the email address for your account." } }, 400);
   }
   const email = body.email.trim().toLowerCase();
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return requestJsonResponse(request, { error: { message: "Enter a valid email address." } }, 400);
   }
   const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
