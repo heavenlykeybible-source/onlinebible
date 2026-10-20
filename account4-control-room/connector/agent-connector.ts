@@ -1,3 +1,4 @@
+import {submitAgentDraft} from '../src/agent-drafts.ts';
 /**
  * Account 4 restricted agent connector (candidate module).
  *
@@ -63,7 +64,14 @@ export async function handleAgentConnector(request:Request,env:ConnectorEnv): Pr
   if (!identity) return reject("Unauthorized",401);
   if (path === "/api/connector/v1/capabilities" && request.method === "GET")
     return json({role:"restricted-agent", deploy:false, approve:false, restore:false,
-      sites:[...allowedSites], actions:["capabilities.read","proposal.submit","proposal.list"]});
+      sites:[...allowedSites], actions:["capabilities.read","proposal.submit","proposal.list","cms-draft.submit"]});
+  if (path === "/api/connector/v1/cms-drafts" && request.method === "POST") {
+    if (!(request.headers.get("content-type")||"").toLowerCase().startsWith("application/json")) return reject("JSON required",415);
+    if (Number(request.headers.get("content-length")||0)>130000)return reject("Too large",413);
+    const raw=await request.text();if(raw.length>130000)return reject("Too large",413);
+    try{return await submitAgentDraft(env,JSON.parse(raw),identity);}
+    catch {return reject("Draft handoff is unavailable",503);}
+  }
   if (path === "/api/connector/v1/proposals" && request.method === "GET") {
     const site = new URL(request.url).searchParams.get("site");
     if (site && !allowedSites.has(site)) return reject("Invalid site");
