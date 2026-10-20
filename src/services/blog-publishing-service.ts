@@ -24,10 +24,11 @@ export function formatBlogSocialText(post: any, url: string, platform: string): 
   const signature = "Heavenly Key Evangelistic Movement — Taking Christ to the Nations of the World.";
   if (platform === "x") {
     // X is limited to 280 characters. Preserve the article link and title first.
-    const fixed = [title, url].filter(Boolean).join("\n");
-    const room = Math.max(0, 279 - Array.from(fixed).length);
-    const shortExcerpt = Array.from(excerpt).slice(0, Math.max(0, room - 2)).join("");
-    return [title, shortExcerpt ? shortExcerpt + "…" : "", url].filter(Boolean).join("\n").slice(0, 280);
+    const link = String(url || "").trim();
+    const safeTitle = Array.from(title).slice(0, Math.max(0, 279 - Array.from(link).length)).join("");
+    const room = Math.max(0, 278 - Array.from(safeTitle).length - Array.from(link).length);
+    const shortExcerpt = Array.from(excerpt).slice(0, Math.max(0, room - 1)).join("");
+    return [safeTitle, shortExcerpt ? shortExcerpt + "…" : "", link].filter(Boolean).join("\n").slice(0, 280);
   }
   return [title, excerpt, url, signature].filter(Boolean).join("\n\n").slice(0, platform === "instagram" ? 2200 : 5000);
 }
@@ -70,6 +71,12 @@ async function enqueueSocialShare(env: Env, post: any, actorId: number): Promise
   const status = failed === results.length ? "failed" : (failed || errors.length) ? "partial" : done === results.length ? "complete" : "queued";
   const details = [...errors, ...(failed ? [failed + " social destination(s) failed; review the social publishing history."] : [])];
   return { status, job_ids: jobIds, ...(details.length ? { error: details.join("; ") } : {}) };
+}
+async function safeEnqueueSocialShare(env: Env, post: any, actorId: number) {
+  try { return await enqueueSocialShare(env, post, actorId); }
+  catch (error) {
+    return { status: "failed", error: error instanceof Error ? error.message : "Social publishing failed unexpectedly." };
+  }
 }
 export async function listPublicBlogPosts(env: Env, limit = 20) {
   const safeLimit = Math.min(Math.max(Number.isFinite(limit) ? Math.floor(limit) : 20, 1), 50);
@@ -117,7 +124,7 @@ export async function createBlogPost(env: Env, input: BlogPostInput, actorId: nu
   ).bind(slug,title,excerpt,body,status,scheduledAt,publishedAt,share,status==="published"&&share?"pending":"not_requested",actorId,actorId).first<any>();
   if (!row) throw new Error("The article could not be saved.");
   if (status === "published" && share) {
-    const distribution = await enqueueSocialShare(env,row,actorId);
+    const distribution = await safeEnqueueSocialShare(env,row,actorId);
     await env.DB.prepare("UPDATE blog_posts SET social_share_status=?,social_share_error=?,updated_at=CURRENT_TIMESTAMP WHERE post_id=?")
       .bind(distribution.status,distribution.error||null,row.post_id).run();
     return {...row,social_share_status:distribution.status,social_share_error:distribution.error||null,social_job_ids:distribution.job_ids||[]};
@@ -134,7 +141,7 @@ export async function publishBlogPost(env: Env, postId: number, actorId: number)
   if (!updated.meta.changes) throw new Error("The article changed before it could be published.");
   const post = {...row,status:"published",published_at:publishedAt};
   if (row.share_to_social) {
-    const distribution = await enqueueSocialShare(env,post,actorId);
+    const distribution = await safeEnqueueSocialShare(env,post,actorId);
     await env.DB.prepare("UPDATE blog_posts SET social_share_status=?,social_share_error=?,updated_at=CURRENT_TIMESTAMP WHERE post_id=?")
       .bind(distribution.status,distribution.error||null,postId).run();
     return {post_id:postId,status:"published",social_share_status:distribution.status,social_share_error:distribution.error||null,social_job_ids:distribution.job_ids||[]};
@@ -157,7 +164,7 @@ export async function runDueBlogPublications(env: Env) {
     await env.DB.prepare("UPDATE blog_posts SET status='published',published_at=?,scheduled_at=NULL,social_share_status=?,updated_at=CURRENT_TIMESTAMP WHERE post_id=? AND status='publishing'")
       .bind(stamp,post.share_to_social?'pending':'not_requested',item.post_id).run();
     if (post.share_to_social) {
-      const distribution = await enqueueSocialShare(env,{...post,published_at:stamp},Number(post.created_by));
+      const distribution = await safeEnqueueSocialShare(env,{...post,published_at:stamp},Number(post.created_by));
       await env.DB.prepare("UPDATE blog_posts SET social_share_status=?,social_share_error=?,updated_at=CURRENT_TIMESTAMP WHERE post_id=?")
         .bind(distribution.status,distribution.error||null,item.post_id).run();
     }
