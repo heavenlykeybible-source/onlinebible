@@ -8,7 +8,7 @@ Reviewed branch: feature/simple-bible-sharing-20261020
 - Core platform: 40 numbered SQL migrations, 0001–0040.
 - Global Christian Community: 15 numbered SQL migrations, 0001–0015.
 - Media Engine: 5 numbered SQL migrations, 0001–0005.
-- Recovery Control: 4 numbered SQL migrations, 0001–0004.
+- Recovery Control: 6 numbered SQL migrations, 0001–0006.
 - Corrected a duplicate core migration number by moving the idempotent website AI inbox schema to migration 0040. Existing migration contents were not edited.
 - Updated the core deployment preflight and architecture gate to expect the 0040 schema tip.
 - Expanded frontend syntax validation to include JavaScript in heavenly-key-app/public and checks for the Bible sharing controls.
