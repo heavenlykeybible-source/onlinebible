@@ -5,9 +5,9 @@ This connector is **implemented as a candidate module, not activated**. It never
 ## Integration gates (owner/operator only)
 1. Review security and test isolation; deploy staging first.
 2. Run `account4-control-room/migrations/0006_connector_proposals.sql` on Account 4 D1 only after backup and review.
-3. Generate a high-entropy random agent token in a trusted environment. Store only its SHA-256 hex digest as `CONNECTOR_TOKENS_SHA256` via Cloudflare Worker secret. Give the token to the authorized integration through its secure credential manager, **never in chat, frontend, repository, logs, or D1**.
+3. Generate a high-entropy agent token in a trusted owner environment. Store **only its SHA-256 digest** in `cms_agent_credentials.token_hash` with a distinct `agent_id`, an explicit `allowed_sites` JSON array, and `enabled=1` after verification. Provision through a protected operator process; never paste the token into chat, frontend assets, repository, logs, or D1. Set `enabled=0` or `revoked_at` to revoke it.
 4. Mount `handleAgentConnector` for `/api/connector/v1/*` only after validating the Cloudflare Access administrator policy for this hostname, and retaining same-origin browser security rules for owner actions.
-5. Add token rotation/revocation, scoped identity and rate limiting before production. Current single role is intentionally narrow. Do not enable production based only on this candidate.
+5. Add token rotation/revocation, scoped identity and rate limiting before production. Credentials are per-agent and site-scoped; a 30-requests/minute server-side quota is enforced. Do not enable production based only on this candidate.
 6. Test malformed requests, cross-account attempts, protected paths, token rejection, D1 audit failures, no CORS, and recovery.
 7. Review and approve the exact commit SHA through the Account 4 maintenance procedure. Never auto-merge to main.
 
@@ -53,3 +53,10 @@ No endpoint can deploy. Production execution must be added in a separately owner
 - The agent bearer route is not ChatGPT integration by itself. A separately configured ChatGPT-compatible OAuth/MCP app, secure credential registration, per-agent scopes, rate limits, staging tests and owner release approval are required.
 - The entire Control Room hostname must stay behind Cloudflare Access; routing code alone is not sufficient access control.
 - **No live deployment has occurred**. This PR is not production-ready until these gates pass.
+
+
+## Agent credential migration / review update
+- Migration `0008_agent_credentials.sql` adds hashed, revocable, site-scoped agent identities and request quota counters.
+- Remove any former `CONNECTOR_TOKENS_SHA256` secret if it was staged for this candidate. The current candidate reads the owner-managed database credential registry instead.
+- The restricted HTTP bearer API is **not a ChatGPT MCP server**. ChatGPT authentication and approved MCP/OpenAPI connector registration remain separate tasks; do not claim ChatGPT is connected based on API availability.
+- Protect the owner hostname and provide an explicitly authenticated agent ingress that does not expose owner-only routes. Any Cloudflare Access machine-to-machine policy must be separately verified.
