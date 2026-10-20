@@ -26,6 +26,8 @@ assert.ok(backend.includes('"hkem-ai:"'), 'backend has per-member AI rate limiti
 assert.ok(backend.includes('validateAiDraftRequest(input)'), 'backend validates input before generation');
 assert.ok(ai.includes('requiresReview:true'), 'backend flags AI output for review');
 assert.ok(ai.includes('containsSensitiveAiData'), 'backend filters sensitive data');
+assert.ok(ai.includes('const hasPhone=Array.from(text.matchAll('), 'phone filtering evaluates individual phone-like tokens');
+assert.ok(ai.includes('.some(match=>(match[1].match(/\\d/g)||[]).length>=9)'), 'phone filtering requires at least nine digits and avoids ISO-date false positives');
 assert.ok(css.includes('min-height:64px'), 'chat output has a readable minimum height');
 assert.ok(css.includes('max-width:600px'), 'phone layout is responsive');
 assert.ok(css.includes(':focus-visible'), 'keyboard focus is visible');
