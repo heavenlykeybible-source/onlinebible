@@ -128,3 +128,13 @@ After the Worker-origin correction, a fresh repository-source inspection passed 
 One known item remains: community/group route response helpers do not yet receive each incoming request's origin, so their responses are not consistently CORS-enabled for a separate custom-domain frontend. Same-origin Worker-hosted pages do not require CORS for those requests, but a future split-origin deployment needs this fixed before browser testing.
 
 These are source-inspection assertions, not an executed Vitest, TypeScript, or browser test run. No deployment was performed.
+
+
+## Community/group response CORS correction — 2026-10-20
+
+- Added a Worker-boundary response wrapper for community and group routes so the actual request's Origin is used only when it matches the exact trusted-origin allowlist.
+- The wrapper removes legacy canonical-origin CORS headers when no approved request origin is present, rather than reflecting an untrusted origin.
+- Wrapped community feeds, discussions, comments/reactions, follows/blocks, testimony moderation, question/answer actions, group directory/membership/posts/polls, and reaction counts.
+- Added a frontend contract test asserting the response wrapper is applied to representative community and group endpoints.
+
+This is a source change and static contract assertion only. It has not been run through Vitest, TypeScript, or browser/device tests in this environment. The project remains **NOT launch-cleared** until those tests and the end-to-end account/community journeys are executed.
