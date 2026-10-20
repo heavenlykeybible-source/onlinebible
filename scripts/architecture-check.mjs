@@ -46,6 +46,21 @@ async function checkMigrationSequence(directory, expectedCount, expectedTip, lab
 await checkMigrationSequence("global-community/migrations", 15, 15, "Global Community");
 await checkMigrationSequence("recovery-control/migrations", 6, 6, "Recovery Control");
 
+const packageConfig = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
+for (const [script, required] of [
+  ["deploy", "npm run preflight"],
+  ["deploy:staging", "npm run preflight:staging"],
+  ["migrate:prod", "npm run preflight"],
+  ["migrate:staging", "npm run preflight:staging"]
+]) {
+  if (!packageConfig.scripts?.[script]?.startsWith(required)) {
+    failures.push(`Remote operation '${script}' must run '${required}' first.`);
+  }
+}
+if (!packageConfig.scripts?.["preflight:staging"]?.includes("--env staging")) {
+  failures.push("Staging preflight must explicitly select the staging environment.");
+}
+
 const prod = await readFile(join(root, ".github/workflows/cloudflare-production.yml"), "utf8");
 const account2 = await readFile(join(root, ".github/workflows/cloudflare-media-engine.yml"), "utf8");
 for (const [name, workflow] of [["Account 1", prod], ["Account 2", account2]]) {
