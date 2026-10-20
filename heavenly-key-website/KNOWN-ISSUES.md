@@ -32,21 +32,23 @@ AI 1 hasn't published one:
 Both show an explicit "not connected yet" message on submit rather than
 pretending to succeed.
 
-## 3. Static-only content without a live API
-Featured sermon and ministry-update/blog sections remain intentionally static. Production JavaScript no longer calls unimplemented `/api/sermons` or `/api/blog` endpoints.
+## 3. Content sources and widgets
+The homepage's **Recent Blog Posts** preview and footer list now load from the public Blogger JSON-in-script feed at `blog.heavenlykey.org`; they do not use an invented `/api/blog` endpoint. If the feed is unavailable or blocked by CSP/network policy, the homepage shows a fallback link to the official blog.
+
+Other content widgets without a published API contract (including Featured Sermons where applicable) must remain static or clearly indicate unavailable data. Production JavaScript must not call unimplemented `/api/sermons` or `/api/blog` endpoints. Verify each widget against the latest HTML and script source before treating this historical note as a complete inventory.
 
 ## 4. Two Open Content Conflicts (need Project Lead decision, not a fix)
 Documented in `CONTENT-INTEGRATION-REPORT.md` §2:
 1. Homepage hero wording — approved spec copy vs. the real site's actual "REVIVAL, HOLINESS, POWER!" copy. Currently running the approved spec version.
 2. Headquarters address — "Warri, Delta State, Nigeria" (early screenshot) vs. "Nigeria, Africa" (offline export, no street address). Currently showing "Nigeria, Africa."
 
-## 5. Blog Migration Incomplete
-94 real teaching articles exist in the offline export. Only 3 real titles
-are surfaced on the homepage as a preview (each marked
-`[PLACEHOLDER — full blog migration pending]`). Full migration into the
-design system is logged as a Legacy Review item in `PROJECT-CHECKLIST.md`
-§7, not attempted here — a partial, inconsistently-styled import of 94
-legacy HTML files would be worse than clearly flagging it as pending.
+## 5. Legacy teaching-article migration incomplete
+94 real teaching articles exist in the offline export. The current homepage
+preview is a **live, five-post Blogger feed**, which is separate from
+migrating those 94 legacy teaching articles into the website's own
+design system. The legacy migration remains outstanding and is logged as
+a Legacy Review item in `PROJECT-CHECKLIST.md` §7. Do not mark those
+94 articles migrated based only on the homepage Blogger feed.
 
 ## 6. Two Stat Categories Still Placeholder
 "Bibles Distributed" and "Partners & Supporters" on the homepage stats
