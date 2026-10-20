@@ -109,6 +109,26 @@ try{
   if(!page.includes('id="bible-study-tools"')||!page.includes('bible-study-tools.css')||!page.includes('bible-study-tools.js'))failures.push({file:join(appPublic,'bible.html'),error:'Bible study tools must be connected to the Bible reader page.'});
 }catch(e){failures.push({file:studyToolsPath,error:'Unable to validate Bible study tools: '+e.message});}
 
+
+const readingRoutinePath=join(appPublic,'bible-reading-routine.js');
+try{
+  const routine=await readFile(readingRoutinePath,'utf8');
+  const styles=await readFile(join(appPublic,'bible-reading-routine.css'),'utf8');
+  const page=await readFile(join(appPublic,'bible.html'),'utf8');
+  for(const [label,pattern] of [
+    ['routine settings saved locally',/hk-bible-reading-routine-v1/],
+    ['local reading progress',/hk-bible-reading-progress-v1/],
+    ['selected reminder time',/type='time'/],
+    ['weekday scheduling',/Reading days/],
+    ['browser notification permission requested by user',/Notification\.requestPermission\(\)/],
+    ['honest closed-browser reminder limitation',/browser is fully closed/],
+    ['reading completion action',/Mark today’s reading complete/],
+    ['no sign-in requirement',/no account is needed/]
+  ])if(!pattern.test(routine))failures.push({file:readingRoutinePath,error:'Missing Bible reading routine requirement: '+label});
+  if(!styles.includes('.brr-card')||!styles.includes('.brr-primary'))failures.push({file:join(appPublic,'bible-reading-routine.css'),error:'Reading routine responsive card styles are missing.'});
+  if(!page.includes('id="bible-reading-routine"')||!page.includes('bible-reading-routine.css')||!page.includes('bible-reading-routine.js'))failures.push({file:join(appPublic,'bible.html'),error:'Bible reading routine must be connected to the Bible reader page.'});
+}catch(e){failures.push({file:readingRoutinePath,error:'Unable to validate Bible reading routine: '+e.message});}
+
 const studioPath=join(root,'production-studio.js');
 try{
   const studio=await readFile(studioPath,'utf8');
