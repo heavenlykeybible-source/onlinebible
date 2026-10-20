@@ -187,7 +187,7 @@ export async function requestPasswordReset(env: Env, email: string): Promise<{ s
 
   const token = bufferToHex(crypto.getRandomValues(new Uint8Array(32)).buffer);
   const tokenHash = await sha256Hex(token);
-  const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString().slice(0, 19).replace("T", " ");
   await env.DB.prepare(
     "UPDATE auth SET reset_token=?, reset_token_expires_at=?, updated_at=CURRENT_TIMESTAMP WHERE user_id=?"
   ).bind(tokenHash, expiresAt, row.user_id).run();
