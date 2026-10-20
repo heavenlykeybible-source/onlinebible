@@ -121,7 +121,7 @@ export async function createBlogPost(env: Env, input: BlogPostInput, actorId: nu
   const share = input.share_to_social === false ? 0 : 1;
   const row = await env.DB.prepare(
     "INSERT INTO blog_posts(slug,title,excerpt,body,status,scheduled_at,published_at,share_to_social,social_share_status,created_by,updated_by) VALUES(?,?,?,?,?,?,?,?,?,?,?) RETURNING post_id,slug,title,excerpt,body,status,scheduled_at,published_at,share_to_social"
-  ).bind(slug,title,excerpt,body,status,scheduledAt,publishedAt,share,status==="published"&&share?"pending":"not_requested",actorId,actorId).first<any>();
+  ).bind(slug,title,excerpt,body,status,scheduledAt,publishedAt,share,status!=="draft"&&share?"pending":"not_requested",actorId,actorId).first<any>();
   if (!row) throw new Error("The article could not be saved.");
   if (status === "published" && share) {
     const distribution = await safeEnqueueSocialShare(env,row,actorId);
@@ -151,24 +151,47 @@ export async function publishBlogPost(env: Env, postId: number, actorId: number)
 
 /** Runs from the Worker's scheduled handler; due posts publish without a visitor opening the site. */
 export async function runDueBlogPublications(env: Env) {
+  // Recover claims abandoned by a previous Worker interruption before selecting
+  // due work. A post can only be reclaimed while it remains in "publishing".
+  await env.DB.prepare(
+    "UPDATE blog_posts SET status='scheduled',updated_at=CURRENT_TIMESTAMP WHERE status='publishing' AND updated_at < datetime('now','-10 minutes')"
+  ).run();
   const due = await env.DB.prepare(
     "SELECT post_id FROM blog_posts WHERE status='scheduled' AND scheduled_at IS NOT NULL AND julianday(scheduled_at)<=julianday('now') ORDER BY scheduled_at LIMIT 10"
   ).all<{post_id:number}>();
   let published = 0;
+  let failed = 0;
   for (const item of due.results || []) {
-    const claim = await env.DB.prepare("UPDATE blog_posts SET status='publishing',updated_at=CURRENT_TIMESTAMP WHERE post_id=? AND status='scheduled'").bind(item.post_id).run();
-    if (!claim.meta.changes) continue;
-    const post = await env.DB.prepare("SELECT * FROM blog_posts WHERE post_id=?").bind(item.post_id).first<any>();
-    if (!post) continue;
-    const stamp = new Date().toISOString();
-    await env.DB.prepare("UPDATE blog_posts SET status='published',published_at=?,scheduled_at=NULL,social_share_status=?,updated_at=CURRENT_TIMESTAMP WHERE post_id=? AND status='publishing'")
-      .bind(stamp,post.share_to_social?'pending':'not_requested',item.post_id).run();
-    if (post.share_to_social) {
-      const distribution = await safeEnqueueSocialShare(env,{...post,published_at:stamp},Number(post.created_by));
-      await env.DB.prepare("UPDATE blog_posts SET social_share_status=?,social_share_error=?,updated_at=CURRENT_TIMESTAMP WHERE post_id=?")
-        .bind(distribution.status,distribution.error||null,item.post_id).run();
+    try {
+      const claim = await env.DB.prepare(
+        "UPDATE blog_posts SET status='publishing',updated_at=CURRENT_TIMESTAMP WHERE post_id=? AND status='scheduled'"
+      ).bind(item.post_id).run();
+      if (!claim.meta.changes) continue;
+      const post = await env.DB.prepare("SELECT * FROM blog_posts WHERE post_id=? AND status='publishing'").bind(item.post_id).first<any>();
+      if (!post) {
+        await env.DB.prepare("UPDATE blog_posts SET status='scheduled',updated_at=CURRENT_TIMESTAMP WHERE post_id=? AND status='publishing'").bind(item.post_id).run();
+        continue;
+      }
+      const stamp = new Date().toISOString();
+      const result = await env.DB.prepare(
+        "UPDATE blog_posts SET status='published',published_at=?,scheduled_at=NULL,social_share_status=?,social_share_error=NULL,updated_at=CURRENT_TIMESTAMP WHERE post_id=? AND status='publishing'"
+      ).bind(stamp,post.share_to_social?'pending':'not_requested',item.post_id).run();
+      if (!result.meta.changes) continue;
+      if (post.share_to_social) {
+        const distribution = await safeEnqueueSocialShare(env,{...post,published_at:stamp},Number(post.created_by));
+        await env.DB.prepare("UPDATE blog_posts SET social_share_status=?,social_share_error=?,updated_at=CURRENT_TIMESTAMP WHERE post_id=?")
+          .bind(distribution.status,distribution.error||null,item.post_id).run();
+      }
+      published++;
+    } catch (error) {
+      failed++;
+      const message=(error instanceof Error?error.message:"Unexpected scheduled publishing failure.").slice(0,1000);
+      // If publication did not commit, release the claim for a later retry.
+      // If it did commit, do not revert a publicly visible article to scheduled.
+      await env.DB.prepare(
+        "UPDATE blog_posts SET status='scheduled',social_share_status='failed',social_share_error=?,updated_at=CURRENT_TIMESTAMP WHERE post_id=? AND status='publishing'"
+      ).bind(message,item.post_id).run().catch(()=>undefined);
     }
-    published++;
   }
-  return {published};
+  return {published,failed};
 }
