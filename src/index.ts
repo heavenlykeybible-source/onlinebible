@@ -98,6 +98,24 @@ export default {
     const requestOrigin = request.headers.get("Origin");
     const corsOrigin = requestOrigin && trustedOrigins.has(requestOrigin) ? requestOrigin : null;
 
+    const withRequestCors = async (responsePromise: Promise<Response>, incomingRequest: Request): Promise<Response> => {
+      const response = await responsePromise;
+      const headers = new Headers(response.headers);
+      const origin = incomingRequest.headers.get("Origin");
+      headers.set("Vary", "Origin");
+      // Route helpers in older modules use a canonical fallback origin. Replace
+      // that fallback at the Worker boundary with the actual explicitly trusted
+      // request origin; never reflect an untrusted Origin value.
+      if (origin && corsOrigin) {
+        headers.set("Access-Control-Allow-Origin", corsOrigin);
+        headers.set("Access-Control-Allow-Credentials", "true");
+      } else {
+        headers.delete("Access-Control-Allow-Origin");
+        headers.delete("Access-Control-Allow-Credentials");
+      }
+      return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+    };
+
     if (method === "OPTIONS") {
       const headers = new Headers({
         "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
@@ -234,30 +252,30 @@ export default {
     { const m=idMatch(/^\/api\/admin\/users\/(\d+)\/role$/); if(m&&method==="POST") return handleAdminUserRole(request,env,Number(m[1])); }
 
     // ---------- Module 2: Community ----------
-    if (pathname === "/api/prayer" && method === "POST") return handleCreatePrayer(request, env);
-    if (pathname === "/api/prayer" && method === "GET") return handleListPrayers(request, env);
-    { const m = idMatch(/^\/api\/prayer\/(\d+)\/respond$/); if (m && method === "POST") return handlePrayerRespond(request, env, Number(m[1])); }
+    if (pathname === "/api/prayer" && method === "POST") return withRequestCors(handleCreatePrayer(request, env), request);
+    if (pathname === "/api/prayer" && method === "GET") return withRequestCors(handleListPrayers(request, env), request);
+    { const m = idMatch(/^\/api\/prayer\/(\d+)\/respond$/); if (m && method === "POST") return withRequestCors(handlePrayerRespond(request, env, Number(m[1])), request); }
 
-    if (pathname === "/api/testimonies" && method === "POST") return handleSubmitTestimony(request, env);
-    if (pathname === "/api/testimonies" && method === "GET") return handleListTestimonies(request, env);
-    { const m = idMatch(/^\/api\/testimonies\/(\d+)\/approve$/); if (m && method === "POST") return handleApproveTestimony(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/testimonies\/(\d+)\/feature$/); if (m && method === "POST") return handleFeatureTestimony(request, env, Number(m[1])); }
+    if (pathname === "/api/testimonies" && method === "POST") return withRequestCors(handleSubmitTestimony(request, env), request);
+    if (pathname === "/api/testimonies" && method === "GET") return withRequestCors(handleListTestimonies(request, env), request);
+    { const m = idMatch(/^\/api\/testimonies\/(\d+)\/approve$/); if (m && method === "POST") return withRequestCors(handleApproveTestimony(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/testimonies\/(\d+)\/feature$/); if (m && method === "POST") return withRequestCors(handleFeatureTestimony(request, env, Number(m[1])), request); }
 
-    if (pathname === "/api/questions" && method === "POST") return handleAskQuestion(request, env);
-    { const m = idMatch(/^\/api\/questions\/(\d+)$/); if (m && method === "GET") return handleGetQuestion(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/questions\/(\d+)\/answers$/); if (m && method === "POST") return handleSubmitAnswer(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/answers\/(\d+)\/recommend$/); if (m && method === "POST") return handleMarkRecommendedAnswer(request, env, Number(m[1])); }
+    if (pathname === "/api/questions" && method === "POST") return withRequestCors(handleAskQuestion(request, env), request);
+    { const m = idMatch(/^\/api\/questions\/(\d+)$/); if (m && method === "GET") return withRequestCors(handleGetQuestion(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/questions\/(\d+)\/answers$/); if (m && method === "POST") return withRequestCors(handleSubmitAnswer(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/answers\/(\d+)\/recommend$/); if (m && method === "POST") return withRequestCors(handleMarkRecommendedAnswer(request, env, Number(m[1])), request); }
 
-    if (pathname === "/api/discussions" && method === "POST") return handleCreateDiscussion(request, env);
-    if (pathname === "/api/discussions" && method === "GET") return handleListDiscussions(request, env);
+    if (pathname === "/api/discussions" && method === "POST") return withRequestCors(handleCreateDiscussion(request, env), request);
+    if (pathname === "/api/discussions" && method === "GET") return withRequestCors(handleListDiscussions(request, env), request);
 
-    if (pathname === "/api/comments" && method === "POST") return handleAddComment(request, env);
-    if (pathname === "/api/comments" && method === "GET") return handleListComments(request, env);
-    if (pathname === "/api/reactions" && method === "POST") return handleToggleReaction(request, env);
+    if (pathname === "/api/comments" && method === "POST") return withRequestCors(handleAddComment(request, env), request);
+    if (pathname === "/api/comments" && method === "GET") return withRequestCors(handleListComments(request, env), request);
+    if (pathname === "/api/reactions" && method === "POST") return withRequestCors(handleToggleReaction(request, env), request);
 
-    { const m = idMatch(/^\/api\/follow\/(\d+)$/); if (m && method === "POST") return handleFollow(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/follow\/(\d+)$/); if (m && method === "DELETE") return handleUnfollow(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/block\/(\d+)$/); if (m && method === "POST") return handleBlock(request, env, Number(m[1])); }
+    { const m = idMatch(/^\/api\/follow\/(\d+)$/); if (m && method === "POST") return withRequestCors(handleFollow(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/follow\/(\d+)$/); if (m && method === "DELETE") return withRequestCors(handleUnfollow(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/block\/(\d+)$/); if (m && method === "POST") return withRequestCors(handleBlock(request, env, Number(m[1])), request); }
 
     // ---------- Module 3: Spiritual Resources ----------
     { const m = idMatch(/^\/api\/bible\/([^/]+)\/(\d+)$/); if (m && method === "GET") return handleGetChapter(request, env, decodeURIComponent(m[1]), Number(m[2])); }
@@ -291,15 +309,15 @@ export default {
     { const m = idMatch(/^\/api\/admin\/counselling\/(\d+)\/message$/); if (m && method === "GET") return handleViewCounsellingMessage(request, env as any, Number(m[1])); }
 
     // ---------- Module 5: Groups & Fellowship ----------
-    if (pathname === "/api/groups" && method === "POST") return handleCreateGroup(request, env);
-    if (pathname === "/api/groups" && method === "GET") return handleListGroups(request, env);
-    { const m = idMatch(/^\/api\/groups\/(\d+)\/join$/); if (m && method === "POST") return handleJoinGroup(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/groups\/join-requests\/(\d+)\/approve$/); if (m && method === "POST") return handleApproveJoinRequest(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/groups\/(\d+)\/posts$/); if (m && method === "POST") return handleCreateGroupPost(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/groups\/(\d+)\/posts$/); if (m && method === "GET") return handleListGroupPosts(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/groups\/(\d+)\/polls$/); if (m && method === "POST") return handleCreatePoll(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/polls\/(\d+)\/vote$/); if (m && method === "POST") return handleVotePoll(request, env, Number(m[1])); }
-    { const m = idMatch(/^\/api\/polls\/(\d+)\/results$/); if (m && method === "GET") return handlePollResults(request, env, Number(m[1])); }
+    if (pathname === "/api/groups" && method === "POST") return withRequestCors(handleCreateGroup(request, env), request);
+    if (pathname === "/api/groups" && method === "GET") return withRequestCors(handleListGroups(request, env), request);
+    { const m = idMatch(/^\/api\/groups\/(\d+)\/join$/); if (m && method === "POST") return withRequestCors(handleJoinGroup(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/groups\/join-requests\/(\d+)\/approve$/); if (m && method === "POST") return withRequestCors(handleApproveJoinRequest(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/groups\/(\d+)\/posts$/); if (m && method === "POST") return withRequestCors(handleCreateGroupPost(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/groups\/(\d+)\/posts$/); if (m && method === "GET") return withRequestCors(handleListGroupPosts(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/groups\/(\d+)\/polls$/); if (m && method === "POST") return withRequestCors(handleCreatePoll(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/polls\/(\d+)\/vote$/); if (m && method === "POST") return withRequestCors(handleVotePoll(request, env, Number(m[1])), request); }
+    { const m = idMatch(/^\/api\/polls\/(\d+)\/results$/); if (m && method === "GET") return withRequestCors(handlePollResults(request, env, Number(m[1])), request); }
 
     // ---------- Module 6: Community Administration ----------
     if (pathname === "/api/admin/moderation-actions" && method === "POST") return handleIssueModerationAction(request, env);
@@ -361,7 +379,7 @@ export default {
     if (pathname === "/api/mrm/my-tasks" && method === "GET") return handleMyTasks(request, env);
     { const m = idMatch(/^\/api\/broadcast\/campaigns\/(\d+)\/distribution-status$/); if (m && method === "GET") return handleGetDistributionStatus(request, env, Number(m[1])); }
 
-    if (pathname === "/api/reactions/count" && method === "GET") return handleCountReactions(request, env);
+    if (pathname === "/api/reactions/count" && method === "GET") return withRequestCors(handleCountReactions(request, env), request);
 
     // ---------- Remaining gap-sweep routes ----------
     if (pathname === "/api/social-accounts" && method === "POST") return handleConnectAccount(request, env as any);
