@@ -65,6 +65,7 @@ for(const icon of pwaManifest.icons){
 const png192=pwaManifest.icons.some(icon=>icon.src==='/icons/icon-192.png'&&icon.sizes==='192x192'&&icon.type==='image/png');
 const png512=pwaManifest.icons.some(icon=>icon.src==='/icons/icon-512.png'&&icon.sizes==='512x512'&&icon.type==='image/png');
 if(!png192||!png512)throw Error('PWA installability needs real 192px and 512px PNG icons.');
+if(!pwaManifest.icons.some(icon=>icon.purpose==='maskable'&&icon.sizes==='512x512'&&icon.type==='image/png'))throw Error('PWA manifest needs a 512px maskable PNG icon.');
 const appHtml=readFileSync(join(biblePublic,'index.html'),'utf8');
 if(!appHtml.includes('<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">'))throw Error('iOS Home Screen needs a PNG Apple touch icon.');
 const serviceWorker=readFileSync(join(biblePublic,'sw.js'),'utf8');
