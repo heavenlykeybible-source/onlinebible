@@ -18,7 +18,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), payment=(), usb=(), interest-cohort=()
   X-Frame-Options: DENY
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: https://i.ytimg.com https://placehold.co https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev https://api.qrserver.com; connect-src 'self' https: wss:; media-src 'self' blob: https:; worker-src 'self'; form-action 'self' https://heavenlykey.alldaywow247.workers.dev; frame-ancestors 'none'; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://blog.heavenlykey.org https://www.blog.heavenlykey.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: https://i.ytimg.com https://placehold.co https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev https://api.qrserver.com; connect-src 'self' https: wss:; media-src 'self' blob: https:; worker-src 'self'; form-action 'self' https://heavenlykey.alldaywow247.workers.dev; frame-ancestors 'none'; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'
 
 # Long-lived, safe to cache aggressively — every reference is
 # version-stamped with ?v=1.2.2, so a new release gets a new URL and
