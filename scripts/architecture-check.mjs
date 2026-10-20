@@ -65,7 +65,7 @@ const communityStaging = await readFile(join(root, ".github/workflows/cloudflare
 const communityPreflight = await readFile(join(root, "global-community/scripts/preflight.mjs"), "utf8");
 if (!communityStaging.includes("/workers/subdomain") ||
     !communityStaging.includes("STAGING_ORIGIN") ||
-    !communityStaging.includes('PUBLIC_ORIGIN = \\"$STAGING_ORIGIN\\"')) {
+    !communityStaging.includes("s|^PUBLIC_ORIGIN = .*|PUBLIC_ORIGIN = ")) {
   failures.push("Global Community staging must resolve the account-specific workers.dev origin before deploy.");
 }
 if (!communityPreflight.includes("assignment.test(staging)")) {
