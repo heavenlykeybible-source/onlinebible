@@ -13,6 +13,13 @@ function readPref(key,fallback){try{return JSON.parse(localStorage.getItem(key))
 async function loadJSON(path){const r=await fetch(path);if(!r.ok)throw Error('Unable to load '+path+'.');return r.json();}
 const manifest=await loadJSON('kjv-manifest.json').catch(e=>{root.append(make('p','The Bible catalogue is temporarily unavailable. Reconnect and reload.'));throw e;});
 const books=manifest.books;
+const speakerAnnotations=await loadJSON('speaker-annotations.json').catch(()=>({jesus:[],god:[]}));
+function speakerFor(bookId,chapter,verse){
+ const matches=kind=>(Array.isArray(speakerAnnotations[kind])&&speakerAnnotations[kind].some(item=>item.book===bookId&&item.chapter===chapter&&Number.isInteger(item.start)&&Number.isInteger(item.end)&&verse>=item.start&&verse<=item.end));
+ if(matches('jesus'))return 'jesus';
+ if(matches('god'))return 'god';
+ return '';
+}
 const byId=Object.fromEntries(books.map(b=>[b.id,b]));
 const resolveBook=value=>books.find(b=>[b.id,b.name,b.path.split('/').pop().replace('.json','')].some(alias=>alias.toLowerCase()===String(value||'').toLowerCase()));
 function validData(data,book){return data?.book===book.name&&Array.isArray(data.chapters)&&data.chapters.length===book.chapters&&data.chapters.every(chapter=>Array.isArray(chapter)&&chapter.length>0&&chapter.every(verse=>typeof verse==='string'&&verse.trim()));}
@@ -44,6 +51,8 @@ function scriptureLines(host,verses,bookId,bookName,chapterNum,onCopy,onShare,on
   const block=make('div',null,'kjv-verse-block');
   const p=make('p',null,'kjv-verse');
   p.id='verse-'+bookId+'-'+chapterNum+'-'+verseNum;
+  const speaker=speakerFor(bookId,chapterNum,verseNum);
+  if(speaker)p.classList.add('kjv-verse--'+speaker);
   p.append(make('sup',String(verseNum)),document.createTextNode(' '+v));
   const tools=make('div',null,'kjv-verse-actions');
   const copy=make('button','Copy','kjv-verse-action');
@@ -111,7 +120,7 @@ async function bible(){
  jesusKey.append(make('span','Red','kjv-color-swatch kjv-color-swatch-jesus'),make('span','Words spoken by Jesus','kjv-color-description'));
  const godKey=make('p',null,'kjv-color-key');
  godKey.append(make('span','Blue','kjv-color-swatch kjv-color-swatch-god'),make('span','Direct speech of God the Father','kjv-color-description'));
- colorLegend.append(make('strong','Scripture colour guide'),jesusKey,godKey,make('small','Colouring is applied only where verified speaker annotations are available. The KJV text files currently provide verse text without speaker labels.','kjv-color-note'));
+ colorLegend.append(make('strong','Scripture colour guide'),jesusKey,godKey,make('small','Red and blue are applied to the passages currently annotated; unannotated passages remain in the normal text colour.','kjv-color-note'));
  intro.append(colorLegend);
  const status=make('p',null,'mobile-kjv-status');
  status.setAttribute('role','status');status.setAttribute('aria-live','polite');
