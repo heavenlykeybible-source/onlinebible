@@ -9,7 +9,7 @@ export async function handlePublicBlogPosts(request:Request,env:Env,slug?:string
   if(request.method!=="GET")return error("Method not allowed.",405);
   if(slug){
     const post=await Blog.getPublicBlogPost(env,slug);
-    return post?json({post},{headers:undefined} as any):error("Article not found.",404);
+    return post?json({post}):error("Article not found.",404);
   }
   const limit=Number(new URL(request.url).searchParams.get("limit")||20);
   return json({items:await Blog.listPublicBlogPosts(env,limit)});
