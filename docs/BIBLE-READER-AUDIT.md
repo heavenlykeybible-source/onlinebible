@@ -59,7 +59,7 @@ Run on real browsers/devices before calling the reader production-ready:
 
 ## Installation compatibility finding and follow-up
 
-The app now includes raster PNG icons at 192×192 and 512×512 for the PWA manifest, plus a 180×180 PNG Apple touch icon. The service-worker shell includes all three PNG files, and the manifest retains SVG variants as additional options. The icon files, manifest paths, Apple touch-icon link, and offline-cache path references were checked against the feature branch after commit `74d387333e301f4045f88517a7a3c8e9b8c87541`. This resolves the source-level SVG-only concern, but real installation behavior still needs browser/device verification.
+The app now includes optimized branded PNG icons at 192×192 and 512×512, a separate 512×512 maskable PNG, and a 180×180 PNG Apple touch icon. The service-worker shell includes all four PNG files, and the manifest retains SVG variants as additional options. The PNG headers and dimensions, manifest paths, Apple touch-icon link, and offline-cache references were checked against the feature branch after the icon commits `74d387333e301f4045f88517a7a3c8e9b8c87541` and `419a1f54f9aa6f8c58637341a07cb2cdd6470caa`. The PNG files use the repository's existing Heavenly Key icon artwork. This resolves the source-level SVG-only concern, but real installation behavior still needs browser/device verification.
 
 A regression guard was added to `scripts/check-app.mjs` requiring the 192px/512px PNG manifest entries, the Apple touch-icon link, and service-worker cache references. The checker itself has not been executed in a local Node runtime in this session.
 
