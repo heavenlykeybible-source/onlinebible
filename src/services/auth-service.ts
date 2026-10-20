@@ -208,7 +208,7 @@ export async function requestPasswordReset(env: Env, email: string): Promise<{ s
     // Do not leave a valid token behind when email delivery fails.
     await env.DB.prepare("UPDATE auth SET reset_token=NULL, reset_token_expires_at=NULL WHERE user_id=? AND reset_token=?")
       .bind(row.user_id, tokenHash).run();
-    return { success: false, configured: true };
+    return { success: true, configured: true };
   }
   return { success: true };
 }
