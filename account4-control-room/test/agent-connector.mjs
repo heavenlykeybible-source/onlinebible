@@ -54,3 +54,16 @@ test('anonymous calls do not disclose capabilities',async()=>{
  const response=await handleAgentConnector(new Request('https://control.example/api/connector/v1/capabilities'),env);
  assert.equal(response.status,401);
 });
+
+test('malformed draft JSON returns 400, without recording a draft',async()=>{
+ const {env,calls}=await mockEnv();
+ const req=new Request('https://control.example/api/connector/v1/cms-drafts',{method:'POST',headers:{authorization:'Bearer '+token,'content-type':'application/json'},body:'{invalid'});
+ const response=await handleAgentConnector(req,env);
+ assert.equal(response.status,400);
+ assert.equal(calls.some(c=>c.sql.includes('INSERT INTO cms_agent_drafts')),false);
+});
+test('unregistered agent sites are rejected even with valid bearer token',async()=>{
+ const {env}=await mockEnv({allowedSites:['account4']});
+ const response=await handleAgentConnector(request('/api/connector/v1/capabilities'),env);
+ assert.equal(response.status,401);
+});
