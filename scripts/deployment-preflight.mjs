@@ -11,8 +11,11 @@ const warn = [];
 const wrangler = await readFile(join(root, "wrangler.toml"), "utf8");
 const stagingMarker = "[env.staging]";
 const stagingOffset = wrangler.indexOf(stagingMarker);
+const stagingEnd = stagingOffset >= 0 ? wrangler.indexOf("\\n[triggers]", stagingOffset) : -1;
 const productionConfig = stagingOffset >= 0 ? wrangler.slice(0, stagingOffset) : wrangler;
-const stagingConfig = stagingOffset >= 0 ? wrangler.slice(stagingOffset) : "";
+const stagingConfig = stagingOffset >= 0
+  ? wrangler.slice(stagingOffset, stagingEnd >= 0 ? stagingEnd : undefined)
+  : "";
 const requiredProductionBindings = [
   "DB", "SESSIONS_KV", "RATE_LIMIT_KV", "LIVE_STATUS_KV", "MEDIA_R2"
 ];
