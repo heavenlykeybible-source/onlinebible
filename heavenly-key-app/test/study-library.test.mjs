@@ -70,8 +70,8 @@ test('Android and Apple installation icons have correct PNG dimensions and safe 
 
 test('Bible reader header can wrap and scroll on narrow phone viewports',()=>{
  const css=read('public/study-library.css');
- assert.match(css,/@media\\s*\\(max-width:\\s*380px\\)/);
- assert.match(css,/\\.mobile-kjv-page \\.mobile-kjv-header\\{flex-wrap:wrap/);
- assert.match(css,/\\.mobile-kjv-page \\.mobile-kjv-header nav\\{[^}]*overflow-x:auto/);
- assert.match(css,/\\.mobile-kjv-page \\.mobile-kjv-header nav a\\{[^}]*white-space:nowrap/);
+ assert.match(css,/@media\s*\(max-width:\s*380px\)/);
+ assert.match(css,/\.mobile-kjv-page \.mobile-kjv-header\{flex-wrap:wrap/);
+ assert.match(css,/\.mobile-kjv-page \.mobile-kjv-header nav\{[^}]*overflow-x:auto/);
+ assert.match(css,/\.mobile-kjv-page \.mobile-kjv-header nav a\{[^}]*white-space:nowrap/);
 });
