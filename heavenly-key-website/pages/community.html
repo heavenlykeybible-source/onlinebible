@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Join the Global Christian Community for fellowship, prayer, testimonies and groups.">
+<title>Global Christian Community | Heavenly Key</title>
+<style>
+:root{color-scheme:light;--green:#075b3b;--gold:#c6a14a;--ink:#202923;--muted:#5d6a62;--paper:#f7f8f5;--line:#dfe6df}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:var(--green);color:white;padding:1rem max(1rem,calc((100% - 1050px)/2));display:flex;gap:1rem;align-items:center;justify-content:space-between;flex-wrap:wrap}
+header a{color:white;text-decoration:none;font-weight:650}.wrap{max-width:1050px;margin:auto;padding:1.25rem}
+.hero{padding:2rem 0 1.2rem}.eyebrow{color:var(--green);font-weight:800;letter-spacing:.09em;text-transform:uppercase;font-size:.78rem}
+h1,h2{line-height:1.2}h1{font-size:clamp(2rem,5vw,3.25rem);margin:.4rem 0}h2{font-size:1.35rem;margin:.2rem 0 .6rem}.intro{max-width:700px;color:var(--muted)}
+.actions{display:flex;gap:.7rem;flex-wrap:wrap;margin:1.2rem 0}.btn{display:inline-block;border-radius:8px;padding:.7rem 1rem;text-decoration:none;font-weight:700;border:1px solid var(--green);background:var(--green);color:white}.btn.alt{background:white;color:var(--green)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,235px),1fr));gap:1rem;margin:1.2rem 0}.panel{background:white;border:1px solid var(--line);border-radius:12px;padding:1rem;min-width:0}.feed{min-height:70px;color:var(--muted);overflow-wrap:anywhere}.feed-item{border-top:1px solid var(--line);padding:.8rem 0}.feed-item:first-child{border-top:0}.feed-item p{margin:.3rem 0}.status{font-size:.9rem;color:var(--muted)}.error{color:#8a1c1c}.loading{opacity:.7}footer{border-top:1px solid var(--line);margin-top:2rem;padding:1.5rem 0;color:var(--muted)}a:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+</style>
+</head>
+<body>
+<header><a href="../index.html">Heavenly Key Evangelistic Movement</a><nav aria-label="Main navigation"><a href="../index.html">Home</a> &nbsp; <a href="admin.html?view=community">Community Admin</a></nav></header>
+<main class="wrap">
+<section class="hero">
+<div class="eyebrow">Faith • Fellowship • Prayer</div>
+<h1>Global Christian Community</h1>
+<p class="intro">Grow in faith together through prayer, testimonies, thoughtful discussions and Christian fellowship across nations.</p>
+<div class="actions"><a class="btn" href="#community-feeds">Open Community Feed</a><a class="btn alt" href="#prayer-centre">Prayer Centre</a><a class="btn alt" href="register.html">Create an account</a><a class="btn alt" href="login.html">Sign in</a></div>
+<p class="status" id="community-status" role="status" aria-live="polite">Connecting to community services…</p>
+</section>
+<section id="community-feeds" aria-labelledby="feeds-heading"><h2 id="feeds-heading">Community feeds</h2>
+<div class="grid">
+<section class="panel" aria-labelledby="discussion-heading"><h2 id="discussion-heading">Discussions</h2><div class="feed" data-feed="discussion" id="discussion-feed">Loading discussions…</div></section>
+<section class="panel" id="prayer-centre" aria-labelledby="prayer-heading"><h2 id="prayer-heading">Prayer Centre</h2><div class="feed" data-feed="prayer" id="prayer-feed">Loading prayer requests…</div><p><a href="register.html">Sign in or register to share a prayer request.</a></p></section>
+<section class="panel" aria-labelledby="testimony-heading"><h2 id="testimony-heading">Testimonies</h2><div class="feed" data-feed="testimony" id="testimony-feed">Loading testimonies…</div></section>
+<section class="panel" aria-labelledby="groups-heading"><h2 id="groups-heading">Groups</h2><div class="feed" data-feed="groups" id="groups-feed">Loading groups…</div></section>
+</div></section>
+<div class="actions"><a class="btn" href="admin.html?view=community">Open Community Feed</a><a class="btn alt" href="../index.html">Return to ministry homepage</a></div>
+<footer><p>Keep fellowship gracious and respectful. Posts and prayer requests may be moderated to protect members and the community.</p></footer>
+</main>
+<script>
+(function(){
+"use strict";
+var apiBase="https://heavenlykey.alldaywow247.workers.dev";
+var feeds=[
+{id:"discussion-feed",path:"/api/discussions",titleKeys:["title","subject"],bodyKeys:["body","content","message"]},
+{id:"prayer-feed",path:"/api/prayer",titleKeys:["title","subject"],bodyKeys:["body","content","message","request"]},
+{id:"testimony-feed",path:"/api/testimonies",titleKeys:["title","subject"],bodyKeys:["body","content","message","testimony"]},
+{id:"groups-feed",path:"/api/groups",titleKeys:["name","title"],bodyKeys:["description","about","summary"]}
+];
+function valueOf(obj,keys){for(var i=0;i<keys.length;i++){if(typeof obj[keys[i]]==="string"&&obj[keys[i]].trim())return obj[keys[i]].trim()}return ""}
+function showItems(target,items,feed){
+target.replaceChildren();
+if(!items.length){target.textContent="No public items to show yet. Check back soon.";return}
+items.slice(0,4).forEach(function(item){
+var article=document.createElement("article");article.className="feed-item";
+var heading=document.createElement("strong");heading.textContent=valueOf(item,feed.titleKeys)||"Community update";article.appendChild(heading);
+var bodyText=valueOf(item,feed.bodyKeys);if(bodyText){var p=document.createElement("p");p.textContent=bodyText.length>360?bodyText.slice(0,357)+"…":bodyText;article.appendChild(p)}
+target.appendChild(article)
+})
+}
+Promise.all(feeds.map(async function(feed){
+var target=document.getElementById(feed.id);
+try{
+var response=await fetch(apiBase+feed.path,{headers:{Accept:"application/json"}});
+if(!response.ok)throw new Error("service unavailable");
+var data=await response.json();
+var items=Array.isArray(data)?data:(Array.isArray(data.items)?data.items:Array.isArray(data.results)?data.results:[]);
+showItems(target,items,feed);return true
+}catch(error){target.textContent="This feed is temporarily unavailable. Please try again later.";target.classList.add("error");return false}
+})).then(function(results){
+var status=document.getElementById("community-status");
+if(results.every(Boolean)){status.textContent="Community feeds checked. Sign in to participate."}
+else{status.textContent="Some feeds could not connect. You can still use account links or try again later.";status.classList.add("error")}
+});
+})();
+</script>
+</body>
+</html>
