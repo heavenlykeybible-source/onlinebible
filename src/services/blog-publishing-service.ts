@@ -18,7 +18,7 @@ function makeSlug(value: string): string {
 function canonicalUrl(slug: string): string {
   return "https://www.heavenlykey.org/blog/" + encodeURIComponent(slug) + "/";
 }
-function shareText(post: any, url: string, platform: string): string {
+export function formatBlogSocialText(post: any, url: string, platform: string): string {
   const title = String(post.title || "").trim();
   const excerpt = String(post.excerpt || "").trim();
   const signature = "Heavenly Key Evangelistic Movement — Taking Christ to the Nations of the World.";
@@ -54,7 +54,7 @@ async function enqueueSocialShare(env: Env, post: any, actorId: number): Promise
     try {
       const jobs = await createPublishJobs(env, {
         account_ids: ids,
-        text: shareText(post,url,platform),
+        text: formatBlogSocialText(post,url,platform),
         media_ids: [],
         publish_mode: "post_now"
       }, actorId);
