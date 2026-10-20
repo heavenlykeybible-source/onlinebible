@@ -1,28 +1,43 @@
-# Backend Audit Status
+# Backend and Release Audit Status
 
-Updated: 2026-09-28
+Updated: 2026-10-20
+Reviewed branch: feature/simple-bible-sharing-20261020
 
-## Current finalized backend
-- 28 migrations
-- 101 SQLite tables after migration replay
-- SQLite foreign-key check: clean
-- Deployment preflight: passed with placeholders explicitly allowed
-- Finalized package SHA-256: `9e3bcbab043354b8b27de4f591cb404f1277ddd281e9771a6f4d8420e430c1`
+## Source inventory
 
-## Latest security hardening
-Manual ministry task completion now:
-- rejects missing tasks
-- rejects non-pending tasks
-- rejects completion by a different assigned worker
-- uses a conditional UPDATE to prevent a race from completing a task twice
+- Core platform: 40 numbered SQL migrations, 0001–0040.
+- Global Christian Community: 15 numbered SQL migrations, 0001–0015.
+- Media Engine: 5 numbered SQL migrations, 0001–0005.
+- Recovery Control: 4 numbered SQL migrations, 0001–0004.
+- Corrected a duplicate core migration number by moving the idempotent website AI inbox schema to migration 0040. Existing migration contents were not edited.
+- Updated the core deployment preflight and architecture gate to expect the 0040 schema tip.
+- Expanded frontend syntax validation to include JavaScript in heavenly-key-app/public and checks for the Bible sharing controls.
+- Added the Workers AI binding to the community staging configuration and added a preflight check that production and staging both declare their required bindings.
 
-The route now propagates service failure instead of always returning success.
+The migration filenames and sequence were inspected from the source tree. A full SQL migration replay and foreign-key integrity check have **not** been rerun during this review; the previous 101-table result below was from an earlier snapshot and is not asserted for this branch.
 
-## Remaining deployment gates
-- Full dependency-backed TypeScript/Vitest run
-- Real Cloudflare resource IDs and secrets
-- Actual Cloudflare deployment/smoke test
-- Real social/broadcast provider credentials and integration testing
-- Frontend integration after the frontend bundle is supplied
+## Latest security hardening already present in source
 
-The Worker remains a control plane for live/broadcast state; it does not claim to be a video encoder or social transport.
+Manual ministry task completion:
+- rejects missing tasks;
+- rejects non-pending tasks;
+- rejects completion by a different assigned worker;
+- uses a conditional update to prevent completing a task twice in a race.
+
+The route propagates service failure instead of always returning success.
+
+## Validation and release status
+
+**Deployment readiness is not certified.** No merge or deployment was performed.
+
+Still required before a future release:
+- run the dependency-backed TypeScript checks and application test suites locally or in a separate free validation environment;
+- replay all migrations against a disposable local database and run foreign-key/integrity checks;
+- verify target-account Cloudflare resource IDs, required secrets, and separate staging resources;
+- exercise registration, login/logout, account recovery, authorization, privacy, moderation/appeals, Bible sharing/offline downloads, media upload/playback/deletion, and cross-service contracts;
+- verify real social/broadcast provider credentials and permissions before enabling automation;
+- complete staging smoke tests, backups/rollback verification, and explicit owner approval.
+
+GitHub Actions are not a dependency for this source review and are not being retried. They have not supplied passing test evidence for this branch.
+
+The Worker is a control plane for live/broadcast state; it does not claim to be a video encoder or social transport.
