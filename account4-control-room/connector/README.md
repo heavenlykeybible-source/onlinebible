@@ -60,3 +60,10 @@ No endpoint can deploy. Production execution must be added in a separately owner
 - Remove any former `CONNECTOR_TOKENS_SHA256` secret if it was staged for this candidate. The current candidate reads the owner-managed database credential registry instead.
 - The restricted HTTP bearer API is **not a ChatGPT MCP server**. ChatGPT authentication and approved MCP/OpenAPI connector registration remain separate tasks; do not claim ChatGPT is connected based on API availability.
 - Protect the owner hostname and provide an explicitly authenticated agent ingress that does not expose owner-only routes. Any Cloudflare Access machine-to-machine policy must be separately verified.
+
+## Deployment safety clarification (2026-10-20)
+The HTTP connector route is now **disabled by default**. Its dedicated host must match `AGENT_INGRESS_HOST` and `AGENT_INGRESS_ENABLED=true` must be explicitly set by the authorized operator. The hostname must have a separate verified machine-to-machine Cloudflare Access policy and no owner routes exposed there. Never enable it on the owner dashboard hostname.
+
+Hardening changes: malformed JSON gets a 400 response, source-code proposal creation and the audit entry run together as one D1 batch, and additional negative security tests cover protected site scopes. These tests have been added, **not yet run**.
+
+Production release remains blocked on: a confirmed deployment identity, tested Cloudflare Access policy, staging migrations, running `npm run check` and Node regression tests on a checked-out repository, real ChatGPT MCP/OAuth app integration, and owner approval of the immutable revision. No GitHub Actions are required.
