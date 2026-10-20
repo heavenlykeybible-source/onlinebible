@@ -5,9 +5,10 @@ import { fileURLToPath } from "node:url";
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const allowPlaceholders = process.argv.includes("--allow-placeholders");
 const envFlag = process.argv.indexOf("--env");
-const targetEnv = process.env.DEPLOY_ENV || (envFlag >= 0 ? process.argv[envFlag + 1] : "production");
+const targetEnv = envFlag >= 0 ? process.argv[envFlag + 1] : (process.env.DEPLOY_ENV || "production");
 const fail = [];
 const warn = [];
+if (!["production", "staging"].includes(targetEnv)) throw new Error("Preflight target must be production or staging.");
 
 const wrangler = await readFile(join(root, "wrangler.toml"), "utf8");
 const stagingMarker = "[env.staging]";
