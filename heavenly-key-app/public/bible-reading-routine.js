@@ -17,9 +17,16 @@ function initRoutine(root) {
   const read = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
   const write = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; } };
   const booksPromise = fetch('kjv-manifest.json').then(r => { if (!r.ok) throw Error(); return r.json(); }).then(data => data.books);
-  let routine = read(KEY, {time:'05:30', days:[1,2,3,4,5,6,0], plan:'whole', customBook:'john', customChapter:1, enabled:false});
+  let routine = read(KEY, {time:'05:30', days:[1,2,3,4,5,6,0], plan:'whole', customBook:'john', customChapter:1, enabled:false, alarmMode:'silent', volume:65});
   let progress = read(PROGRESS, {whole:0, nt:0, devotional:0, custom:0, completed:{}});
+  if (!routine || typeof routine !== 'object') routine = {time:'05:30',days:[1,2,3,4,5,6,0],plan:'whole',customBook:'john',customChapter:1,enabled:false,alarmMode:'silent',volume:65};
   if (!Array.isArray(routine.days)) routine.days = [1,2,3,4,5,6,0];
+  if (!['whole','nt','devotional','custom'].includes(routine.plan)) routine.plan='whole';
+  if (!['silent','ring'].includes(routine.alarmMode)) routine.alarmMode='silent';
+  routine.volume=Math.max(0,Math.min(100,Number(routine.volume ?? 65)));
+  if (!progress || typeof progress !== 'object') progress={whole:0,nt:0,devotional:0,custom:0,completed:{}};
+  if (!progress.completed || typeof progress.completed !== 'object') progress.completed={};
+  for (const key of ['whole','nt','devotional','custom']) if (!Number.isFinite(progress[key]) || progress[key]<0) progress[key]=0;
   const card = make('section', null, 'brr-card');
   card.setAttribute('aria-labelledby','brr-title');
   card.append(make('p','GROW IN THE WORD','brr-eyebrow'),make('h2','My Bible Reading Routine','brr-title'),
@@ -28,6 +35,19 @@ function initRoutine(root) {
   const field = (labelText, control) => { const wrap=make('div',null,'brr-field'); const label=make('label',labelText); label.htmlFor=control.id; wrap.append(label,control); return wrap; };
   const time = make('input'); time.type='time'; time.id='brr-time'; time.value=routine.time || '05:30'; time.required=true;
   form.append(field('Daily reminder time (your device time)',time));
+  const alarmMode=make('select');alarmMode.id='brr-alarm-mode';
+  [['silent','Silent — no alarm sound'],['ring','Ringing alarm — play sound']].forEach(([value,label])=>{const option=make('option',label);option.value=value;alarmMode.append(option);});
+  alarmMode.value=routine.alarmMode;
+  form.append(field('Alarm sound',alarmMode));
+  const volume=make('input');volume.type='range';volume.id='brr-volume';volume.min='0';volume.max='100';volume.step='5';volume.value=String(routine.volume);
+  const volumeValue=make('output',volume.value+'%','brr-volume-value');volumeValue.htmlFor='brr-volume';
+  const volumeField=field('Alarm volume',volume);volumeField.append(volumeValue);form.append(volumeField);
+  const soundActions=make('div',null,'brr-sound-actions');
+  const testSound=make('button','Test alarm sound','brr-secondary');testSound.type='button';
+  const stopSound=make('button','Stop alarm','brr-secondary');stopSound.type='button';stopSound.disabled=true;
+  soundActions.append(testSound,stopSound);form.append(soundActions);
+  alarmMode.addEventListener('change',()=>{routine.alarmMode=alarmMode.value;});
+  volume.addEventListener('input',()=>{volumeValue.textContent=volume.value+'%';routine.volume=Number(volume.value);if(alarmGain)alarmGain.gain.value=Number(volume.value)/100;});
   const dayWrap=make('fieldset',null,'brr-days'); dayWrap.append(make('legend','Reading days'));
   const dayInputs=[];
   DAYS.forEach((day,i)=>{ const label=make('label',null,'brr-day'); const input=make('input'); input.type='checkbox'; input.value=String(i); input.checked=routine.days.includes(i); input.id='brr-day-'+i; label.append(input,document.createTextNode(day)); dayWrap.append(label); dayInputs.push(input); });
@@ -55,6 +75,29 @@ function initRoutine(root) {
   summary.append(next,open,done);
   card.append(form,status,summary,make('p','Reminder limits: notifications require browser permission and this page to be open or running in the background. If the browser is fully closed, a website-only reminder may not fire at the chosen time. Open this page again to check for a missed reminder.','brr-note'));
   root.replaceChildren(card);
+
+  let audioContext=null, alarmGain=null, alarmTimer=null, alarmStopTimer=null;
+  function prepareAudio() {
+    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+    if(!AudioContextClass)return false;
+    try {
+      if(!audioContext){audioContext=new AudioContextClass();alarmGain=audioContext.createGain();alarmGain.gain.value=Number(volume.value)/100;alarmGain.connect(audioContext.destination);}
+      if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
+      return true;
+    } catch {return false;}
+  }
+  function beep() {
+    if(!audioContext||!alarmGain||audioContext.state!=='running'||Number(volume.value)<=0)return;
+    try {const oscillator=audioContext.createOscillator();const envelope=audioContext.createGain();oscillator.type='sine';oscillator.frequency.value=880;envelope.gain.setValueAtTime(0.0001,audioContext.currentTime);envelope.gain.exponentialRampToValueAtTime(0.22,audioContext.currentTime+0.025);envelope.gain.exponentialRampToValueAtTime(0.0001,audioContext.currentTime+0.28);oscillator.connect(envelope);envelope.connect(alarmGain);oscillator.start();oscillator.stop(audioContext.currentTime+0.3);}catch{}
+  }
+  function stopAlarm() {if(alarmTimer)clearInterval(alarmTimer);if(alarmStopTimer)clearTimeout(alarmStopTimer);alarmTimer=null;alarmStopTimer=null;stopSound.disabled=true;}
+  function startAlarm() {
+    if(!prepareAudio()){status.textContent='This browser does not support a sound alarm. Use browser notifications or silent reminders instead.';return false;}
+    stopAlarm();if(Number(volume.value)<=0){status.textContent='Alarm volume is 0%. Increase the volume to hear the alarm.';return false;}
+    beep();alarmTimer=setInterval(beep,850);alarmStopTimer=setTimeout(stopAlarm,30000);stopSound.disabled=false;return true;
+  }
+  testSound.addEventListener('click',()=>{if(startAlarm())status.textContent='Testing the ringing alarm. Press Stop alarm to silence it, or wait up to 30 seconds.';});
+  stopSound.addEventListener('click',()=>{stopAlarm();status.textContent='Alarm sound stopped.';});
 
   function dayKey(date=new Date()){return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');}
   function getPassage(books) {
@@ -88,12 +131,13 @@ function initRoutine(root) {
     event?.preventDefault();
     const selected=dayInputs.filter(x=>x.checked).map(x=>Number(x.value));
     if(!selected.length){status.textContent='Choose at least one reading day.';return;}
-    routine.time=time.value||'05:30';routine.days=selected;routine.plan=plan.value;
+    routine.time=time.value||'05:30';routine.days=selected;routine.plan=plan.value;routine.alarmMode=alarmMode.value;routine.volume=Number(volume.value);
     routine.customBook=book.value||'john';routine.customChapter=Math.max(1,Number(chapter.value)||1);
     routine.enabled=true;
     if(!write(KEY,routine)){status.textContent='Could not save on this device. Check browser storage settings.';return;}
     booksPromise.then(update).catch(()=>{status.textContent='Could not load the Bible book list. Reload and try again.';});
-    status.textContent='Routine saved on this device.';
+    status.textContent='Routine saved on this device. Alarm mode: '+(routine.alarmMode==='ring'?'ringing':'silent')+'. Volume: '+routine.volume+'%.';
+    prepareAudio();
     checkReminder(true);
   }
   form.addEventListener('submit',saveRoutine);
@@ -102,7 +146,7 @@ function initRoutine(root) {
     try { const result=await Notification.requestPermission();status.textContent=result==='granted'?'Browser notifications enabled where supported.':'Notifications were not enabled; you can still use the routine on this page.';checkReminder(true); }
     catch {status.textContent='Could not request notification permission in this browser.';}
   });
-  disable.addEventListener('click',()=>{routine.enabled=false;write(KEY,routine);booksPromise.then(update);status.textContent='Your reading routine is paused.';});
+  disable.addEventListener('click',()=>{routine.enabled=false;write(KEY,routine);stopAlarm();booksPromise.then(update);status.textContent='Your reading routine is paused.';});
   done.addEventListener('click',async()=>{
     const books=await booksPromise;const passage=getPassage(books);if(!routine.enabled||progress.completed[dayKey()]||passage.finished)return;
     progress.completed[dayKey()]=true;progress[routine.plan]=(progress[routine.plan]||0)+(routine.plan==='custom'?0:1);
@@ -121,7 +165,8 @@ function initRoutine(root) {
     lastNotified=key;write('hk-bible-reminder-last-v1',key);
     const message='It is time for your Bible reading. Open Heavenly Key Bible and read today’s passage.';
     if('Notification' in window&&Notification.permission==='granted') { try { new Notification('My Bible Reading Routine',{body:message,tag:'hk-bible-reading-'+today}); } catch {} }
-    status.textContent=message;
+    if(routine.alarmMode==='ring')startAlarm();
+    status.textContent=message+(routine.alarmMode==='ring'?' Ringing alarm is on; press Stop alarm to silence it.':' Reminder is silent.');
   }
   booksPromise.then(books=>{ 
     for(const b of books){const o=make('option',b.name);o.value=b.id;book.append(o);}
