@@ -42,3 +42,14 @@ No endpoint can deploy. Production execution must be added in a separately owner
 - Added focused routing security regression tests under `test/connections.mjs` (not yet executed against a full installed repository environment).
 - **Release blocker:** production operations remain planning-only. Live website edits, real provider API calls, image previews, owner connection registration, per-token authorization and production execution are not yet implemented.
 - **Account 4 core-lock policy:** merge and deployment require an intentional protected maintenance review with staging verification. No automated PR merging or GitHub Actions needed.
+
+## Additional implementation: agent CMS draft inbox
+- `src/agent-drafts.ts` provides validated agent CMS document intake and owner-only draft review.
+- `/api/connector/v1/cms-drafts` accepts a structurally validated CMS draft with a bearer token **only after secure edge access and secret provisioning**.
+- `/api/agent-drafts` and `/api/agent-drafts/:id` are owner-authenticated review endpoints; accepting saves a **private draft only** with a version check.
+- The dashboard renders an escaped, sandboxed text-content preview. This does **not** reproduce the exact site's visual design yet.
+- Migration `0007_agent_drafts.sql` provisions the queue.
+- No API token, cross-account execution credential or arbitrary destination URL is supplied by the AI.
+- The agent bearer route is not ChatGPT integration by itself. A separately configured ChatGPT-compatible OAuth/MCP app, secure credential registration, per-agent scopes, rate limits, staging tests and owner release approval are required.
+- The entire Control Room hostname must stay behind Cloudflare Access; routing code alone is not sufficient access control.
+- **No live deployment has occurred**. This PR is not production-ready until these gates pass.
