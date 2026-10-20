@@ -29,7 +29,7 @@ try{
   ])if(!pattern.test(source))failures.push({file:studyLibrary,error:'Missing Bible sharing requirement: '+label});
   const shareBlock=source.slice(source.indexOf('function passageUrl'),source.indexOf('async function copyFullBible'));
   if(!shareBlock.includes("searchParams.set('book',currentBook.id)")||!shareBlock.includes("searchParams.set('chapter',String(currentChapter))"))failures.push({file:studyLibrary,error:'Shared Bible links must preserve the selected book and chapter.'});
-  if(shareBlock.includes('url.href')||shareBlock.includes('page.href'))failures.push({file:studyLibrary,error:'Share URLs are strings; stale .href access would break native-share fallback or social links.'});
+  if(/\b(?:page|shareUrl)\.href\b/.test(shareBlock))failures.push({file:studyLibrary,error:'Share URLs are strings; stale .href access would break native-share fallback or social links.'});
   if(!source.includes("const verseAnchorPrefix='#verse-'+selectedBook.id+'-'+selectedChapter+'-'")||!source.includes("target.scrollIntoView({block:'start',behavior:'auto'})"))failures.push({file:studyLibrary,error:'Shared verse links must retain their matching anchor and scroll to the verse after loading.'});
 }catch(e){failures.push({file:studyLibrary,error:'Unable to inspect Bible sharing controls: '+e.message});}
 
