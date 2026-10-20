@@ -190,13 +190,13 @@ async function bible(){
   const page=new URL(location.href);page.hash='';
   const payload=text+'\n\nShare to bless others\nTogether we take Christ to the nations of the world.';
   const items=[
-   ['WhatsApp','https://wa.me/?text='+encodeURIComponent(payload+'\n'+page.href),'wa'],
-   ['Facebook','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(page.href),'fb'],
-   ['Telegram','https://t.me/share/url?url='+encodeURIComponent(page.href)+'&text='+encodeURIComponent(payload),'tg'],
-   ['X','https://twitter.com/intent/tweet?text='+encodeURIComponent(payload)+'&url='+encodeURIComponent(page.href),'x']
+   ['◉','https://wa.me/?text='+encodeURIComponent(payload+'\n'+page.href),'wa','WhatsApp'],
+   ['f','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(page.href),'fb','Facebook'],
+   ['➤','https://t.me/share/url?url='+encodeURIComponent(page.href)+'&text='+encodeURIComponent(payload),'tg','Telegram'],
+   ['𝕏','https://twitter.com/intent/tweet?text='+encodeURIComponent(payload)+'&url='+encodeURIComponent(page.href),'x','X']
   ];
-  for(const [label,href,kind] of items){
-   const a=make('a',label,'kjv-social-icon kjv-social-'+kind);a.href=href;a.target='_blank';a.rel='noopener noreferrer';a.setAttribute('aria-label','Share '+title+' on '+label);row.append(a);
+  for(const [glyph,href,kind,label] of items){
+   const a=make('a',glyph,'kjv-social-icon kjv-social-'+kind);a.href=href;a.target='_blank';a.rel='noopener noreferrer';a.setAttribute('aria-label','Share '+title+' on '+label);a.title=label;row.append(a);
   }
   return row;
  }
