@@ -62,4 +62,16 @@ describe("frontend contract", () => {
     expect(community).not.toContain("Global Revival &amp; Destiny Prayer Cry");
     expect(community).toContain('href="admin.html?view=community"');
   });
+  it("applies request-aware CORS to community and group API responses", async () => {
+    const root = process.cwd();
+    const worker = await readFile(join(root, "src/index.ts"), "utf8");
+    expect(worker).toContain("const withRequestCors = async (responsePromise: Promise<Response>, incomingRequest: Request)");
+    expect(worker).toContain('headers.set("Access-Control-Allow-Origin", corsOrigin)');
+    expect(worker).toContain('headers.delete("Access-Control-Allow-Origin")');
+    expect(worker).toContain("return withRequestCors(handleCreateDiscussion(request, env), request)");
+    expect(worker).toContain("return withRequestCors(handleListGroups(request, env), request)");
+    expect(worker).toContain("return withRequestCors(handleCreateGroupPost(request, env, Number(m[1])), request)");
+    expect(worker).toContain("return withRequestCors(handleCountReactions(request, env), request)");
+  });
+
 });
