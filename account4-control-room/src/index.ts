@@ -1,9 +1,11 @@
 import {SITES,planDeployment} from './deployment-engine.ts';
 import {handleConnectionDirectory} from './connection-directory.ts';
+import {handleAgentConnector} from '../connector/agent-connector.ts';
+import {ownerDraftQueue} from './agent-drafts.ts';
 import {AI_MODEL,PUBLIC_CMS_ORIGIN,validateDocument} from './cms-schema.ts';
 import {saveDraft,publishDraft,restoreDraft} from './cms-storage.ts';
 import {ownerSession,ownerLogin,ownerLogout,setOwnerPassword,generatedPassword} from './owner-auth.ts';
-interface Env {DB:D1Database;MEDIA:R2Bucket;AI:Ai;ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUD:string}
+interface Env {DB:D1Database;MEDIA:R2Bucket;AI:Ai;ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUD:string;CONNECTOR_TOKENS_SHA256?:string}
 const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
 const fail=(message:string,status=400)=>json({error:message},status);
 function b64url(s:string){const p=s.replace(/-/g,"+").replace(/_/g,"/");return Uint8Array.from(atob(p+"=".repeat((4-p.length%4)%4)),c=>c.charCodeAt(0))}
@@ -34,6 +36,10 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
   if(request.headers.get('Origin')!==u.origin)return fail('Invalid sign-in origin.',403);
   try{const data=await body(request,4096);if(data.username!==undefined&&data.username!=='owner')return fail('Sign-in failed. Check your username and password.',401);const result=await ownerLogin(request,env.DB,data.password);return result.ok?new Response(JSON.stringify({ok:true}),{headers:{'content-type':'application/json','cache-control':'no-store','set-cookie':result.cookie!}}):fail(result.error!,result.status)}catch{return fail('Sign-in is temporarily unavailable.',503)}
  }
+ // Restricted agent API authenticates with an independently provisioned scoped secret.
+ // The Control Room hostname must also be protected at the Cloudflare Access edge.
+ if(!ownerHost&&u.pathname.startsWith('/api/connector/v1/'))
+  return handleAgentConnector(request,{DB:env.DB,CONNECTOR_TOKENS_SHA256:env.CONNECTOR_TOKENS_SHA256||''});
  const accessActor=ownerHost?null:await authenticate(request,env);
  const actor=accessActor||(ownerHost?await ownerSession(request,env.DB):null);
  if(!u.pathname.startsWith('/api/')){
@@ -52,6 +58,7 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
    return json({cms,publishing,ai:env.AI?'connected':'unavailable',media:env.MEDIA?'connected':'unavailable',publicService:PUBLIC_CMS_ORIGIN,note:'Publish makes an approved snapshot available to the connected website renderer. AI inference is tested by sending a prompt.'});
   }
   if(u.pathname.startsWith('/api/connections/'))return handleConnectionDirectory(request,env);
+  if(u.pathname.startsWith('/api/agent-drafts'))return ownerDraftQueue(request,env,actor);
   if(u.pathname==='/api/deploy/sites'&&request.method==='GET')return json({sites:SITES,executionEnabled:false,contentPublishingEnabled:true});
   if(u.pathname==='/api/deploy/plan'&&request.method==='POST')return json({plan:planDeployment(await body(request,4096))});
   if(u.pathname==='/api/entry'&&request.method==='GET'){
