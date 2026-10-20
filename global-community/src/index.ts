@@ -8,7 +8,6 @@ import * as Stewardship from "./stewardship";
 import * as Social from "./social-auth";
 import * as Adverts from "./adverts";
 import * as Editorial from "./ministry-editorial";
-import {communityAiDraft,validateAiDraftRequest} from "./heavenly-key-ai";
 
 const security=(headers=new Headers())=>{
   headers.set("X-Content-Type-Options","nosniff");headers.set("X-Frame-Options","DENY");headers.set("Referrer-Policy","strict-origin-when-cross-origin");
@@ -36,6 +35,7 @@ async function me(request:Request,env:Env){const u=await getSession(request,env)
 
 async function route(request:Request,env:Env):Promise<Response>{
   const url=new URL(request.url),p=url.pathname,m=request.method;
+  if(p==="/api/community-ai"||p.startsWith("/api/ai/"))return error("AI features are currently unavailable.",410);
   if(m==="OPTIONS")return new Response(null,{status:204,headers:security(new Headers({"Allow":"GET,POST,PATCH,DELETE,OPTIONS"}))});
   if(!p.startsWith("/api/"))return error("Not found.",404);
   if(!["GET","HEAD","OPTIONS"].includes(m)){if(request.headers.get("Sec-Fetch-Site")==="cross-site")return error("Cross-site action denied.",403);const origin=request.headers.get("Origin");if(origin&&origin!==url.origin)return error("Use global.heavenlykey.org to perform this action.",403);}
@@ -99,13 +99,6 @@ async function route(request:Request,env:Env):Promise<Response>{
   if(p==="/api/me/requests"&&m==="POST"){const u=await me(request,env);if(!await rate(env,"requests:"+u.userId,10,3600))return error("Please wait before submitting another request.",429);return json(await Safety.submitRequest(env,u.userId,await body(request)),201);}
   if(p==="/api/moderation/requests"&&m==="GET"){const u=await requireRole(request,env,"administrator");if(!u)return error("Administrator access required.",403);return json({items:await Safety.requestQueue(env)});}
   {const x=p.match(/^\/api\/moderation\/requests\/(\d+)$/);if(x&&m==="POST"){const u=await requireRole(request,env,"administrator");if(!u)return error("Administrator access required.",403);return json(await Safety.reviewRequest(env,u,Number(x[1]),await body(request)));}}
-  if(p==="/api/community-ai"&&m==="POST"){
-    const u=await me(request,env);
-    if(!await rate(env,"hkem-ai:"+u.userId,12,3600))return error("AI writing limit reached. Please try again later.",429);
-    const input=await body(request);
-    validateAiDraftRequest(input);
-    return json(await communityAiDraft(env,input));
-  }
   if(p==="/api/ministry/profiles"&&m==="GET")return json({organization:"Heavenly Key Evangelistic Movement",items:Editorial.ministryProfiles});
   if(p==="/api/ministry/admin/activation-preview"&&m==="GET"){const admin=await requireRole(request,env,"administrator");if(!admin)return error("Administrator access required.",403);return json(await Editorial.draftActivationPreview(env));}
   if(p==="/api/ministry/admin/activate-all"&&m==="POST"){const admin=await requireRole(request,env,"administrator");if(!admin)return error("Administrator access required.",403);const input=await body(request);return json(await Editorial.activateAllDrafts(env,admin.userId,Number(input.expectedCount)));}

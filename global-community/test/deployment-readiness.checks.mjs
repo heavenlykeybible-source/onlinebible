@@ -24,12 +24,6 @@ test('API responses preserve authentication errors and valid results',async()=>{
  const result=await client({ok:true,status:200,json:async()=>({items:[]})})('/api/feed');
  assert.equal(result.items.length,0);
 });
-test('both AI interfaces use the authenticated community endpoint',()=>{
- for(const source of [app,readFileSync(new URL('../public/heavenly-key-assistant.js',import.meta.url),'utf8')]){
-  assert.ok(source.includes('/api/community-ai'));
-  assert.ok(!source.includes('/v1/assistant'));
- }
-});
 
 test('chat enhancement notifies only new incoming messages and never replaces the messenger',()=>{
  const messages=[],notices=[];let changed;
@@ -52,4 +46,24 @@ test('chat enhancement notifies only new incoming messages and never replaces th
  messages.push(bubble(12));changed();assert.equal(notices.length,1);
  messages.splice(0,messages.length,bubble(10));changed();
  messages.push(bubble(11,false),bubble(12));changed();assert.equal(notices.length,1);
+});
+
+test('a malformed timestamp does not prevent messages from rendering',()=>{
+ const dateCode=app.slice(app.indexOf('const dateTime='),app.indexOf('const status='));
+ const renderCode=app.slice(app.indexOf('function renderThread('),app.indexOf('async function mountSalvation('));
+ class Node{
+  constructor(tag,text){this.tag=tag;this.textContent=text||'';this.dataset={};this.children=[];this.scrollHeight=100;this.scrollTop=0;this.clientHeight=100;}
+  append(...nodes){this.children.push(...nodes);}
+  replaceChildren(){this.children=[];}
+  setAttribute(){}
+  addEventListener(){}
+ }
+ const history=new Node('div'),latest={hidden:true};
+ const render=vm.runInNewContext(dateCode+renderCode+'\nrenderThread;',{
+  activeConversation:7,threadHost:{querySelector:selector=>selector==='.chat-history'?history:latest},
+  chatQuery:'',chatBodies:new Map([[7,[{message_id:1,sender_user_id:1,body:'Retained message',created_at:'invalid'}]]]),
+  session:{user:{userId:1}},el:(tag,text)=>new Node(tag,text),reportPost(){}
+ });
+ render(7);
+ assert.ok(history.children.some(node=>node.children.some(child=>child.textContent==='Retained message')));
 });

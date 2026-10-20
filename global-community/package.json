@@ -15,7 +15,7 @@
     "test:feed": "node --test test/frontend-feed.checks.mjs",
     "test:stewardship": "node --test test/stewardship.checks.mjs",
     "test:social-adverts": "node --test test/social-adverts.checks.mjs",
-    "test:deployment": "node --test test/deployment-readiness.checks.mjs && node tests/live-chat-contract.test.mjs"
+    "test:deployment": "node --test test/deployment-readiness.checks.mjs test/ai-privacy.checks.mjs && node tests/live-chat-contract.test.mjs && node tests/heavenly-key-assistant-contract.test.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20261015.1",
