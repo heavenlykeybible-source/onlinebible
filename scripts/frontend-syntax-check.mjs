@@ -123,7 +123,7 @@ try{
     ['browser notification permission requested by user',/Notification\.requestPermission\(\)/],
     ['user-selectable silent or ringing alarm',/\['silent','Silent — no alarm sound'\].*\['ring','Ringing alarm — play sound'\]/s],
     ['adjustable alarm volume control',/type='range'.*id='brr-volume'/s],
-    ['ringing alarm sound generation',/function startAlarm\(\)[\s\S]*?function stopAlarm\(\)/],
+    ['ringing alarm sound generation',/function stopAlarm\(\)[\s\S]*?function startAlarm\(\)/],
     ['stop alarm control',/Stop alarm/],
     ['honest closed-browser reminder limitation',/browser is fully closed/],
     ['reading completion action',/Mark today’s reading complete/],
