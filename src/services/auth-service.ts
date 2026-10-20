@@ -194,17 +194,23 @@ export async function requestPasswordReset(env: Env, email: string): Promise<{ s
 
   const siteBase = (env.PUBLIC_SITE_URL || "https://www.heavenlykey.org").replace(/\/+$/, "");
   const resetUrl = siteBase + "/pages/reset-password.html?token=" + encodeURIComponent(token);
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from: env.AUTH_EMAIL_FROM,
-      to: [row.email],
-      subject: "Reset your Heavenly Key account password",
-      text: "Hello " + row.name + ",\n\nUse this one-time link within 30 minutes to reset your Heavenly Key account password:\n" + resetUrl + "\n\nIf you did not request this, you can ignore this email.\n\nHeavenly Key Evangelistic Movement",
-    }),
-  });
-  if (!response.ok) {
+  let response: Response | null = null;
+  try {
+    response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: env.AUTH_EMAIL_FROM,
+        to: [row.email],
+        subject: "Reset your Heavenly Key account password",
+        text: "Hello " + row.name + ",\n\nUse this one-time link within 30 minutes to reset your Heavenly Key account password:\n" + resetUrl + "\n\nIf you did not request this, you can ignore this email.\n\nHeavenly Key Evangelistic Movement",
+      }),
+    });
+  } catch {
+    // Network errors must invalidate the token just like provider HTTP errors.
+    response = null;
+  }
+  if (!response?.ok) {
     // Do not leave a valid token behind when email delivery fails.
     await env.DB.prepare("UPDATE auth SET reset_token=NULL, reset_token_expires_at=NULL WHERE user_id=? AND reset_token=?")
       .bind(row.user_id, tokenHash).run();
