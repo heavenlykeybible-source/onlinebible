@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process';
 
 const root='heavenly-key-website/js';
 const files=(await readdir(root,{recursive:true})).filter(name=>name.endsWith('.js')).map(name=>join(root,name)).sort();
+files.push(join('heavenly-key-website','blog','blog.js'));
 const failures=[];
 for(const file of files){
   const r=spawnSync(process.execPath,['--check',file],{encoding:'utf8'});
