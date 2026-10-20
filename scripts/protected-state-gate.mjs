@@ -70,6 +70,7 @@ const baseline={
   "migrations/0037_site_page_content.sql": "d223dbf2fc0ead94e020ef21e30175a503b0d47b",
   "migrations/0038_system_release_history.sql": "46fc4604aa935c854d6019bb98ee9a7492ce3515",
   "migrations/0039_visual_cms.sql": "faa20292887b23d0f333b7a191a9ad25c3ddb13a",
+  "migrations/0040_website_ai_inbox.sql": "6d243b47bedf06590e33ffedcf11558e9db54ad1",
   "recovery-control/migrations/0001_recovery_control.sql": "c74a8970e3eee3d5598d5877ed705363087b31a4",
   "recovery-control/migrations/0002_direct_upload.sql": "e18b94a5d32c4a74278d6651a7aab3c523a71eac",
   "recovery-control/migrations/0003_security_quota.sql": "ed74e3e45a78b7591ff607b6100671cbab75633a",
