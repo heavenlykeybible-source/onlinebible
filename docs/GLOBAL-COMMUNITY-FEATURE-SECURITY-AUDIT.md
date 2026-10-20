@@ -119,3 +119,12 @@ This is a source-level journey check only. It does not prove a real cookie survi
 ### Configured Worker-origin correction
 
 The configured production and staging website origins are `https://heavenlykey.alldaywow247.workers.dev` and `https://heavenlykey-staging.alldaywow247.workers.dev`. Both are now explicitly included in the exact-origin allowlists in `src/index.ts` and `src/routes/auth.ts`. The API contract checker asserts these entries. This fixes a source-level mismatch that could otherwise reject POST requests originating from the configured Worker-hosted pages. Runtime confirmation is still pending.
+
+
+## Latest sequential source-check results — 2026-10-20
+
+After the Worker-origin correction, a fresh repository-source inspection passed 11 targeted assertions covering: production and staging origins in both request guard and auth CORS policy; password-reset route registration; reset-token schema columns; reset-token invalidation on email failure; community profile/logout hooks; all four community feed endpoints; frontend test coverage for account/community pages; and API contract assertions for both configured Worker origins.
+
+One known item remains: community/group route response helpers do not yet receive each incoming request's origin, so their responses are not consistently CORS-enabled for a separate custom-domain frontend. Same-origin Worker-hosted pages do not require CORS for those requests, but a future split-origin deployment needs this fixed before browser testing.
+
+These are source-inspection assertions, not an executed Vitest, TypeScript, or browser test run. No deployment was performed.
