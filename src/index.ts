@@ -84,25 +84,40 @@ export default {
     const method = request.method;
     const idMatch = (pattern: RegExp) => pathname.match(pattern);
 
+    // Exact-origin allowlist for browser clients. Never reflect arbitrary Origin
+    // values: session cookies and credentialed requests require an explicit trust boundary.
+    const trustedOrigins = new Set([
+      "https://heavenlykey.org",
+      "https://www.heavenlykey.org",
+      "https://global.heavenlykey.org",
+      "https://bible.heavenlykey.org",
+      "https://app.heavenlykey.org",
+    ]);
+    const requestOrigin = request.headers.get("Origin");
+    const corsOrigin = requestOrigin && trustedOrigins.has(requestOrigin) ? requestOrigin : null;
+
     if (method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: {
-          "Access-Control-Allow-Origin": "https://www.heavenlykey.org",
-          "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
-          "Access-Control-Max-Age": "86400",
-          "Vary": "Origin",
-        },
+      const headers = new Headers({
+        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Max-Age": "86400",
+        "Vary": "Origin",
       });
+      if (corsOrigin) {
+        headers.set("Access-Control-Allow-Origin", corsOrigin);
+        headers.set("Access-Control-Allow-Credentials", "true");
+      }
+      return new Response(null, { status: 204, headers });
     }
 
     if(pathname.startsWith('/api/')&&request.headers.get('Content-Type')?.includes('application/json')&&!['GET','HEAD','OPTIONS'].includes(method)){
       try{const body=await request.clone().json();if(!body||Array.isArray(body)||typeof body!=='object')throw new Error();}
       catch{return Response.json({error:{message:'Send a valid JSON object.'}},{status:400});}
     }
-    if(pathname.startsWith('/api/')&&!['GET','HEAD','OPTIONS'].includes(method)){
-      const origin=request.headers.get('Origin');if(origin&&origin!==url.origin)return Response.json({error:{message:'Use the website to perform this action.'}},{status:403});
+    if (pathname.startsWith("/api/") && !["GET", "HEAD", "OPTIONS"].includes(method)) {
+      if (requestOrigin && !corsOrigin) {
+        return Response.json({ error: { message: "Use an approved Heavenly Key website to perform this action." } }, { status: 403 });
+      }
     }
     if (pathname === "/api/broadcast/community-player" && method === "GET") return handleCommunityPlayer(request);
     if (pathname === "/api/homepage-updates" && method === "GET") return handleHomepageUpdates(request, env);
