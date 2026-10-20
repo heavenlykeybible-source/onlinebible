@@ -35,5 +35,9 @@ export async function handleAdminBlogPosts(request:Request,env:Env,postId?:numbe
       return json({result:await Blog.publishBlogPost(env,postId,actor.userId)});
     }
     return error("Method not allowed.",405);
-  } catch(e) { return error(e instanceof Error?e.message:"Blog publishing failed."); }
+  } catch(e) {
+    const message=e instanceof Error?e.message:"Blog publishing failed.";
+    const clientError=/Enter |Choose |not found|valid|future|at least|title|content/i.test(message);
+    return error(message,clientError?400:500);
+  }
 }
