@@ -27,6 +27,9 @@ try{
     ['full Bible export action',/Copy full Bible/],
     ['verse-specific sharing anchor',/id='verse-'/]
   ])if(!pattern.test(source))failures.push({file:studyLibrary,error:'Missing Bible sharing requirement: '+label});
+  const shareBlock=source.slice(source.indexOf('function passageUrl'),source.indexOf('async function copyFullBible'));
+  if(!shareBlock.includes("searchParams.set('book',currentBook.id)")||!shareBlock.includes("searchParams.set('chapter',String(currentChapter))"))failures.push({file:studyLibrary,error:'Shared Bible links must preserve the selected book and chapter.'});
+  if(/(?:url|page)\\.href/.test(shareBlock))failures.push({file:studyLibrary,error:'Share URLs are strings; stale .href access would break native-share fallback or social links.'});
 }catch(e){failures.push({file:studyLibrary,error:'Unable to inspect Bible sharing controls: '+e.message});}
 
 const studioPath=join(root,'production-studio.js');
