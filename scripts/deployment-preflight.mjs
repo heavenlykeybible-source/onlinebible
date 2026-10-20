@@ -11,7 +11,7 @@ const warn = [];
 const wrangler = await readFile(join(root, "wrangler.toml"), "utf8");
 const stagingMarker = "[env.staging]";
 const stagingOffset = wrangler.indexOf(stagingMarker);
-const stagingEnd = stagingOffset >= 0 ? wrangler.indexOf("\n[triggers]", stagingOffset) : -1;
+const stagingEnd = stagingOffset >= 0 ? wrangler.indexOf("\n[[r2_buckets]]", stagingOffset) : -1;
 const productionBucketStart = stagingOffset >= 0 ? wrangler.indexOf("\n[[r2_buckets]]", stagingOffset) : -1;
 const productionBucketEnd = productionBucketStart >= 0 ? wrangler.indexOf("\n[triggers]", productionBucketStart) : -1;
 const productionConfig = stagingOffset >= 0
