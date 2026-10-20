@@ -28,6 +28,24 @@ if (mediaMigrations.length !== 5 || !mediaMigrations.at(-1)?.startsWith("0005_")
   failures.push("Media Engine migration tip must be 0005 with exactly 5 numbered migrations.");
 }
 
+async function checkMigrationSequence(directory, expectedCount, expectedTip, label) {
+  const files = (await readdir(join(root, directory)))
+    .filter((f) => /^\\d{4}_.+\\.sql$/.test(f))
+    .sort();
+  const nums = files.map((f) => Number(f.slice(0, 4)));
+  if (nums.length !== expectedCount || nums.at(-1) !== expectedTip) {
+    failures.push(`${label} migration tip must be ${String(expectedTip).padStart(4, "0")} with exactly ${expectedCount} numbered migrations.`);
+  }
+  for (let i = 0; i < nums.length; i++) {
+    if (nums[i] !== i + 1) {
+      failures.push(`${label} migration sequence has a gap or duplicate at ${String(i + 1).padStart(4, "0")}.`);
+      break;
+    }
+  }
+}
+await checkMigrationSequence("global-community/migrations", 15, 15, "Global Community");
+await checkMigrationSequence("recovery-control/migrations", 4, 4, "Recovery Control");
+
 const prod = await readFile(join(root, ".github/workflows/cloudflare-production.yml"), "utf8");
 const account2 = await readFile(join(root, ".github/workflows/cloudflare-media-engine.yml"), "utf8");
 for (const [name, workflow] of [["Account 1", prod], ["Account 2", account2]]) {
