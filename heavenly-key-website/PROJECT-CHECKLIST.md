@@ -14,6 +14,18 @@
 > **Project B — Frontend Design Freeze**
 > **Version 1.2.2 · Status: Architecture Frozen · Implementation Ready**
 >
+> ## Product decision — unified website and blog
+> **One product only:** Heavenly Key Website & Blog App. The blog is a
+> first-party section of the ministry website, not a separate app or a
+> parallel blog product. Target routes are under the website origin
+> (`/blog/` and article routes), sharing navigation, header/footer,
+> responsive design, accessibility, SEO and the content model.
+> The current Blogger feed is transitional; it is not proof that the
+> legacy teaching-article migration is complete. Do not mark the unified
+> blog feature complete until the article inventory is migrated, routes
+> work, search/categories are verified, and the external-feed dependency
+> is removed or formally accepted as a temporary bridge.
+>
 > ## 🧊 FRONTEND ARCHITECTURE & COMPONENT LIBRARY FROZEN
 > Project B's frontend architecture, design system, component library,
 > and UI specifications are frozen. This is **not** a claim that the
