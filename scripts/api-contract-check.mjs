@@ -78,6 +78,15 @@ if (!index.includes('method === "OPTIONS"')) {
   failures.push("Worker must handle CORS OPTIONS preflight.");
 }
 
+if (
+  !index.includes("const withRequestCors = async (responsePromise: Promise<Response>, incomingRequest: Request)") ||
+  !index.includes("return withRequestCors(handleCreateDiscussion(request, env), request)") ||
+  !index.includes("return withRequestCors(handleListGroups(request, env), request)") ||
+  !index.includes("return withRequestCors(handleCreateGroupPost(request, env, Number(m[1])), request)")
+) {
+  failures.push("Community and group API responses must apply request-aware exact-origin CORS.");
+}
+
 if (failures.length) {
   console.error("API CONTRACT CHECK FAILED");
   for (const failure of failures) console.error("- " + failure);
