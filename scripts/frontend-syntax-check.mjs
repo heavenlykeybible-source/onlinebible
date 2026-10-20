@@ -33,6 +33,36 @@ try{
   if(!source.includes("const verseAnchorPrefix='#verse-'+selectedBook.id+'-'+selectedChapter+'-'")||!source.includes("target.scrollIntoView({block:'start',behavior:'auto'})"))failures.push({file:studyLibrary,error:'Shared verse links must retain their matching anchor and scroll to the verse after loading.'});
 }catch(e){failures.push({file:studyLibrary,error:'Unable to inspect Bible sharing controls: '+e.message});}
 
+const bibleManifestPath=join(appPublic,'kjv-manifest.json');
+try{
+  const manifest=JSON.parse(await readFile(bibleManifestPath,'utf8'));
+  if(manifest.totalBooks!==66||!Array.isArray(manifest.books)||manifest.books.length!==66)failures.push({file:bibleManifestPath,error:'KJV manifest must describe all 66 books.'});
+  const ids=new Set(),paths=new Set();
+  let chapterCount=0,verseCount=0;
+  for(const book of manifest.books||[]){
+    if(!book?.id||!book?.name||!Number.isInteger(book.chapters)||book.chapters<1||typeof book.path!=='string'||!book.path.startsWith('reading/kjv/')||book.path.includes('..')){
+      failures.push({file:bibleManifestPath,error:'Invalid or unsafe KJV book entry: '+JSON.stringify(book)});continue;
+    }
+    if(ids.has(book.id))failures.push({file:bibleManifestPath,error:'Duplicate KJV book ID: '+book.id});
+    if(paths.has(book.path))failures.push({file:bibleManifestPath,error:'Duplicate KJV book path: '+book.path});
+    ids.add(book.id);paths.add(book.path);
+    try{
+      const data=JSON.parse(await readFile(join(appPublic,book.path),'utf8'));
+      if(data.book!==book.name||!Array.isArray(data.chapters)||data.chapters.length!==book.chapters){
+        failures.push({file:join(appPublic,book.path),error:'Book identity or chapter count does not match the manifest.'});continue;
+      }
+      for(const [index,chapter] of data.chapters.entries()){
+        if(!Array.isArray(chapter)||chapter.length===0||chapter.some(verse=>typeof verse!=='string'||!verse.trim())){
+          failures.push({file:join(appPublic,book.path),error:'Invalid verse data in chapter '+(index+1)+'.'});continue;
+        }
+        chapterCount++;verseCount+=chapter.length;
+      }
+    }catch(e){failures.push({file:join(appPublic,book.path),error:'Missing or invalid KJV JSON: '+e.message});}
+  }
+  if(chapterCount!==manifest.totalChapters)failures.push({file:bibleManifestPath,error:'KJV chapter total mismatch: expected '+manifest.totalChapters+', found '+chapterCount+'.'});
+  if(verseCount!==manifest.totalVerses)failures.push({file:bibleManifestPath,error:'KJV verse total mismatch: expected '+manifest.totalVerses+', found '+verseCount+'.'});
+}catch(e){failures.push({file:bibleManifestPath,error:'Unable to validate KJV manifest: '+e.message});}
+
 const studioPath=join(root,'production-studio.js');
 try{
   const studio=await readFile(studioPath,'utf8');
