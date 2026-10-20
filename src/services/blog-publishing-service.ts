@@ -30,7 +30,7 @@ export function formatBlogSocialText(post: any, url: string, platform: string): 
     const shortExcerpt = Array.from(excerpt).slice(0, Math.max(0, room - 1)).join("");
     return [safeTitle, shortExcerpt ? shortExcerpt + "…" : "", link].filter(Boolean).join("\n").slice(0, 280);
   }
-  return [title, excerpt, url, signature].filter(Boolean).join("\n\n").slice(0, platform === "instagram" ? 2200 : 5000);
+  return [title, excerpt, url, signature].filter(Boolean).join("\n\n").slice(0, platform === "instagram" ? 2200 : platform === "linkedin" ? 3000 : 5000);
 }
 async function enqueueSocialShare(env: Env, post: any, actorId: number): Promise<{status:string;error?:string;job_ids?:number[]}> {
   if (!post.share_to_social) return { status: "not_requested" };
