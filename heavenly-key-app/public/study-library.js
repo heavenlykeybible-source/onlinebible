@@ -296,7 +296,7 @@ async function bible(){
    const data=await getBook(selectedBook);
    if(id!==loadSerial)return;
    loaded=data;
-   scriptureLines(verses,data.chapters[selectedChapter-1],selectedBook.id,selectedBook.name,selectedChapter,text=>copyPassage(text,'Verse copied.'),(text,title)=>sharePassage(text,title),copyChapter,shareChapter,socialLinks);
+   scriptureLines(verses,data.chapters[selectedChapter-1],selectedBook.id,selectedBook.name,selectedChapter,text=>copyPassage(text,'Verse copied.'),(text,title,anchor)=>sharePassage(text,title,anchor),copyChapter,shareChapter,socialLinks);
    status.textContent='';
    notice('KJV — '+selectedBook.name+' '+selectedChapter);
   }catch(error){
