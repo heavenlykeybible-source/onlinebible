@@ -7,9 +7,9 @@ import {submitAgentDraft} from '../src/agent-drafts.ts';
  */
 interface ConnectorEnv {
   DB: D1Database;
-  CONNECTOR_TOKENS_SHA256: string; // comma-separated hashes, provisioned as a Worker secret
 }
-const allowedSites = new Set(["account1", "account2", "account3", "account5", "account6"]);
+type AgentIdentity = {id:string;sites:Set<string>};
+const allowedSites = new Set(["account1","account2","account3","account5","account6"]);
 const json = (data: unknown, status = 200) =>
   Response.json(data, { status, headers: {
     "cache-control": "no-store", "x-content-type-options": "nosniff",
@@ -19,24 +19,28 @@ const sha256 = async (data: string) => {
   const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(data)));
   return [...hash].map(x => x.toString(16).padStart(2,"0")).join("");
 };
-const constantTimeEqual = (a: string, b: string) => {
-  if (a.length !== b.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < a.length; i++) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return mismatch === 0;
-};
 const reject = (message: string, status = 400) => json({error:message},status);
-const tokenPattern = /^[A-Za-z0-9_-]{32,256}$/;
-async function identify(request: Request, env: ConnectorEnv) {
-  const header = request.headers.get("authorization") || "";
-  const m = /^Bearer ([A-Za-z0-9_-]{32,256})$/.exec(header);
-  if (!m || !tokenPattern.test(m[1]) || !env.CONNECTOR_TOKENS_SHA256) return null;
-  const hashed = await sha256(m[1]);
-  const records = env.CONNECTOR_TOKENS_SHA256.split(",").map(x => x.trim().toLowerCase()).filter(x => /^[a-f0-9]{64}$/.test(x));
-  let match = false;
-  for (const record of records) match = constantTimeEqual(record, hashed) || match;
-  // Never log the raw bearer token or its hash.
-  return match ? "restricted-agent" : null;
+async function identify(request: Request, env: ConnectorEnv):Promise<AgentIdentity|null> {
+  const m = /^Bearer ([A-Za-z0-9_-]{48,256})$/.exec(request.headers.get("authorization")||"");
+  if (!m) return null;
+  const digest = await sha256(m[1]);
+  const row = await env.DB.prepare(
+    "SELECT agent_id, allowed_sites FROM cms_agent_credentials WHERE token_hash=? AND enabled=1 AND revoked_at IS NULL"
+  ).bind(digest).first<{agent_id:string;allowed_sites:string}>();
+  if (!row) return null;
+  let sites:unknown;
+  try { sites=JSON.parse(row.allowed_sites); }catch{return null}
+  if (!Array.isArray(sites)||sites.length<1||!sites.every(x=>typeof x==="string"&&allowedSites.has(x)))return null;
+  return {id:row.agent_id,sites:new Set(sites)};
+}
+async function consumeQuota(env:ConnectorEnv,agentId:string):Promise<boolean>{
+  const window=Math.floor(Date.now()/60000)*60;
+  const result=await env.DB.prepare(
+    "INSERT INTO cms_agent_request_limits(agent_id,window_start,request_count) VALUES(?,?,1) "+
+    "ON CONFLICT(agent_id,window_start) DO UPDATE SET request_count=request_count+1 "+
+    "WHERE request_count<30 RETURNING request_count"
+  ).bind(agentId,window).first();
+  return !!result;
 }
 type Proposal = {site:string; revision:string; summary:string; changedPaths:string[]};
 function validate(input: unknown): Proposal {
@@ -60,21 +64,29 @@ export async function handleAgentConnector(request:Request,env:ConnectorEnv): Pr
   if (!path.startsWith("/api/connector/v1/")) return reject("Not found",404);
   if (request.method === "OPTIONS") return reject("Not allowed",405);
   if (!["GET","POST"].includes(request.method)) return reject("Method not allowed",405);
-  const identity = await identify(request,env);
+  let identity:AgentIdentity|null;
+  try { identity=await identify(request,env); }
+  catch { return reject("Agent authentication unavailable",503); }
   if (!identity) return reject("Unauthorized",401);
+  try { if(!await consumeQuota(env,identity.id))return reject("Rate limit exceeded",429); }
+  catch { return reject("Agent rate limiting unavailable",503); }
   if (path === "/api/connector/v1/capabilities" && request.method === "GET")
     return json({role:"restricted-agent", deploy:false, approve:false, restore:false,
-      sites:[...allowedSites], actions:["capabilities.read","proposal.submit","proposal.list","cms-draft.submit"]});
+      sites:[...identity.sites], actions:["capabilities.read","proposal.submit","proposal.list","cms-draft.submit"]});
   if (path === "/api/connector/v1/cms-drafts" && request.method === "POST") {
     if (!(request.headers.get("content-type")||"").toLowerCase().startsWith("application/json")) return reject("JSON required",415);
     if (Number(request.headers.get("content-length")||0)>130000)return reject("Too large",413);
     const raw=await request.text();if(raw.length>130000)return reject("Too large",413);
-    try{return await submitAgentDraft(env,JSON.parse(raw),identity);}
+    try{
+      const draft=JSON.parse(raw) as Record<string,unknown>;
+      if(typeof draft.site!=="string"||!identity.sites.has(draft.site))return reject("Site permission denied",403);
+      return await submitAgentDraft(env,draft,identity.id);
+    }
     catch {return reject("Draft handoff is unavailable",503);}
   }
   if (path === "/api/connector/v1/proposals" && request.method === "GET") {
     const site = new URL(request.url).searchParams.get("site");
-    if (site && !allowedSites.has(site)) return reject("Invalid site");
+    if (!site || !identity.sites.has(site)) return reject("Site permission denied",403);
     const rows = await env.DB.prepare(
       "SELECT id,site,revision,summary,status,created_at FROM cms_connector_proposals WHERE (? IS NULL OR site=?) ORDER BY id DESC LIMIT 50"
     ).bind(site,site).all();
@@ -87,11 +99,12 @@ export async function handleAgentConnector(request:Request,env:ConnectorEnv): Pr
     if (raw.length > 12000) return reject("Too large",413);
     let data: Proposal;
     try { data=validate(JSON.parse(raw)); } catch(e) { return reject(e instanceof Error ? e.message : "Invalid JSON"); }
+    if (!identity.sites.has(data.site)) return reject("Site permission denied",403);
     const result = await env.DB.prepare(
       "INSERT INTO cms_connector_proposals(site,revision,summary,changed_paths,submitted_by,status) VALUES(?,?,?,?,?,'pending') RETURNING id"
-    ).bind(data.site,data.revision,data.summary,JSON.stringify(data.changedPaths),identity).first<{id:number}>();
+    ).bind(data.site,data.revision,data.summary,JSON.stringify(data.changedPaths),identity.id).first<{id:number}>();
     await env.DB.prepare("INSERT INTO cms_audit(actor,action,target) VALUES(?,?,?)")
-      .bind(identity,"agent-proposal-submitted",data.site+":"+result?.id).run();
+      .bind(identity.id,"agent-proposal-submitted",data.site+":"+result?.id).run();
     return json({id:result?.id,site:data.site,status:"pending",requiresOwnerApproval:true,executed:false},201);
   }
   return reject("Not found",404);
