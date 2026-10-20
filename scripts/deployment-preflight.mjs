@@ -9,6 +9,10 @@ const fail = [];
 const warn = [];
 
 const wrangler = await readFile(join(root, "wrangler.toml"), "utf8");
+const stagingMarker = "[env.staging]";
+const stagingOffset = wrangler.indexOf(stagingMarker);
+const productionConfig = stagingOffset >= 0 ? wrangler.slice(0, stagingOffset) : wrangler;
+const stagingConfig = stagingOffset >= 0 ? wrangler.slice(stagingOffset) : "";
 const requiredProductionBindings = [
   "DB", "SESSIONS_KV", "RATE_LIMIT_KV", "LIVE_STATUS_KV", "MEDIA_R2"
 ];
@@ -19,11 +23,12 @@ const requiredSecrets = [
   "SESSION_SECRET", "PASSWORD_PEPPER", "ENCRYPTION_KEY", "MEDIA_ENGINE_SHARED_SECRET"
 ];
 
+if (stagingOffset < 0) fail.push("Missing [env.staging] configuration section.");
 for (const binding of requiredProductionBindings) {
-  if (!wrangler.includes(`binding = "${binding}"`)) fail.push(`Missing production binding: ${binding}`);
+  if (!productionConfig.includes(`binding = "${binding}"`)) fail.push(`Missing production binding: ${binding}`);
 }
 for (const binding of requiredStagingBindings) {
-  if (!wrangler.includes(`binding = "${binding}"`)) fail.push(`Missing staging binding: ${binding}`);
+  if (!stagingConfig.includes(`binding = "${binding}"`)) fail.push(`Missing staging binding inside [env.staging]: ${binding}`);
 }
 for (const secret of requiredSecrets) {
   if (!wrangler.includes(`"${secret}"`)) warn.push(`Note: secret '${secret}' is not declared in wrangler.toml — ensure it's set via 'wrangler secret put' for the target environment.`);
