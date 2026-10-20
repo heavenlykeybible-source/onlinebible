@@ -210,7 +210,14 @@ async function bible(){
     const data=await getBook(b);
     parts.push(b.name.toUpperCase()+'\n'+data.chapters.map((chapter,ci)=>'CHAPTER '+(ci+1)+'\n'+chapter.map((v,vi)=>(vi+1)+'. '+v).join('\n')).join('\n\n'));
    }
-   await copyPassage(parts.join('\n\n'),'Full KJV Bible copied to clipboard.');
+   const fullText=parts.join('\n\n');
+   try{await navigator.clipboard.writeText(fullText);notice('Full KJV Bible copied to clipboard.');}
+   catch{
+    const blob=new Blob([fullText],{type:'text/plain;charset=utf-8'});
+    const downloadUrl=URL.createObjectURL(blob),download=make('a','Download full Bible text');
+    download.href=downloadUrl;download.download='heavenly-key-bible-kjv.txt';download.hidden=true;document.body.append(download);download.click();download.remove();URL.revokeObjectURL(downloadUrl);
+    notice('Clipboard access was blocked. A full Bible text file was downloaded instead.');
+   }
   }catch(error){notice('Could not copy the full Bible: '+(error.message||'Please reconnect and try again.'));}
   finally{copyBible.disabled=false;copyBible.textContent='Copy full Bible';}
  }
