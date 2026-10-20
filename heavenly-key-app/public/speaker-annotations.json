@@ -68,12 +68,30 @@
       "book": "genesis",
       "chapter": 1,
       "start": 20,
+      "end": 20
+    },
+    {
+      "book": "genesis",
+      "chapter": 1,
+      "start": 22,
       "end": 22
     },
     {
       "book": "genesis",
       "chapter": 1,
       "start": 24,
+      "end": 24
+    },
+    {
+      "book": "genesis",
+      "chapter": 1,
+      "start": 26,
+      "end": 26
+    },
+    {
+      "book": "genesis",
+      "chapter": 1,
+      "start": 28,
       "end": 30
     },
     {
