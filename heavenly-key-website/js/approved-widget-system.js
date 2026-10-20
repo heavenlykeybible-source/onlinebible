@@ -15,14 +15,21 @@ function volumeUI(adjustable){volumeInput.hidden=!adjustable;volumeInput.disable
 function primeVolume(){if(nativeVolume)return;try{const Context=window.AudioContext||window.webkitAudioContext;if(Context){audioContext=audioContext||new Context();audioContext.resume().catch(()=>{})}}catch{}}
 function resetAudio(){const muted=audio.muted,next=document.createElement('audio');audio.pause();audio.removeAttribute('src');audio.load();audio.replaceWith(next);audio=next;audio.preload='none';audio.muted=muted;attachPlayback();volumeSource?.disconnect();gainNode?.disconnect();volumeSource=null;gainNode=null}
 async function prepareVolume(url){if(nativeVolume){audio.volume=volumeLevel;volumeUI(true);return}const sameOrigin=new URL(url,location.origin).origin===location.origin;if(!sameOrigin){if(volumeSource)resetAudio();volumeUI(false);return}primeVolume();if(!audioContext){volumeUI(false);return}try{await audioContext.resume();if(!volumeSource){gainNode=audioContext.createGain();volumeSource=audioContext.createMediaElementSource(audio);volumeSource.connect(gainNode);gainNode.connect(audioContext.destination)}gainNode.gain.setValueAtTime(volumeLevel,audioContext.currentTime);volumeUI(true)}catch{if(volumeSource)resetAudio();volumeUI(false)}}
-function display(playing){$('.hkr-launch-mode').textContent=playing?'PLAYING':'RADIO';root.classList.toggle('hkr-playing',playing);button.textContent=playing?'❚❚':'▶';button.setAttribute('aria-label',playing?'Pause radio':'Play radio');if(playing){notice.textContent='Playing';retries=0;clearTimeout(retry)}}
+function syncMediaSession(playing){
+ if(!('mediaSession' in navigator))return;
+ try{
+  if(typeof MediaMetadata==='function')navigator.mediaSession.metadata=new MediaMetadata({title:programme.textContent||'Heavenly Key Radio',artist:'Heavenly Key Evangelistic Movement',album:'Heavenly Key Radio'});
+  navigator.mediaSession.playbackState=playing?'playing':'paused';
+ }catch{}
+}
+function display(playing){$('.hkr-launch-mode').textContent=playing?'PLAYING':'RADIO';root.classList.toggle('hkr-playing',playing);button.textContent=playing?'❚❚':'▶';button.setAttribute('aria-label',playing?'Pause radio':'Play radio');syncMediaSession(playing);if(playing){notice.textContent='Playing';retries=0;clearTimeout(retry)}}
 const bind=window.HKRadioPlayback||function(audio,render){let playing=false;const sync=()=>render(playing&&!audio.paused&&!audio.ended&&!audio.error);audio.addEventListener('playing',()=>{playing=true;sync()});['pause','ended','waiting','stalled','seeking','emptied','error','abort','loadstart'].forEach(e=>audio.addEventListener(e,()=>{playing=false;sync()}));sync()};
 function safeUrl(item){const u=new URL(item.url,location.origin);if(u.protocol!=='https:'&&u.origin!==location.origin)throw Error('Radio source is unavailable.');return u.href}
 function release(){audio.pause();audio.removeAttribute('src');audio.load();display(false)}
 function stop(){desired=false;generation++;clearTimeout(poll);clearTimeout(retry);release();notice.textContent='Stopped. Tap Play to listen.'}
 function schedule(){clearTimeout(poll);if(desired)poll=setTimeout(()=>refresh(true).catch(()=>{}),30000)}
 function reconnect(){clearTimeout(retry);if(!desired||retries>=4){if(desired){desired=false;notice.textContent='Connection unavailable. Tap Play to retry.'}return}notice.textContent='Connection interrupted. Reconnecting…';const turn=generation;retry=setTimeout(()=>{if(desired&&turn===generation)startTrack(index).catch(reconnect)},Math.min(16000,2000*2**retries++))}
-async function startTrack(next){if(!items.length)throw Error('No playable programme is available.');index=(next+items.length)%items.length;const turn=generation,url=safeUrl(items[index]);await prepareVolume(url);if(audio.src!==url){audio.src=url;audio.load()}programme.textContent=items[index].title||'Heavenly Key Radio';notice.textContent='Connecting…';await audio.play();if(!desired||turn!==generation){release();return}schedule()}
+async function startTrack(next){if(!items.length)throw Error('No playable programme is available.');index=(next+items.length)%items.length;const turn=generation,url=safeUrl(items[index]);await prepareVolume(url);if(audio.src!==url){audio.src=url;audio.load()}programme.textContent=items[index].title||'Heavenly Key Radio';syncMediaSession(false);notice.textContent='Connecting…';await audio.play();if(!desired||turn!==generation){release();return}schedule()}
 async function refresh(allowSwitch=false){if(fetching)return fetching;const turn=generation;fetching=(async()=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);try{const r=await fetch('/api/broadcast/programme?channel=radio',{headers:{Accept:'application/json'},signal:controller.signal,cache:'no-store'});if(!r.ok)throw Error('Radio programme is temporarily unavailable.');const data=await r.json();if(turn!==generation)return;
 if(['livekit','youtube'].includes(data.transport)){items=[];release();programme.textContent=data.title||'Live programme';notice.replaceChildren();const link=document.createElement('a');link.href='/pages/radio.html';link.target='_blank';link.rel='noopener';link.textContent='Open live radio player';notice.append(link);desired=false;clearTimeout(poll);return}
 const next=Array.isArray(data.items)?data.items.filter(x=>x&&typeof x.url==='string'):[];const previous=audio.src;items=next;index=Math.max(0,items.findIndex(x=>{try{return safeUrl(x)===previous}catch{return false}}));
@@ -37,6 +44,10 @@ for(const [selector,delta] of [['.hkr-prev',-1],['.hkr-next',1]])$(selector).onc
 function attachPlayback(){bind(audio,display);audio.addEventListener('ended',()=>{if(desired&&items.length)startTrack(index+1).catch(reconnect)});
 audio.addEventListener('error',()=>{display(false);reconnect()});audio.addEventListener('waiting',()=>{if(desired)notice.textContent='Buffering…'});}
 attachPlayback();
+if('mediaSession' in navigator){
+ const actions={play:()=>{if(!desired)button.click()},pause:()=>{if(desired)stop()},stop:()=>stop(),nexttrack:()=>$('.hkr-next').click(),previoustrack:()=>$('.hkr-prev').click()};
+ for(const [action,handler] of Object.entries(actions)){try{navigator.mediaSession.setActionHandler(action,handler)}catch{}}
+}
 let anchor;function returnToAnchor(){if(anchor?.isConnected){anchor.replaceWith(root);anchor=null}}
 $('.hkr-bubble').onclick=()=>{if(!mount){anchor=document.createComment('radio launcher position');root.before(anchor);document.body.append(root)}root.classList.remove('hkr-mini','hkr-tiny');$('.hkr-bubble').setAttribute('aria-expanded','true');button.focus()};
 $('.hkr-min').onclick=()=>{if(mount)return;returnToAnchor();root.classList.add('hkr-mini','hkr-tiny');$('.hkr-bubble').setAttribute('aria-expanded','false');$('.hkr-bubble').setAttribute('aria-label',desired?'Restore Heavenly Key Radio — audio continues':'Open Heavenly Key Radio');$('.hkr-bubble').focus()};
