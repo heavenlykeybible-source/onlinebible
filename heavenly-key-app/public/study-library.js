@@ -308,7 +308,7 @@ async function bible(){
    scriptureLines(verses,data.chapters[selectedChapter-1],selectedBook.id,selectedBook.name,selectedChapter,text=>copyPassage(text,'Verse copied.'),(text,title,anchor)=>sharePassage(text,title,anchor),copyChapter,shareChapter,socialLinks);
    status.textContent='';
    if(url.hash){
-    const target=document.getElementById(decodeURIComponent(url.hash.slice(1)));
+    const target=document.getElementById(url.hash.slice(1));
     if(target)target.scrollIntoView({block:'start',behavior:'auto'});
    }
    notice('KJV — '+selectedBook.name+' '+selectedChapter);
