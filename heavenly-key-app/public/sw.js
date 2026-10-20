@@ -6,7 +6,7 @@ const SHELL=["/download/android/hk-approved-page-style-android-index.css","/down
  '/icons/icon-192.svg','/icons/icon-512.svg','/icons/apple-touch-icon.svg',
  '/bible.html','/bible-downloads.html','/bible-downloads.js','/devotional.html','/hymns.html','/audio-hymns.html',
  '/study-library.js','/study-library.css','/faith-content.js','/bible-catalog.js','/bible-mobile-controls.js','/kjv-manifest.json','/daily-reading-excerpts.json','/KJV-SOURCE-LICENSE.txt',
- '/audio-bible.js','/audio-bible-catalog.js','/audio-bible-manifest.json','/audio-background-catalog.js','/audio-background-manifest.json','/audio-playlist.js',
+ '/audio-background-catalog.js','/audio-background-manifest.json','/audio-playlist.js',
  '/audio-hymn-catalog.js','/audio-hymn-manifest.json','/audio-hymns.js','/audio-hymns.css','/featured-main-hymn.js','/lock-screen-media.js','/walk-offline.html','/walk-offline.js','/walk-offline-content.js','/offline-vault.js','/offline-status.js','/creation-to-eternity.html','/walk-offline.css','/creation-to-eternity.js','/creation-to-eternity.css','/offline-noscript.css'];
 const PUBLIC=new Set(SHELL),READING=new Set(['/bible.html']);
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)));});
