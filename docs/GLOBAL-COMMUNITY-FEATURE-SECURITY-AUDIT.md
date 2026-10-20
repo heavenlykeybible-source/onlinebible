@@ -63,9 +63,9 @@ The auth response helper sets `Access-Control-Allow-Origin: https://www.heavenly
 
 ### Immediate blockers before a pass can be claimed
 
-1. Restore or correct the missing `heavenly-key-website/pages/community.html` contract.
-2. Wire password-reset routes and UI, and add automated tests for valid, expired, reused and malformed tokens, neutral responses, delivery failure and session invalidation.
-3. Centralize CORS response handling so OPTIONS and actual auth responses use the same exact allowlist and credentials policy.
+1. **Community page contract:** source-level fix committed — added `heavenly-key-website/pages/community.html` with discussion, prayer, testimony and group feeds, API error states, and community navigation. It has not yet been executed in a browser.
+2. **Password recovery wiring:** source-level fix committed — added request/complete handlers at `/api/auth/password-reset/request` and `/api/auth/password-reset/complete`, exact-origin CORS on auth responses, rate limiting, a reset UI, and member login/register pages. Automated token lifecycle, email-delivery and session-invalidation tests are still required.
+3. **CORS:** auth responses now echo only an exact trusted origin and enable credentials for that origin. **This is only a partial fix:** legacy community/group and other route helpers still call the shared security-header helper without passing the request origin, so cross-origin behavior from the apex domain and subdomains still needs a consistent end-to-end fix.
 4. Run `npm ci`, `npm test`, `npm run check:api-contract`, `npm run check:architecture`, `npm run check:frontend`, `npm run check:links`, and `npx tsc --noEmit --pretty false` in CI; then run relevant Global Community and browser tests.
 5. Fix all failed checks and rerun from the final audit-branch commit. Do not deploy as part of this step.
 
@@ -90,3 +90,15 @@ Before marking launch-ready, run and record:
 6. A final review of every failed test and regression.
 
 **Important:** This report records source-review findings. No automated suite or browser end-to-end test is claimed to have passed here. Deployment configuration is intentionally outside this audit.
+
+
+## Follow-up source changes — 2026-10-20
+
+- Added the missing public community page expected by the frontend contract test.
+- Added member sign-in and registration pages with client-side validation, loading/error feedback, and API requests.
+- Added a reset-password page supporting both email request and token-based completion.
+- Wired password recovery handlers into the Worker router. Public reset-request responses are neutral for existing and unknown accounts; requests and completions are rate-limited.
+- Made auth route responses origin-aware for the explicit trusted-origin allowlist. The shared legacy response helpers used by other route modules are not yet fully origin-aware.
+- Extended the frontend contract test to require the login, registration, and reset pages and their expected API endpoints.
+
+**Verification status remains unchanged:** these changes were committed to the audit branch but the Vitest suite, TypeScript compiler, API contract checks, frontend syntax/link checks, email delivery, and browser/device flows have not been executed in this environment. Do not treat source changes as a passing test run.
