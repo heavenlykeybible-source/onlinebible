@@ -54,8 +54,8 @@ const nums = migrations.map(f => Number(f.slice(0, 4)));
 for (let i = 0; i < nums.length; i++) {
   if (nums[i] !== i + 1) fail.push(`Migration sequence gap at ${String(i + 1).padStart(4, "0")}.`);
 }
-if (nums.length !== 39 || nums[nums.length - 1] !== 39) {
-  fail.push(`Expected migration 0039 as the current schema tip; found ${nums.length ? String(nums[nums.length - 1]).padStart(4, "0") : "none"}.`);
+if (nums.length !== 40 || nums[nums.length - 1] !== 40) {
+  fail.push(`Expected migration 0040 as the current schema tip; found ${nums.length ? String(nums[nums.length - 1]).padStart(4, "0") : "none"}.`);
 }
 
 async function walk(dir) {
