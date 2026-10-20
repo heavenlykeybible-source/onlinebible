@@ -1,11 +1,24 @@
-# Heavenly Key Evangelistic Movement — Public Website
+# Heavenly Key Website & Blog App — Heavenly Key Evangelistic Movement
 **Project Nehemiah · AI 2's scope in the three-application Heavenly Key ecosystem**
 
-## What This Is
-The public, unauthenticated ministry website — one of three applications
-sharing a single Cloudflare D1 database (see the sibling Global Christian
-Platform and Ministry Management Suite, built by AI 1). This repo covers
-the website only: no backend, no database, no AI service layer live here.
+## Product Definition — One Unified Website and Blog
+This repository represents **one product: the Heavenly Key Website & Blog App**.
+The public ministry website, blog index, teaching articles, sermons, ministry
+updates, and article navigation belong to one site, one visual system, and one
+visitor experience. Do not create or deploy a second standalone blog app as a
+parallel product.
+
+The blog must ultimately live under the website's own origin and navigation
+(for example, `/blog/` and `/blog/<article-slug>/`), with shared header,
+footer, responsive styles, accessibility behavior, search, and SEO metadata.
+A separate blog subdomain or external feed may be used only as a temporary
+legacy content source during migration; it is not the target product
+architecture. The current Blogger feed integration is transitional and does
+not mean the migration of legacy teaching articles is complete.
+
+This repository is the static frontend. The shared platform backend/API is
+maintained separately; integration must use its documented contract and must
+not invent endpoints or claim mock forms are live.
 
 ## Stack
 Vanilla HTML5, CSS3, and ES6+ JavaScript. No build step, no frameworks,
@@ -13,7 +26,9 @@ no npm dependencies. Static files, deployable as-is to Cloudflare Pages.
 
 ## Structure
 ```
-/index.html              Homepage
+/index.html              Homepage + latest blog preview
+/blog/                    Unified blog index (target route)
+/blog/<article-slug>/     Unified article pages (target route)
 /pages/*.html             10 inner pages (about, ministries, missions,
                           events, radio, resources, community, partner,
                           contact, i-said-yes)
