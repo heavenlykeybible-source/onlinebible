@@ -38,4 +38,19 @@ if(!/definite act of God's grace/i.test(entry('Sanctification')?.definition||'')
 if(!/one immersion/i.test(entry('Baptism')?.definition||''))throw Error('Water baptism entry must preserve the one-immersion doctrine.');
 if(!/not previously learned/i.test(entry('Holy Ghost Baptism')?.definition||''))throw Error('Holy Ghost baptism entry must preserve the stated initial-evidence doctrine.');
 
+
+/* Responsive/accessibility smoke checks; real device/browser testing is still required. */
+for(const pageName of ['index.html','bible.html','bible-downloads.html']){
+ const html=readFileSync(join(biblePublic,pageName),'utf8');
+ if(!/<meta\\s+name=["']viewport["'][^>]*width=device-width/i.test(html))throw Error('Missing responsive viewport meta in '+pageName+'.');
+}
+const readerStyles=readFileSync(join(biblePublic,'study-library.css'),'utf8');
+for(const [label,pattern] of [
+ ['mobile breakpoint',/@media\\s*\\(max-width:\\s*600px\\)/],
+ ['fluid typography',/clamp\\(/],
+ ['touch-safe chapter navigation',/min-height:\\s*46px/],
+ ['safe-area-aware bottom navigation',/env\\(safe-area-inset-bottom\\)/]
+])if(!pattern.test(readerStyles))throw Error('Bible reader responsive check failed: '+label+'.');
+if(!/aria-live=["']polite["']/.test(readFileSync(join(biblePublic,'bible.html'),'utf8')))throw Error('Bible reader must announce loading/status updates accessibly.');
+
 console.log('All app scripts, module dependencies and local page/assets links verified.');
