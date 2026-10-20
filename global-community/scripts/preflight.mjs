@@ -1,8 +1,9 @@
 import { readFile } from 'node:fs/promises';
 
 const config = await readFile(new URL('../wrangler.toml', import.meta.url), 'utf8');
+const staging = await readFile(new URL('../wrangler.staging.toml', import.meta.url), 'utf8');
 const release = process.argv.includes('--release');
-const requiredBindings = ['DB', 'SESSIONS', 'MEDIA'];
+const requiredBindings = ['DB', 'SESSIONS', 'MEDIA', 'AI'];
 const requiredSecrets = ['SESSION_SECRET', 'PASSWORD_PEPPER', 'INTERSERVICE_SECRET'];
 
 for (const secret of requiredSecrets) {
@@ -12,7 +13,10 @@ for (const secret of requiredSecrets) {
 }
 for (const binding of requiredBindings) {
   if (!config.includes('binding = "' + binding + '"')) {
-    throw new Error('Missing required binding: ' + binding);
+    throw new Error('Missing required production binding: ' + binding);
+  }
+  if (!staging.includes('binding = "' + binding + '"')) {
+    throw new Error('Missing required staging binding: ' + binding);
   }
 }
 if (!config.includes('https://global.heavenlykey.org')) {
