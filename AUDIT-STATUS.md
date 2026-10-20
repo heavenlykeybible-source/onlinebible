@@ -17,6 +17,7 @@ Reviewed branch: feature/simple-bible-sharing-20261020
 - Added regression assertions for share URL context, anchor navigation, and stale URL-object access.
 - Expanded the independent frontend audit to parse every public app JavaScript file and validate the KJV manifest, safe book paths, per-book chapter counts, verse data, and the 66-book / 1,189-chapter / 31,102-verse totals.
 - Strengthened the core deployment preflight so production bindings are checked separately from the `[env.staging]` resource declarations instead of letting production resources satisfy staging checks.
+- Fixed the staging deployment path so staging deploys and remote staging migrations run the staging-specific preflight; production remote migrations now run production preflight first. The architecture gate checks these command guards.
 - Expanded the architecture gate to check migration continuity for Global Community and Recovery Control as well as the core and Media Engine.
 
 The migration filenames and sequence were inspected from the source tree. A full SQL migration replay and foreign-key integrity check have **not** been rerun during this review; the previous 101-table result below was from an earlier snapshot and is not asserted for this branch.
