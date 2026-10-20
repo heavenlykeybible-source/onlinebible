@@ -49,6 +49,26 @@ The auth response helper sets `Access-Control-Allow-Origin: https://www.heavenly
 - Confirm public community content is escaped/rendered safely and moderation/blocking behavior is consistent.
 - Review logging and audit records for secrets, tokens, passwords and unnecessary personal data.
 
+## Functional test pass — 2026-10-20
+
+### Results from source and CI inspection
+
+- **Full test suite: NOT RUN in this session.** The execution environment cannot resolve GitHub to clone the repository, and dependencies/runtime are not available here. Do not treat this as a pass.
+- **Current audit-branch CI: no run/status found** for the current branch head at the time of inspection.
+- **Existing branch workflow run:** the latest visible Six-Service Read-Only Audit run (run 39409250214, commit 367573566c7a361ef6b5c9003851f0ec5c5dd93b) concluded **failure** in three jobs: shared platform contract/architecture checks, six-service release manifest consistency, and Account 3 community source checks. This run predates the newest audit commits, so it is evidence of unresolved prior CI failures, not a test result for the current head.
+- **Confirmed likely test failure by repository tree inspection:** `test/unit/frontend-contract.test.ts` reads `heavenly-key-website/pages/community.html`, but that file is absent from the current branch tree. The test suite is expected to fail on this missing file unless the test or page is restored.
+- **Password reset: NOT FUNCTIONALLY CONNECTED.** Service functions have been added, but `src/routes/auth.ts` still has no password-reset handlers and `src/index.ts` has no reset endpoints. The reset service must not be advertised as working until route wiring, UI pages, configuration and tests are complete.
+- **CORS/session browser flow: NOT VERIFIED.** The main Worker has an origin allowlist, but `src/routes/auth.ts` still sets a fixed `Access-Control-Allow-Origin: https://www.heavenlykey.org` response header. This can break credentialed responses from other allowlisted origins. Resolve this mismatch and test preflight, login, profile and logout from every intended frontend origin.
+- **Runtime, D1/KV integration, email delivery, browser/mobile end-to-end and security penetration tests: NOT RUN.** No live account creation, password reset email, database mutation or production data was exercised.
+
+### Immediate blockers before a pass can be claimed
+
+1. Restore or correct the missing `heavenly-key-website/pages/community.html` contract.
+2. Wire password-reset routes and UI, and add automated tests for valid, expired, reused and malformed tokens, neutral responses, delivery failure and session invalidation.
+3. Centralize CORS response handling so OPTIONS and actual auth responses use the same exact allowlist and credentials policy.
+4. Run `npm ci`, `npm test`, `npm run check:api-contract`, `npm run check:architecture`, `npm run check:frontend`, `npm run check:links`, and `npx tsc --noEmit --pretty false` in CI; then run relevant Global Community and browser tests.
+5. Fix all failed checks and rerun from the final audit-branch commit. Do not deploy as part of this step.
+
 ## Required member experience
 
 - Clear register / sign-in / sign-out pages and helpful validation errors.
