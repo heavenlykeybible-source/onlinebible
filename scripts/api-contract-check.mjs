@@ -68,7 +68,9 @@ const authRoute = await readFile(join(root, "src/routes/auth.ts"), "utf8");
 if (
   !authRoute.includes('headers.set("Access-Control-Allow-Origin", origin)') ||
   !authRoute.includes("trustedOrigins.has(origin)") ||
-  !authRoute.includes('"https://www.heavenlykey.org"')
+  !authRoute.includes('"https://www.heavenlykey.org"') ||
+  !authRoute.includes('"https://heavenlykey.alldaywow247.workers.dev"') ||
+  !authRoute.includes('"https://heavenlykey-staging.alldaywow247.workers.dev"')
 ) {
   failures.push("API CORS must use the exact trusted-origin allowlist and allow the canonical website origin.");
 }
