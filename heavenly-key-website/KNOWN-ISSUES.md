@@ -32,21 +32,34 @@ AI 1 hasn't published one:
 Both show an explicit "not connected yet" message on submit rather than
 pretending to succeed.
 
-## 3. Static-only content without a live API
-Featured sermon and ministry-update/blog sections remain intentionally static. Production JavaScript no longer calls unimplemented `/api/sermons` or `/api/blog` endpoints.
+## 3. Content sources and widgets
+The homepage's **Recent Blog Posts** preview, footer list, and internal `/blog/` pages now prefer the first-party `GET /api/blog/posts` API. The legacy Blogger feed is only a transitional fallback while the 94 legacy articles are reviewed and migrated. The new API requires migration `0040_blog_publishing.sql` and backend deployment before it can serve real content.
+
+Other content widgets without a published API contract (including Featured Sermons where applicable) must remain static or clearly indicate unavailable data. Production JavaScript must not call unimplemented `/api/sermons` endpoints.
 
 ## 4. Two Open Content Conflicts (need Project Lead decision, not a fix)
 Documented in `CONTENT-INTEGRATION-REPORT.md` §2:
 1. Homepage hero wording — approved spec copy vs. the real site's actual "REVIVAL, HOLINESS, POWER!" copy. Currently running the approved spec version.
 2. Headquarters address — "Warri, Delta State, Nigeria" (early screenshot) vs. "Nigeria, Africa" (offline export, no street address). Currently showing "Nigeria, Africa."
 
-## 5. Blog Migration Incomplete
-94 real teaching articles exist in the offline export. Only 3 real titles
-are surfaced on the homepage as a preview (each marked
-`[PLACEHOLDER — full blog migration pending]`). Full migration into the
-design system is logged as a Legacy Review item in `PROJECT-CHECKLIST.md`
-§7, not attempted here — a partial, inconsistently-styled import of 94
-legacy HTML files would be worse than clearly flagging it as pending.
+## Product architecture: website and blog are one app
+The target is one **Heavenly Key Website & Blog App**, with the blog and
+article pages hosted under the same website origin and sharing the same
+navigation, design system, and content model. The current Blogger feed
+integration is a transitional source for recent-post previews only. It is
+not a second product and must not be treated as completion of the unified
+blog migration. The first-party blog index, article template, secured publisher UI, public/admin API handlers, scheduled publication worker and text/link social distribution are now implemented in the audit branch. Release acceptance still requires applying migration `0040_blog_publishing.sql`, deploying the Worker and website together, verifying provider credentials and API permissions, migrating the 94 legacy articles, checking all links, and running end-to-end tests.
+
+## 5. Legacy teaching-article migration incomplete
+94 real teaching articles exist in the offline export. The current homepage
+preview is a **live, five-post Blogger feed**, which is separate from
+migrating those 94 legacy teaching articles into the website's own
+design system. The legacy migration remains outstanding and is logged as
+a Legacy Review item in `PROJECT-CHECKLIST.md` §7. Do not mark those
+94 articles migrated based only on the homepage Blogger feed.
+
+## Blog publishing and social distribution — implementation boundary
+The admin publisher can save drafts, schedule articles, publish immediately, and request automatic text/link sharing to connected Facebook, X, and LinkedIn accounts. Scheduled publication uses the Worker cron handler; it does not depend on visitors opening the site. Social sharing uses the existing encrypted account-connection and publishing queue. Instagram, TikTok and YouTube are not automatically claimed by the text-only blog workflow because their media-specific publishing requirements are not wired into this feature. Real publishing requires migration `0040_blog_publishing.sql`, an active authorized social account, provider app credentials/permissions, and a deployed Worker. No social post can be confirmed until live credentials and provider responses are tested.
 
 ## 6. Two Stat Categories Still Placeholder
 "Bibles Distributed" and "Partners & Supporters" on the homepage stats

@@ -1,6 +1,8 @@
 import {handleGRDPCPublic,handleGRDPCAdmin} from "./routes/grdpc";
 import {handleWebsiteAiInbox,handleWebsiteAiConversation} from "./routes/website-ai-inbox";
 import {runReminders} from "./services/grdpc-service";
+import {runDueBlogPublications} from "./services/blog-publishing-service";
+import {handlePublicBlogPosts,handleAdminBlogPosts} from "./routes/blog-publishing";
 import {handleCommunityPlayer} from "./routes/community-player";
 /**
  * Worker entry point. Per Implementation Handbook §3: routes requests only —
@@ -70,7 +72,8 @@ export default {
     const cronTasks: Array<readonly [string,()=>Promise<unknown>]> = [
       ["broadcast monitor + playout", async()=>{await monitorLiveBroadcasts(env);await advancePlayoutState(env);}],
       ["social scheduler", ()=>runDueJobs(env)],
-      ["reminders", ()=>runReminders(env,controller.scheduledTime)]
+      ["reminders", ()=>runReminders(env,controller.scheduledTime)],
+      ["scheduled blog publications", ()=>runDueBlogPublications(env)]
     ];
     if(new Date(controller.scheduledTime).getUTCMinutes()%15===0)
       cronTasks.push(["storage cleanup",()=>cleanupExpiredStorage(env)]);
@@ -126,6 +129,10 @@ export default {
     if (pathname === "/api/admin/system-updates/action" && method === "POST") return handleSystemUpdateAction(request, env);
     if (pathname === "/api/stats/lives-transformed" && method === "GET") return handleLivesTransformedStats(request, env);
     if (pathname === "/api/events" && method === "GET") return handleWebsiteEvents(request, env);
+    if (pathname === "/api/blog/posts" && method === "GET") return handlePublicBlogPosts(request,env);
+    {const m=idMatch(/^\/api\/blog\/posts\/([^/]+)$/);if(m&&method==="GET")return handlePublicBlogPosts(request,env,decodeURIComponent(m[1]));}
+    if (pathname === "/api/admin/blog/posts" && ["GET","POST","OPTIONS"].includes(method)) return handleAdminBlogPosts(request,env);
+    {const m=idMatch(/^\/api\/admin\/blog\/posts\/(\d+)\/(publish)$/);if(m&&["POST","OPTIONS"].includes(method))return handleAdminBlogPosts(request,env,Number(m[1]),m[2]);}
     if (pathname === "/api/contact" && method === "POST") return handlePublicSubmission(request, env as any, "contact");
     if (pathname === "/api/newsletter" && method === "POST") return handlePublicSubmission(request, env as any, "newsletter");
     if (pathname === "/api/partner" && method === "POST") return handlePublicSubmission(request, env as any, "partner");

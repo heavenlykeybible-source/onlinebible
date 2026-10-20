@@ -14,6 +14,21 @@
 > **Project B — Frontend Design Freeze**
 > **Version 1.2.2 · Status: Architecture Frozen · Implementation Ready**
 >
+> ## Product decision — unified website and blog
+> **One product only:** Heavenly Key Website & Blog App. The blog is a
+> first-party section of the ministry website, not a separate app or a
+> parallel blog product. Target routes are under the website origin
+> (`/blog/` and article routes), sharing navigation, header/footer,
+> responsive design, accessibility, SEO and the content model.
+> The current Blogger feed is transitional; it is not proof that the
+> legacy teaching-article migration is complete. The audit branch now adds
+> first-party blog pages, a protected publisher, API handlers, scheduled
+> publication and text/link auto-sharing for connected Facebook, X and
+> LinkedIn accounts. Do not mark the unified blog feature release-ready
+> until migration `0040_blog_publishing.sql` is applied, the Worker and site
+> are deployed, the 94-article inventory is migrated, social provider access
+> is verified, and browser/device end-to-end tests pass.
+>
 > ## 🧊 FRONTEND ARCHITECTURE & COMPONENT LIBRARY FROZEN
 > Project B's frontend architecture, design system, component library,
 > and UI specifications are frozen. This is **not** a claim that the
@@ -50,6 +65,17 @@ Status values: `Not Started` | `In Progress` | `Completed` | `Tested`
 AI 1 owns Community Platform, Ministry Management Suite, Workers API, D1,
 Auth, AI Service, Notifications, Event Bus, Admin Dashboard — none of
 this is or will be built by AI 2.
+
+## Blog publishing automation implementation (audit branch)
+| Item | Status | Notes |
+|---|---|---|
+| First-party blog index and article template | Implemented in source | `/blog/` and clean `/blog/<slug>/` routes; needs host rewrite support and live test |
+| Blog draft/immediate/scheduled publishing API | Implemented in source | Requires migration `0040_blog_publishing.sql` and Worker deployment |
+| Scheduled publication without site visits | Implemented in source | Worker cron calls `runDueBlogPublications`; test against deployed scheduler before release |
+| Automatic text/link social sharing | Implemented in source | Facebook, X, LinkedIn only; active provider authorization required; status is recorded |
+| Instagram/TikTok/YouTube blog auto-share | Not implemented in this workflow | Media-specific integration and provider approvals still required |
+| Legacy article migration | Open | 94 articles from offline export remain to be reviewed/imported |
+| Browser/device and live-provider testing | Open | No physical Android/iPhone or production social account test claimed |
 
 ## 0. Governance
 | Item | Status | Notes |

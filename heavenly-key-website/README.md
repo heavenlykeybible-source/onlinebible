@@ -1,11 +1,24 @@
-# Heavenly Key Evangelistic Movement — Public Website
+# Heavenly Key Website & Blog App — Heavenly Key Evangelistic Movement
 **Project Nehemiah · AI 2's scope in the three-application Heavenly Key ecosystem**
 
-## What This Is
-The public, unauthenticated ministry website — one of three applications
-sharing a single Cloudflare D1 database (see the sibling Global Christian
-Platform and Ministry Management Suite, built by AI 1). This repo covers
-the website only: no backend, no database, no AI service layer live here.
+## Product Definition — One Unified Website and Blog
+This repository represents **one product: the Heavenly Key Website & Blog App**.
+The public ministry website, blog index, teaching articles, sermons, ministry
+updates, and article navigation belong to one site, one visual system, and one
+visitor experience. Do not create or deploy a second standalone blog app as a
+parallel product.
+
+The blog must ultimately live under the website's own origin and navigation
+(for example, `/blog/` and `/blog/<article-slug>/`), with shared header,
+footer, responsive styles, accessibility behavior, search, and SEO metadata.
+A separate blog subdomain or external feed may be used only as a temporary
+legacy content source during migration; it is not the target product
+architecture. The current Blogger feed integration is transitional and does
+not mean the migration of legacy teaching articles is complete.
+
+This repository is the static frontend. The shared platform backend/API is
+maintained separately; integration must use its documented contract and must
+not invent endpoints or claim mock forms are live.
 
 ## Stack
 Vanilla HTML5, CSS3, and ES6+ JavaScript. No build step, no frameworks,
@@ -13,7 +26,9 @@ no npm dependencies. Static files, deployable as-is to Cloudflare Pages.
 
 ## Structure
 ```
-/index.html              Homepage
+/index.html              Homepage + latest blog preview
+/blog/index.html          Unified first-party blog index
+/blog/article.html        Article template; clean /blog/<slug>/ routes rewrite here
 /pages/*.html             10 inner pages (about, ministries, missions,
                           events, radio, resources, community, partner,
                           contact, i-said-yes)
@@ -24,6 +39,7 @@ no npm dependencies. Static files, deployable as-is to Cloudflare Pages.
   homepage-components.js  Render functions for the 8 API-driven homepage sections
   ui-components.js        Toast, modal, accordion, tabs, site-wide memory verse
   main.js                 Nav, slideshow, forms, PWA registration
+  blog-admin.js           Secured admin composer for drafts, scheduling, and social distribution
 /assets/                  Logo, icons, curated ministry photos
 /manifest.json            PWA manifest
 /service-worker.js        Offline caching (app-shell cache-first, API network-only)
@@ -56,6 +72,13 @@ no npm dependencies. Static files, deployable as-is to Cloudflare Pages.
 | `ASSET-INVENTORY.md` | Every file in `/assets/` — purpose, pages used on, placeholder vs. production, optimization status |
 | `DESIGN-TOKENS.md` | Every official color/type/spacing/radius/shadow/animation/z-index token and its real usage |
 | `FRONTEND-DEFINITION-OF-DONE.md` | The quality checklist every new page or component must satisfy |
+
+## Unified blog publishing
+- Public blog reads: `GET /api/blog/posts` and `GET /api/blog/posts/:slug`.
+- Admin publishing: `GET/POST /api/admin/blog/posts`; `POST /api/admin/blog/posts/:id/publish`.
+- Migration: `migrations/0040_blog_publishing.sql`.
+- The Worker scheduled handler publishes due articles and requests automatic text/link distribution to connected Facebook, X, and LinkedIn accounts. Instagram, TikTok and YouTube require separate media-specific work and provider approval.
+- This is source implementation only until the migration is applied and the Worker/site are deployed; social connections and real publishing must be tested with authorized accounts. The 94 legacy teaching articles are not yet claimed as migrated.
 
 ## Current Status
 > **Project B — Frontend Design Freeze**
