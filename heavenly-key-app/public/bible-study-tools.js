@@ -25,7 +25,7 @@ const curated=[
 {term:"Romans 8:28",refs:["Genesis 50:20","Ephesians 1:11","James 1:2-4"]},
 {term:"Isaiah 53:5",refs:["1 Peter 2:24","Matthew 8:16-17","Romans 4:25"]}
 ];
-const refLink=ref=>{const m=String(ref).match(/^(.+?)\s+(\d+)(?::(\d+))?/);if(!m)return null;const b=(manifest?.books||[]).find(x=>x.name.toLowerCase()===m[1].toLowerCase());if(!b)return null;return {ref,href:'bible.html?book='+encodeURIComponent(b.id)+'&chapter='+m[2]+(m[3]?'#verse-'+b.id+'-'+m[2]+'-'+m[3]:'')};};
+const refLink=ref=>{const m=String(ref).match(/^(.+?)\s+(\d+)(?::(\d+))?/);if(!m)return null;const b=(manifest?.books||[]).find(x=>x.name.toLowerCase()===m[1].toLowerCase())||(m[1].toLowerCase()==='psalm'?(manifest?.books||[]).find(x=>x.id==='psalms'):null);if(!b)return null;return {ref,href:'bible.html?book='+encodeURIComponent(b.id)+'&chapter='+m[2]+(m[3]?'#verse-'+b.id+'-'+m[2]+'-'+m[3]:'')};};
 function link(ref){const x=refLink(ref);return x?'<a class="bst-ref" href="'+esc(x.href)+'">'+esc(ref)+'</a>':'<span class="bst-ref">'+esc(ref)+'</span>'}
 function showRefs(refs){return refs.map(r=>link(r)).join(' <span aria-hidden="true">·</span> ')}
 async function loadDictionary(){if(dictionary.length)return;const r=await fetch('bible-dictionary.json');if(!r.ok)throw Error('Dictionary could not be loaded');dictionary=(await r.json()).entries||[]}
