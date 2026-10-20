@@ -38,7 +38,7 @@ async function enqueueSocialShare(env: Env, post: any, actorId: number): Promise
   // Instagram/TikTok/YouTube need media-specific flows and are not represented as
   // automated destinations by this text-only blog distribution path.
   const accounts = await env.DB.prepare(
-    "SELECT id,platform FROM social_managed_accounts WHERE active=1 AND connection_status='connected' AND platform IN ('facebook','x','linkedin') ORDER BY platform,display_name"
+    "SELECT id,platform FROM social_managed_accounts WHERE organization_id=1 AND active=1 AND connection_status='connected' AND platform IN ('facebook','x','linkedin') ORDER BY platform,display_name"
   ).all<{id:string;platform:string}>();
   const rows = accounts.results || [];
   if (!rows.length) return { status: "failed", error: "No active Facebook, X, or LinkedIn publishing account is connected." };
