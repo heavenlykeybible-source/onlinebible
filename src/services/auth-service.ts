@@ -211,27 +211,31 @@ export async function registerUser(env: Env, input: RegisterInput): Promise<Regi
   const salt = generateSalt();
   const passwordHash = await hashPassword(input.password, salt, env.PASSWORD_PEPPER);
 
-  const userResult = await env.DB.prepare(
-    `INSERT INTO users (name, email, country, role_id, status) VALUES (?, ?, ?, ?, 'active') RETURNING user_id`
-  )
-    .bind(input.name, input.email, input.country, memberRole.role_id)
-    .first<{ user_id: number }>();
-
-  if (!userResult) {
-    return { success: false, error: "Failed to create account." };
+  // Create the profile and its credentials in one D1 batch. D1 batches are
+  // transactional: if either insert fails, neither half-account is committed.
+  // The auth insert selects the newly-created row by normalized email so it
+  // cannot accidentally attach credentials to an unrelated user ID.
+  try {
+    const created = await env.DB.batch([
+      env.DB.prepare(
+        `INSERT INTO users (name, email, country, role_id, status) VALUES (?, ?, ?, ?, 'active') RETURNING user_id`
+      ).bind(input.name, input.email, input.country, memberRole.role_id),
+      env.DB.prepare(
+        `INSERT INTO auth (user_id, password_hash, password_salt, email_verified)
+         SELECT user_id, ?, ?, 0 FROM users WHERE email = ?`
+      ).bind(passwordHash, salt, input.email),
+    ]);
+    const userId = (created[0]?.results?.[0] as { user_id?: number } | undefined)?.user_id;
+    if (!userId || !created[1]?.success) {
+      return { success: false, error: "Unable to create the account. Please try again." };
+    }
+    // Email verification remains a separate launch requirement until a real
+    // transactional email provider is configured and the verification flow exists.
+    return { success: true, userId };
+  } catch {
+    // Do not expose database internals or leak account data to the client.
+    return { success: false, error: "Unable to create the account. Please try again." };
   }
-
-  await env.DB.prepare(
-    `INSERT INTO auth (user_id, password_hash, password_salt, email_verified) VALUES (?, ?, ?, 0)`
-  )
-    .bind(userResult.user_id, passwordHash, salt)
-    .run();
-
-  // NOTE: email verification dispatch is a separate concern (transactional email
-  // provider — Volume 3 §1 flags this as an open implementation decision) —
-  // intentionally not blocking registration on it here.
-
-  return { success: true, userId: userResult.user_id };
 }
 
 export interface LoginResult {
