@@ -2,7 +2,7 @@ import type { Env } from "../services/auth-service";
 import { requireMinimumRole } from "../middleware/rbac";
 import * as Blog from "../services/blog-publishing-service";
 
-const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
+const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{"Cache-Control":"no-store","X-Content-Type-Options":"nosniff","Access-Control-Allow-Origin":"https://www.heavenlykey.org","Vary":"Origin"}});
 const error=(message:string,status=400)=>json({error:{message}},status);
 
 export async function handlePublicBlogPosts(request:Request,env:Env,slug?:string) {
