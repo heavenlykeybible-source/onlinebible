@@ -51,6 +51,10 @@ describe("frontend contract", () => {
     expect(community).toContain('data-feed="prayer"');
     expect(community).toContain('data-feed="testimony"');
     expect(community).toContain('data-feed="groups"');
+    expect(community).toContain("/api/auth/profile");
+    expect(community).toContain("/api/auth/logout");
+    expect(community).toContain('id="logout-button"');
+    expect(community).toContain('id="member-status"');
     expect(community).toContain("Open Community Feed");
     expect(community).toContain("Prayer Centre");
     expect(community).not.toContain("Watch Faith Of Our Fathers TV Webcast");
