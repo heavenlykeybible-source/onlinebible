@@ -57,9 +57,11 @@ Run on real browsers/devices before calling the reader production-ready:
 4. Re-check the source of the KJV compilation and applicable distribution rights before public release.
 
 
-## Installation compatibility finding
+## Installation compatibility finding and follow-up
 
-The current web app manifest and Apple touch-icon link reference SVG-only icons. Some install surfaces, especially iOS/iPadOS Home Screen icon handling, are more reliable with a conventional PNG touch icon and raster 192px/512px manifest icons. This remains a compatibility risk to resolve before claiming fully verified installation on iPhone/iPad and all Android launchers. The present source-level check confirms that the referenced SVG files exist, not that every operating system accepts them as install icons.
+The app now includes raster PNG icons at 192×192 and 512×512 for the PWA manifest, plus a 180×180 PNG Apple touch icon. The service-worker shell includes all three PNG files, and the manifest retains SVG variants as additional options. The icon files, manifest paths, Apple touch-icon link, and offline-cache path references were checked against the feature branch after commit `74d387333e301f4045f88517a7a3c8e9b8c87541`. This resolves the source-level SVG-only concern, but real installation behavior still needs browser/device verification.
+
+A regression guard was added to `scripts/check-app.mjs` requiring the 192px/512px PNG manifest entries, the Apple touch-icon link, and service-worker cache references. The checker itself has not been executed in a local Node runtime in this session.
 
 ## Device test record (not yet executed on physical devices)
 
@@ -75,4 +77,4 @@ The current web app manifest and Apple touch-icon link reference SVG-only icons.
 | Offline / airplane mode | Not run | Reopen previously saved book, navigate saved chapters, handle uncached books gracefully |
 | Service-worker update | Not run | Install a new shell version and confirm saved Bible books/private stores remain intact |
 
-The newly extended `npm run check` adds a full 66-book data integrity pass and PWA manifest/icon existence checks. It has been committed but was not executed in this session because the repository's local Node environment and physical-device browsers are not available here. Do not treat added checks as passing until someone runs them.
+A direct read-and-parse audit was completed against all 66 KJV JSON book files on the feature branch: every file parsed, book names and chapter counts matched the manifest, all 1,189 chapters were non-empty arrays, all 31,102 verses were non-empty strings, and no per-book structural issues were found. This was a manual remote-source data check, not execution of the repository's Node test suite. The extended `npm run check` also checks JavaScript syntax, module/page dependencies, doctrine regression guards, responsive markers, PWA icons, and KJV totals, but it has not been executed in a local Node runtime in this session. Physical-device and browser tests remain unrun.
