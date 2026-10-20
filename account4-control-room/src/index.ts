@@ -5,7 +5,7 @@ import {ownerDraftQueue} from './agent-drafts.ts';
 import {AI_MODEL,PUBLIC_CMS_ORIGIN,validateDocument} from './cms-schema.ts';
 import {saveDraft,publishDraft,restoreDraft} from './cms-storage.ts';
 import {ownerSession,ownerLogin,ownerLogout,setOwnerPassword,generatedPassword} from './owner-auth.ts';
-interface Env {DB:D1Database;MEDIA:R2Bucket;AI:Ai;ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUD:string;}
+interface Env {DB:D1Database;MEDIA:R2Bucket;AI:Ai;ASSETS:Fetcher;ACCESS_TEAM_DOMAIN:string;ACCESS_AUD:string;AGENT_INGRESS_HOST?:string;AGENT_INGRESS_ENABLED?:string;}
 const json=(data:unknown,status=200)=>Response.json(data,{status,headers:{'cache-control':'no-store','x-content-type-options':'nosniff'}});
 const fail=(message:string,status=400)=>json({error:message},status);
 function b64url(s:string){const p=s.replace(/-/g,"+").replace(/_/g,"/");return Uint8Array.from(atob(p+"=".repeat((4-p.length%4)%4)),c=>c.charCodeAt(0))}
@@ -38,8 +38,13 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
  }
  // Restricted agent API authenticates with an independently provisioned scoped secret.
  // The Control Room hostname must also be protected at the Cloudflare Access edge.
- if(!ownerHost&&u.pathname.startsWith('/api/connector/v1/'))
+ if(u.pathname.startsWith('/api/connector/v1/')){
+  // Explicitly configured, dedicated connector hostname. Fail closed otherwise.
+  if(env.AGENT_INGRESS_ENABLED!=='true'||!env.AGENT_INGRESS_HOST||
+     u.hostname!==env.AGENT_INGRESS_HOST||ownerHost)
+    return fail('Connector ingress disabled',404);
   return handleAgentConnector(request,{DB:env.DB});
+ }
  const accessActor=ownerHost?null:await authenticate(request,env);
  const actor=accessActor||(ownerHost?await ownerSession(request,env.DB):null);
  if(!u.pathname.startsWith('/api/')){
