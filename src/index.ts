@@ -92,6 +92,8 @@ export default {
       "https://global.heavenlykey.org",
       "https://bible.heavenlykey.org",
       "https://app.heavenlykey.org",
+      "https://heavenlykey.alldaywow247.workers.dev",
+      "https://heavenlykey-staging.alldaywow247.workers.dev",
     ]);
     const requestOrigin = request.headers.get("Origin");
     const corsOrigin = requestOrigin && trustedOrigins.has(requestOrigin) ? requestOrigin : null;
