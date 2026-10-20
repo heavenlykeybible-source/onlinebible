@@ -7,6 +7,36 @@
  function status(text){$('#status').textContent=text}
  async function api(path,init){const response=await fetch(path,init);let data;try{data=await response.json()}catch{throw Error('Sign in to the Control Room, then reload this page.')}if(!response.ok)throw Error(data.error||'The request could not be completed.');return data}
  const post=(path,body)=>api(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+
+ // A connection selector never exposes provider credentials, accepts arbitrary URLs or deploys.
+ let knownConnections=[];
+ const connectionSite=()=>$('#site').value;
+ function paintConnections(){
+  const provider=$('#connection-provider').value,selected=$('#connection-id').value;
+  const list=knownConnections.filter(x=>x.site===connectionSite()&&(provider==='all'||x.provider===provider));
+  const select=$('#connection-id');select.replaceChildren();
+  const initial=document.createElement('option');initial.value='';initial.textContent=list.length?'Choose authorized connection':'No connections provisioned';select.append(initial);
+  for(const x of list){const o=document.createElement('option');o.value=x.id;o.disabled=!x.enabled||!x.verified;o.textContent=x.label+' · '+x.provider+(o.disabled?' · inactive':'');select.append(o)}
+  if(list.some(x=>x.id===selected&&x.enabled&&x.verified))select.value=selected;
+ }
+ async function refreshConnections(){
+  const label=$('#connection-status');label.textContent='Checking registered connections…';
+  const site=connectionSite();
+  if(site==='account4'){knownConnections=[];paintConnections();label.textContent='Account 4 is protected. Agent connections cannot target the Control Room.';return}
+  try{const data=await api('/api/connections/list?site='+encodeURIComponent(site));
+   knownConnections=data.connections||[];paintConnections();
+   label.textContent=knownConnections.length+' registered connection(s). This directory is read-only; connection checks do not deploy or generate previews.';
+  }catch(error){knownConnections=[];paintConnections();label.textContent='Connection directory unavailable: '+error.message}
+ }
+ $('#connection-provider').onchange=paintConnections;
+ $('#connection-refresh').onclick=refreshConnections;
+ $('#connection-check').onclick=async()=>{
+  const connectionId=$('#connection-id').value,operation=$('#connection-operation').value,label=$('#connection-status');
+  if(!connectionId){label.textContent='Select an active verified connection first.';return}
+  try{const data=await post('/api/connections/plan',{site:connectionSite(),connectionId,operation});
+   label.textContent='Connection verified for '+data.plan.operation+' via '+data.plan.provider+'. This is a routing plan only: no action has executed.';
+  }catch(error){label.textContent=error.message}
+ };
  const emptyFooter=()=>({schema:1,copyright:'Copyright © Heavenly Key Evangelistic Movement 2012-2026.',designer:{label:'TALKMONEY Ecosystem',href:'https://talkmoney.uk'}});
  function message(type,data={}){if(preview&&!preview.closed)preview.postMessage({type,nonce,...data},sites[$('#site').value].origin)}
  function render(){
@@ -31,7 +61,7 @@
  async function save(){const data=await post('/api/save?'+target(),{content:readForm(),expectedVersion:version});version=data.version;status('Draft saved privately · version '+version);return data}
  async function publish(){await save();const data=await post('/api/publish?'+target(),{expectedVersion:version});if(!data.published)throw Error('Publication was not confirmed.');const response=await fetch(PUBLIC+'/v1/content?site='+effective()+'&page='+encodeURIComponent(pageKey()),{cache:'no-store'});const live=await response.json(),entry=kind==='page'?live.content:live[kind];if(!response.ok||entry?.version!==version)throw Error('Publication saved; public verification is pending. Reload before trying again.');status('Published and verified · version '+version+'. Reload the live website to see your changes.');message('hkem-status',{message:'Published and verified. The live website now uses this revision.'})}
  function pages(){const site=$('#site').value;const entries=site==='account2'?[{path:'/pages/admin',label:'Studio & dashboard'}]:catalog[site]||[{path:'/',label:'Home'}];$('#page').replaceChildren(...entries.map(p=>{const option=document.createElement('option');option.value=p.path;option.textContent=p.label;return option}));$('#site-note').textContent=sites[site].note;fields=[];menuSeed=null;footerSeed=null;$('#revisions').replaceChildren();load()}
- $('#site').onchange=pages;$('#page').onchange=()=>{fields=[];load()};$('#filter').oninput=renderFields;
+ $('#site').onchange=()=>{pages();refreshConnections()};$('#page').onchange=()=>{fields=[];load()};$('#filter').oninput=renderFields;
  for(const button of document.querySelectorAll('[data-tab]'))button.onclick=()=>{kind=button.dataset.tab;for(const b of document.querySelectorAll('[data-tab]'))b.setAttribute('aria-selected',String(b===button));for(const pane of document.querySelectorAll('[data-pane]'))pane.hidden=pane.dataset.pane!==kind;load()};
  $('#load').onclick=load;$('#save').onclick=()=>save().catch(e=>status(e.message));$('#publish').onclick=async()=>{const b=$('#publish');b.disabled=true;status('Publishing this '+kind+'…');try{await publish()}catch(e){status(e.message)}finally{b.disabled=false}};
  $('#open-visual').onclick=()=>{nonce=crypto.randomUUID();const url=new URL($('#page').value||'/',sites[$('#site').value].origin);url.searchParams.set('hkem-cms','edit');url.searchParams.set('hkem-session',nonce);url.searchParams.set('hkem-control',location.origin);preview=window.open(url,'hkem-visual-editor');if(!preview)status('Allow the visual editor to open a new tab, then try again.');else status('Visual editor opened. Waiting for the page to connect…')};
@@ -49,5 +79,5 @@
  $('#health').onclick=async()=>{try{const data=await api('/api/system/health');$('#health-result').textContent='CMS: '+data.cms+'\nPublishing: '+data.publishing+'\nAI: '+data.ai+'\nPictures: '+data.media}catch(error){$('#health-result').textContent=error.message}};
  async function password(generate){$('#password-status').textContent='Setting owner password…';$('#password-result').hidden=true;try{const data=await post('/api/owner/password',generate?{generate:true}:{password:$('#owner-password').value});$('#owner-password').value='';$('#password-status').textContent='Owner password is ready. Keep it privately; use the Owner password sign-in link above.';if(data.password){$('#password-result').textContent='Your new owner password — save it privately: '+data.password;$('#password-result').hidden=false}}catch(error){$('#password-status').textContent=error.message}}
  $('#password-save').onclick=()=>password(false);$('#password-generate').onclick=()=>password(true);$('#logout').onclick=async()=>{try{await post('/api/owner/logout',{})}catch{}location.href=(location.hostname.startsWith('heavenlykey-owner-dashboard')||location.hostname==='control.heavenlykey.org')?'/login.html':'/cdn-cgi/access/logout'};
- Promise.all([fetch('/catalog.json').then(r=>r.json()),api('/api/me')]).then(([pagesData,me])=>{catalog=pagesData;$('#identity').textContent='Signed in: '+me.actor;pages()}).catch(error=>{$('#identity').textContent=error.message;status(error.message)});
+ Promise.all([fetch('/catalog.json').then(r=>r.json()),api('/api/me')]).then(([pagesData,me])=>{catalog=pagesData;$('#identity').textContent='Signed in: '+me.actor;pages();refreshConnections()}).catch(error=>{$('#identity').textContent=error.message;status(error.message)});
 })();
