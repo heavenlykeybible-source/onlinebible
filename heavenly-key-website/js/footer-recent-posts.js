@@ -8,7 +8,7 @@
   try{
    const r=await fetch(API+'/api/blog/posts?limit=3',{headers:{Accept:'application/json'}});
    if(!r.ok)throw Error();const data=await r.json();
-   if(Array.isArray(data.items)&&data.items.length){root.replaceChildren();for(const p of data.items){const a=el('a',p.title||'Ministry message');a.href='blog/article.html?slug='+encodeURIComponent(p.slug||'');root.append(a)}return}
+   if(Array.isArray(data.items)&&data.items.length){root.replaceChildren();for(const p of data.items){const a=el('a',p.title||'Ministry message');a.href='/blog/'+encodeURIComponent(p.slug||'')+'/';root.append(a)}return}
   }catch(_){}
   const cb='hkFooterLegacy_'+Date.now()+'_'+Math.floor(Math.random()*100000),script=document.createElement('script');let done=false;
   function finish(){if(done)return;done=true;script.remove();try{delete window[cb]}catch(_){window[cb]=undefined}}
