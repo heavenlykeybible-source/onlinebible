@@ -50,3 +50,15 @@
 #hk-floating-radio .hkr-volume-label{display:flex!important;min-height:20px}
 #hk-floating-radio .hkr-volume-label input{height:20px;touch-action:pan-y}
 #hk-floating-radio .hkr-art-transport{overflow-y:auto;overscroll-behavior:contain}
+
+/* Tiny minimised radio launcher: keep the same audio element alive while the listener uses the page. */
+#hk-floating-radio.hkr-mini.hkr-tiny{position:fixed!important;right:max(8px,env(safe-area-inset-right))!important;bottom:max(8px,env(safe-area-inset-bottom))!important;left:auto!important;top:auto!important;transform:none!important;width:56px!important;max-width:56px!important;z-index:10090!important}
+#hk-floating-radio.hkr-mini.hkr-tiny .hkr-bubble{display:block!important;width:56px!important;height:56px!important;max-width:56px!important;aspect-ratio:1!important;overflow:hidden!important;border-radius:50%!important;border:2px solid #e2bb4b!important;box-shadow:0 3px 14px #0007!important;background:#7b0007!important}
+#hk-floating-radio.hkr-mini.hkr-tiny .hkr-bubble img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important}
+#hk-floating-radio.hkr-mini.hkr-tiny .hk-launcher-title,
+#hk-floating-radio.hkr-mini.hkr-tiny .hk-launcher-tagline{display:none!important}
+#hk-floating-radio.hkr-mini.hkr-tiny .hkr-launch-mode{left:12%!important;top:12%!important;width:76%!important;height:25%!important;font-size:8px!important;border-radius:8px!important}
+#hk-floating-radio.hkr-mini.hkr-tiny .hk-launch-signal{right:8%!important;top:8%!important;width:15%!important}
+#hk-floating-radio.hkr-mini.hkr-tiny.hkr-playing .hkr-bubble{box-shadow:0 0 0 2px #28c76f,0 3px 14px #0007!important}
+#hk-floating-radio.hkr-mini.hkr-tiny .hkr-art-player{display:none!important}
+@media(max-width:440px){#hk-floating-radio.hkr-mini.hkr-tiny{width:52px!important;max-width:52px!important}#hk-floating-radio.hkr-mini.hkr-tiny .hkr-bubble{width:52px!important;height:52px!important;max-width:52px!important}}
