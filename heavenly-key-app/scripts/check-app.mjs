@@ -62,6 +62,13 @@ for(const icon of pwaManifest.icons){
  const target=join(biblePublic,icon.src.replace(/^\//,''));
  if(!existsSync(target))throw Error('PWA manifest icon is missing: '+icon.src);
 }
+const png192=pwaManifest.icons.some(icon=>icon.src==='/icons/icon-192.png'&&icon.sizes==='192x192'&&icon.type==='image/png');
+const png512=pwaManifest.icons.some(icon=>icon.src==='/icons/icon-512.png'&&icon.sizes==='512x512'&&icon.type==='image/png');
+if(!png192||!png512)throw Error('PWA installability needs real 192px and 512px PNG icons.');
+const appHtml=readFileSync(join(biblePublic,'index.html'),'utf8');
+if(!/<link\\s+rel=["']apple-touch-icon["'][^>]*href=["']\\/icons\\/apple-touch-icon\\.png["']/.test(appHtml))throw Error('iOS Home Screen needs a PNG Apple touch icon.');
+const serviceWorker=readFileSync(join(biblePublic,'sw.js'),'utf8');
+for(const path of ['/icons/icon-192.png','/icons/icon-512.png','/icons/apple-touch-icon.png'])if(!serviceWorker.includes(path))throw Error('Offline app shell is missing install icon '+path+'.');
 const kjvManifest=JSON.parse(readFileSync(join(biblePublic,'kjv-manifest.json'),'utf8'));
 if(!Array.isArray(kjvManifest.books)||kjvManifest.books.length!==66)throw Error('KJV manifest must contain all 66 books.');
 let checkedChapters=0,checkedVerses=0;
