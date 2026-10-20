@@ -136,6 +136,11 @@ try{
     ['reading completion action',/Mark today’s reading complete/],
     ['no sign-in requirement',/no account is needed/]
   ])if(!pattern.test(routine))failures.push({file:readingRoutinePath,error:'Missing Bible reading routine requirement: '+label});
+  const destinyPlan=routine.match(/GUIDED\.destiny\.items\s*=\s*\[([\s\S]*?)\n  \];/);
+  const revivalPlan=routine.match(/GUIDED\.revival\s*=\s*\{label:[\s\S]*?items:\[([\s\S]*?)\n  \]\};/);
+  const entryCount=body=>(body.match(/\['[^']+\s+\d+[^']*',/g)||[]).length;
+  if(!destinyPlan||entryCount(destinyPlan[1])!==30)failures.push({file:readingRoutinePath,error:'Destiny plan must contain 30 distinct daily Scripture/devotion/prayer entries.'});
+  if(!revivalPlan||entryCount(revivalPlan[1])!==30)failures.push({file:readingRoutinePath,error:'Revival plan must contain 30 distinct daily Scripture/devotion/prayer entries.'});
   if(!styles.includes('.brr-card')||!styles.includes('.brr-primary')||!styles.includes('.brr-devotion'))failures.push({file:join(appPublic,'bible-reading-routine.css'),error:'Reading routine responsive card styles are missing.'});
   if(!page.includes('id="bible-reading-routine"')||!page.includes('bible-reading-routine.css')||!page.includes('bible-reading-routine.js'))failures.push({file:join(appPublic,'bible.html'),error:'Bible reading routine must be connected to the Bible reader page.'});
 }catch(e){failures.push({file:readingRoutinePath,error:'Unable to validate Bible reading routine: '+e.message});}
