@@ -16,7 +16,7 @@
 .messages-page .hero,.messages-page #hk-radio-compact{display:none}
 .messages-page .social-stream{width:100%;max-width:none}
 .messages-page .messenger{
- width:100%;height:calc(100dvh - 180px);min-height:450px;max-height:950px;
+ width:100%;height:calc(100vh - 180px);height:calc(100dvh - 180px);min-height:450px;max-height:950px;
  grid-template-columns:320px minmax(0,1fr);border:1px solid #d1d7db;border-radius:12px;
  background:#fff;box-shadow:0 8px 28px #111b2112;color:var(--chat-ink);
 }
@@ -64,7 +64,7 @@
 }
 @media(max-width:760px){
  .messages-page .shell{margin:8px auto;padding:0 6px}
- .messages-page .messenger{display:flex;height:calc(100dvh - 190px - env(safe-area-inset-bottom));min-height:320px;max-height:none;border-radius:8px}
+ .messages-page .messenger{display:flex;height:calc(100vh - 190px - env(safe-area-inset-bottom));height:calc(100dvh - 190px - env(safe-area-inset-bottom));min-height:320px;max-height:none;border-radius:8px}
  .messages-page .inbox-panel{min-height:0;max-height:none;border:0}
  .messages-page .conversation-panel{min-height:0;height:100%}
  .messages-page .messenger.chat-open .inbox-panel{display:none}

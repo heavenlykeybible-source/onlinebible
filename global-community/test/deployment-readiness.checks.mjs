@@ -67,3 +67,12 @@ test('a malformed timestamp does not prevent messages from rendering',()=>{
  render(7);
  assert.ok(history.children.some(node=>node.children.some(child=>child.textContent==='Retained message')));
 });
+
+
+test('messaging layout has viewport-height fallbacks for older mobile browsers',()=>{
+ const css=readFileSync(new URL('../public/messaging-theme.css',import.meta.url),'utf8');
+ assert.match(css,/height:calc\(100vh - 180px\);\s*height:calc\(100dvh - 180px\)/);
+ assert.match(css,/height:calc\(100vh - 190px - env\(safe-area-inset-bottom\)\);\s*height:calc\(100dvh - 190px - env\(safe-area-inset-bottom\)\)/);
+ assert.match(css,/@media\(max-width:760px\)/);
+ assert.match(css,/focus-visible/);
+});
