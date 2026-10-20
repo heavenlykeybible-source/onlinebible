@@ -104,6 +104,7 @@ Before marking launch-ready, run and record:
 - Added unit-test cases for missing email configuration, malformed reset tokens and password-policy rejection.
 - Hardened recovery email failure handling so both provider HTTP failures and network exceptions clear the stored one-time token.
 - Updated the API contract checker to recognize the exact-origin CORS allowlist rather than requiring a single hard-coded response origin.
+- Found and fixed a cross-step origin mismatch: the configured production and staging `workers.dev` site origins are now explicitly trusted by both the Worker request guard and auth response CORS allowlist; the API contract checker asserts these configured origins remain present.
 
 **Verification status remains unchanged:** these changes were committed to the audit branch but the Vitest suite, TypeScript compiler, API contract checks, frontend syntax/link checks, email delivery, and browser/device flows have not been executed in this environment. Do not treat source changes as a passing test run.
 
@@ -113,3 +114,8 @@ Before marking launch-ready, run and record:
 The public community page now checks `GET /api/auth/profile` with credentials, displays the member's name when a profile session is returned, and calls `POST /api/auth/logout` with credentials when the member signs out. The frontend contract test now asserts the profile/logout hooks are present.
 
 This is a source-level journey check only. It does not prove a real cookie survives the deployed browser origin, that D1/KV session state is working, or that sign-out is effective in a live browser. Those require execution against the actual runtime. The complete sequence still needs browser verification: register → sign in → profile appears → sign out → profile becomes unauthenticated → sign in again.
+
+
+### Configured Worker-origin correction
+
+The configured production and staging website origins are `https://heavenlykey.alldaywow247.workers.dev` and `https://heavenlykey-staging.alldaywow247.workers.dev`. Both are now explicitly included in the exact-origin allowlists in `src/index.ts` and `src/routes/auth.ts`. The API contract checker asserts these entries. This fixes a source-level mismatch that could otherwise reject POST requests originating from the configured Worker-hosted pages. Runtime confirmation is still pending.
