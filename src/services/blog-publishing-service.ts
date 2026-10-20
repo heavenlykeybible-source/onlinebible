@@ -16,7 +16,7 @@ function makeSlug(value: string): string {
     .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 100);
 }
 function canonicalUrl(env: Env, slug: string): string {
-  const base = String(env.PUBLIC_SITE_URL || "https://www.heavenlykey.org").replace(/\/$/, "");
+  const base = "https://www.heavenlykey.org";
   return base + "/blog/article.html?slug=" + encodeURIComponent(slug);
 }
 function shareText(post: any, url: string): string {
@@ -41,7 +41,8 @@ async function enqueueSocialShare(env: Env, post: any, actorId: number): Promise
       media_ids: [],
       publish_mode: "post_now"
     }, actorId);
-    if (!jobs.length) return { status: "failed", error: "No social publishing jobs were created." };\n    const results = await publishJobResults(env, jobs);\n    const failed = results.filter((item:any) => item.status === "failed").length;\n    const done = results.filter((item:any) => item.status === "published").length;\n    const status = failed === results.length ? "failed" : failed ? "partial" : done === results.length ? "complete" : "queued";\n    return { status, job_ids: jobs, ...(failed ? { error: failed + " social destination(s) failed; review the social publishing history." } : {}) };
+    if (!jobs.length) return { status: "failed", error: "No social publishing jobs were created." };
+    const results = await publishJobResults(env, jobs);\n    const failed = results.filter((item:any) => item.status === "failed").length;\n    const done = results.filter((item:any) => item.status === "published").length;\n    const status = failed === results.length ? "failed" : failed ? "partial" : done === results.length ? "complete" : "queued";\n    return { status, job_ids: jobs, ...(failed ? { error: failed + " social destination(s) failed; review the social publishing history." } : {}) };
   } catch (error) {
     return { status: "failed", error: error instanceof Error ? error.message : "Social sharing could not be queued." };
   }
