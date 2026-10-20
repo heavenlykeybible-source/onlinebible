@@ -91,7 +91,7 @@ try{
       failures.push({file:join(appPublic,'bible-dictionary.json'),error:'Every dictionary entry needs a term, definition, and Scripture references.'});continue;
     }
     for(const ref of entry.refs){
-      const match=String(ref).match(/^(.+?)\\s+\\d+/);
+      const match=String(ref).match(/^(.+?)\s+\d+/);
       if(!match||(!bookNames.has(match[1].toLowerCase())&&match[1].toLowerCase()!=='psalm'))failures.push({file:join(appPublic,'bible-dictionary.json'),error:'Unrecognized Bible book in dictionary reference: '+ref});
     }
   }
