@@ -5,6 +5,7 @@ test('Private notebook round-trip, wrong-passphrase and tamper checks',async()=>
  const secret={version:1,goals:[{title:'Private study goal',completed:false}],journal:[{title:'A private prayer',text:'My confidential prayer request'}],answers:{b01:1}};
  const sealed=await sealNotebook(secret,'a separate notebook passphrase');assert.deepEqual(await openNotebook(sealed,'a separate notebook passphrase'),secret);
  assert.ok(!JSON.stringify(sealed).includes('confidential'));assert.ok(!JSON.stringify(sealed).includes('Private study'));
+ await assert.rejects(openNotebook(sealed,'short'),/12–200 characters/);
  await assert.rejects(openNotebook(sealed,'a wrong notebook passphrase'));
  const changed={...sealed,ciphertext:'A'+sealed.ciphertext.slice(1)};if(changed.ciphertext===sealed.ciphertext)changed.ciphertext='B'+sealed.ciphertext.slice(1);await assert.rejects(openNotebook(changed,'a separate notebook passphrase'));
  await assert.rejects(openNotebook({...sealed,iterations:1},'a separate notebook passphrase'));
@@ -15,8 +16,8 @@ test('Offline curriculum retains all 66-book survey questions and valid answer i
  for(const q of QUESTIONS){assert.ok(Number.isInteger(q.correct)&&q.correct>=0&&q.correct<q.options.length);assert.ok(q.reference&&q.explanation)}
 });
 test('Strict CSP: new learning pages contain no executable inline code or inline styles',()=>{
- for(const path of ['public/walk-offline.html','public/creation-to-eternity.html']){const html=file(path);assert.doesNotMatch(html,/<style|\sstyle=|<script>/i);assert.ok(html.includes('offline-status.js'))}
- assert.doesNotMatch(file('public/walk-offline.js'),/fetch\(|\/api\/|localStorage\.setItem\([^,]+,JSON\.stringify\(state\)/);
+ for(const path of ['public/walk-offline.html','public/creation-to-eternity.html']){const html=file(path);assert.doesNotMatch(html,/<style|\\sstyle=|<script>/i);assert.ok(html.includes('offline-status.js'))}
+ assert.doesNotMatch(file('public/walk-offline.js'),/fetch\\(|\\/api\\/|localStorage\\.setItem\\([^,]+,JSON\\.stringify\\(state\\)/);
 });
 test('App service worker reopens learning tools offline and never captures private routes',async()=>{
  const listeners={},store=new Map();let online=true;
