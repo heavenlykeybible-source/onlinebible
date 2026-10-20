@@ -30,6 +30,11 @@ test('PWA provides PNG icons for Android installation and Apple Home Screen',()=
   assert.deepEqual([...bytes.subarray(0,8)],[137,80,78,71,13,10,26,10],src+' must be a valid PNG file');
   assert.ok(sw.includes("'"+src+"'"),src+' must be included in offline shell');
  }
+ const maskable='/icons/icon-maskable-512.png';
+ assert.ok(manifest.icons.some(icon=>icon.src===maskable&&icon.sizes==='512x512'&&icon.type==='image/png'&&icon.purpose==='maskable'));
+ const maskableBytes=readFileSync(new URL('../public'+maskable,import.meta.url));
+ assert.deepEqual([...maskableBytes.subarray(0,8)],[137,80,78,71,13,10,26,10]);
+ assert.ok(sw.includes("'"+maskable+"'"),'Maskable icon must be included in offline shell');
  const apple='/icons/apple-touch-icon.png';
  assert.ok(html.includes('rel="apple-touch-icon" sizes="180x180" href="'+apple+'"'));
  const appleBytes=readFileSync(new URL('../public'+apple,import.meta.url));
