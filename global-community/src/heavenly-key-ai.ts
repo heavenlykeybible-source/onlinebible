@@ -31,10 +31,14 @@ const TASKS = {
 /* Stop obvious personal contact, credentials and payment details before sending prompts externally. */
 export function containsSensitiveAiData(value:string):boolean{
  const text=String(value||'');
- return /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(text)
-  || /(?:\+?\d[\d().\s-]{7,}\d)/.test(text)
-  || /\b(?:password|passphrase|api[_ -]?key|access[_ -]?token|secret[_ -]?key)\s*(?:is|:|=)\s*\S+/i.test(text)
-  || /\b(?:\d[ -]*?){13,19}\b/.test(text);
+ const hasEmail=/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(text);
+ // Require at least 9 digits in a phone-like token. This avoids rejecting ISO dates
+ // such as 2026-10-20 (8 digits) while still catching common local/international numbers.
+ const hasPhone=Array.from(text.matchAll(/(?:^|[^\d])(\+?\d[\d().\s-]{7,}\d)(?!\d)/g))
+  .some(match=>(match[1].match(/\d/g)||[]).length>=9);
+ const hasCredential=/\b(?:password|passphrase|api[_ -]?key|access[_ -]?token|secret[_ -]?key)\s*(?:is|:|=)\s*\S+/i.test(text);
+ const hasPaymentCard=/\b(?:\d[ -]*?){13,19}\b/.test(text);
+ return hasEmail||hasPhone||hasCredential||hasPaymentCard;
 }
 export function validateAiDraftRequest(raw:any) {
  if(!raw||typeof raw!=='object'||Array.isArray(raw))throw Error('Choose an AI writing action.');
