@@ -35,9 +35,30 @@
   }
 
   function plain(value) {
-    var el = document.createElement('div');
-    el.innerHTML = value || '';
-    return (el.textContent || '').replace(/\s+/g, ' ').trim();
+    var text = String(value == null ? '' : value).replace(/<[^>]*>/g, ' ');
+    return text.replace(/&(#x[0-9a-f]+|#\\d+|amp|lt|gt|quot|apos|nbsp);/gi, function (entity, code) {
+      var named = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+      if (code.charAt(0) !== '#') return named[code.toLowerCase()] || entity;
+      var number = code.charAt(1).toLowerCase() === 'x'
+        ? parseInt(code.slice(2), 16)
+        : parseInt(code.slice(1), 10);
+      if (!Number.isFinite(number) || number < 0 || number > 0x10ffff ||
+          (number >= 0xd800 && number <= 0xdfff)) return '';
+      try { return String.fromCodePoint(number); } catch (_) { return ''; }
+    }).replace(/\\s+/g, ' ').trim();
+  }
+
+  function safeThumbnailUrl(value) {
+    try {
+      var url = new URL(value);
+      var host = url.hostname.toLowerCase();
+      var allowed = host === 'blogger.googleusercontent.com' ||
+        host.endsWith('.googleusercontent.com') ||
+        host.endsWith('.blogspot.com');
+      return url.protocol === 'https:' && allowed ? url.href : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   function append(tag, className, content, parent) {
