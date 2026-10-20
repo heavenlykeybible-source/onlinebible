@@ -40,4 +40,6 @@ Adds programme settings (sending paused by default), explicit WhatsApp subscript
 
 | 36 | `0036_site_content.sql` | 1 | allow-listed editable public website/homepage text managed by administrators |
 
-| 40 | `0040_blog_publishing.sql` | 1, 31 | Unified website blog articles, scheduled publication and social-share status |
+
+## 0040 — Unified website blog publishing
+Adds first-party blog article storage, draft/scheduled/published states, scheduled publication timestamps, and social-share status/error receipts. Depends on the authentication users table and the social publishing subsystem. Apply this migration before deploying the new blog API/Worker code.
