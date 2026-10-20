@@ -194,7 +194,7 @@ async function bible(){
    }
   }catch(error){
    if(error?.name==='AbortError')return;
-   await copyPassage(shareText+'\n'+url.href,'Passage copied with the sharing message. Paste it into WhatsApp or another app.');
+   await copyPassage(shareText+'\n'+url,'Passage copied with the sharing message. Paste it into WhatsApp or another app.');
   }
  }
  function socialLinks(text,title,anchor){
@@ -206,7 +206,7 @@ async function bible(){
    ['◉','https://wa.me/?text='+encodeURIComponent(payload+'\n'+page),'wa','WhatsApp'],
    ['f','https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(page),'fb','Facebook'],
    ['➤','https://t.me/share/url?url='+encodeURIComponent(page)+'&text='+encodeURIComponent(payload),'tg','Telegram'],
-   ['𝕏','https://twitter.com/intent/tweet?text='+encodeURIComponent(payload)+'&url='+encodeURIComponent(page.href),'x','X']
+   ['𝕏','https://twitter.com/intent/tweet?text='+encodeURIComponent(payload)+'&url='+encodeURIComponent(page),'x','X']
   ];
   for(const [glyph,href,kind,label] of items){
    const a=make('a',glyph,'kjv-social-icon kjv-social-'+kind);a.href=href;a.target='_blank';a.rel='noopener noreferrer';a.setAttribute('aria-label','Share '+title+' on '+label);a.title=label;row.append(a);
