@@ -30,7 +30,7 @@ if (mediaMigrations.length !== 5 || !mediaMigrations.at(-1)?.startsWith("0005_")
 
 async function checkMigrationSequence(directory, expectedCount, expectedTip, label) {
   const files = (await readdir(join(root, directory)))
-    .filter((f) => /^\\d{4}_.+\\.sql$/.test(f))
+    .filter((f) => /^\d{4}_.+\.sql$/.test(f))
     .sort();
   const nums = files.map((f) => Number(f.slice(0, 4)));
   if (nums.length !== expectedCount || nums.at(-1) !== expectedTip) {
