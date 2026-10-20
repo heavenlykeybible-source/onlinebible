@@ -96,6 +96,7 @@ Before marking launch-ready, run and record:
 
 - Added the missing public community page expected by the frontend contract test.
 - Added member sign-in and registration pages with client-side validation, loading/error feedback, and API requests.
+- Extended the community page to check the current cookie-backed profile session and expose sign-out when authenticated; added frontend contract assertions for profile/logout integration.
 - Added a reset-password page supporting both email request and token-based completion.
 - Wired password recovery handlers into the Worker router. Public reset-request responses are neutral for existing and unknown accounts; requests and completions are rate-limited.
 - Made auth route responses origin-aware for the explicit trusted-origin allowlist. The shared legacy response helpers used by other route modules are not yet fully origin-aware.
@@ -105,3 +106,10 @@ Before marking launch-ready, run and record:
 - Updated the API contract checker to recognize the exact-origin CORS allowlist rather than requiring a single hard-coded response origin.
 
 **Verification status remains unchanged:** these changes were committed to the audit branch but the Vitest suite, TypeScript compiler, API contract checks, frontend syntax/link checks, email delivery, and browser/device flows have not been executed in this environment. Do not treat source changes as a passing test run.
+
+
+## Sequential journey follow-up — 2026-10-20
+
+The public community page now checks `GET /api/auth/profile` with credentials, displays the member's name when a profile session is returned, and calls `POST /api/auth/logout` with credentials when the member signs out. The frontend contract test now asserts the profile/logout hooks are present.
+
+This is a source-level journey check only. It does not prove a real cookie survives the deployed browser origin, that D1/KV session state is working, or that sign-out is effective in a live browser. Those require execution against the actual runtime. The complete sequence still needs browser verification: register → sign in → profile appears → sign out → profile becomes unauthenticated → sign in again.
