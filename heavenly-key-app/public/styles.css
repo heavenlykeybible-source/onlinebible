@@ -9,3 +9,12 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}button:fo
 
 
 .offline-link{display:block;border:1px solid #d3dceb;padding:12px 15px;border-radius:10px;color:#162f78;background:#f1f5fd;text-decoration:none;font-weight:700}.offline-link:focus-visible{outline:3px solid #d29a28;outline-offset:3px}
+
+
+/* Embedded Heavenly Key Radio: keep the player usable on narrow phones and tablets. */
+.hk-app-radio-frame{width:100%;max-width:560px;margin:14px auto;border:1px solid #d7dfed;border-radius:14px;overflow:hidden;background:#07152f;isolation:isolate}
+.hk-app-radio-frame iframe{display:block;width:100%;height:660px;max-height:78vh;border:0;background:#07152f}
+.hk-app-radio-card .service-links{display:flex;flex-wrap:wrap;gap:10px}
+.hk-app-radio-card .service-link{min-height:44px;display:inline-flex;align-items:center}
+@media(max-width:420px){.hk-app-radio-frame iframe{height:620px;max-height:76vh}}
+@media(prefers-reduced-motion:reduce){.hk-app-radio-frame{scroll-behavior:auto}}
