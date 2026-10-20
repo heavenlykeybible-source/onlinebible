@@ -20,6 +20,9 @@ export async function openNotebook(envelope,passphrase){
  if(!envelope||envelope.version!==1||envelope.iterations!==ITERATIONS)throw Error('Unsupported notebook file.');
  const salt=unb64(envelope.salt),iv=unb64(envelope.iv),bytes=unb64(envelope.ciphertext);
  if(salt.length!==16||iv.length!==12||bytes.length<16)throw Error('Invalid notebook file.');
- try{const key=await keyFor(passphrase,salt,['decrypt']);return JSON.parse(decoder.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},key,bytes)));}
+ // Keep passphrase validation and unsupported-browser errors distinct from an
+ // authentication failure, so users receive an actionable error message.
+ const key=await keyFor(passphrase,salt,['decrypt']);
+ try{return JSON.parse(decoder.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},key,bytes)));}
  catch{throw Error('The passphrase is incorrect or this notebook is damaged.');}
 }

@@ -5,6 +5,7 @@ test('Private notebook round-trip, wrong-passphrase and tamper checks',async()=>
  const secret={version:1,goals:[{title:'Private study goal',completed:false}],journal:[{title:'A private prayer',text:'My confidential prayer request'}],answers:{b01:1}};
  const sealed=await sealNotebook(secret,'a separate notebook passphrase');assert.deepEqual(await openNotebook(sealed,'a separate notebook passphrase'),secret);
  assert.ok(!JSON.stringify(sealed).includes('confidential'));assert.ok(!JSON.stringify(sealed).includes('Private study'));
+ await assert.rejects(openNotebook(sealed,'short'),/12–200 characters/);
  await assert.rejects(openNotebook(sealed,'a wrong notebook passphrase'));
  const changed={...sealed,ciphertext:'A'+sealed.ciphertext.slice(1)};if(changed.ciphertext===sealed.ciphertext)changed.ciphertext='B'+sealed.ciphertext.slice(1);await assert.rejects(openNotebook(changed,'a separate notebook passphrase'));
  await assert.rejects(openNotebook({...sealed,iterations:1},'a separate notebook passphrase'));
