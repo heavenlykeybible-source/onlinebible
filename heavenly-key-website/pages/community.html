@@ -26,6 +26,12 @@ h1,h2{line-height:1.2}h1{font-size:clamp(2rem,5vw,3.25rem);margin:.4rem 0}h2{fon
 <div class="actions"><a class="btn" href="#community-feeds">Open Community Feed</a><a class="btn alt" href="#prayer-centre">Prayer Centre</a><a class="btn alt" href="register.html">Create an account</a><a class="btn alt" href="login.html">Sign in</a></div>
 <p class="status" id="community-status" role="status" aria-live="polite">Connecting to community services…</p>
 </section>
+<section class="panel" id="member-account" aria-labelledby="member-account-heading">
+<h2 id="member-account-heading">Your account</h2>
+<p id="member-status" class="status" role="status" aria-live="polite">Checking sign-in status…</p>
+<div class="actions" id="member-actions"><a class="btn" href="login.html">Sign in</a><a class="btn alt" href="register.html">Create account</a></div>
+<button id="logout-button" class="btn alt" type="button" hidden>Sign out</button>
+</section>
 <section id="community-feeds" aria-labelledby="feeds-heading"><h2 id="feeds-heading">Community feeds</h2>
 <div class="grid">
 <section class="panel" aria-labelledby="discussion-heading"><h2 id="discussion-heading">Discussions</h2><div class="feed" data-feed="discussion" id="discussion-feed">Loading discussions…</div></section>
@@ -57,7 +63,32 @@ var bodyText=valueOf(item,feed.bodyKeys);if(bodyText){var p=document.createEleme
 target.appendChild(article)
 })
 }
-Promise.all(feeds.map(async function(feed){
+
+// Account journey: check the cookie-backed session, then offer sign-out.
+(async function(){
+var status=document.getElementById("member-status");
+var actions=document.getElementById("member-actions");
+var logout=document.getElementById("logout-button");
+try{
+var response=await fetch(apiBase+"/api/auth/profile",{headers:{Accept:"application/json"},credentials:"include"});
+var data=await response.json().catch(function(){return {}});
+if(response.ok&&data.profile){
+status.textContent="Signed in as "+(data.profile.name||"member")+".";
+actions.hidden=true;logout.hidden=false;
+}else{
+status.textContent="You are not signed in. Sign in to participate in the community.";
+}
+}catch(error){status.textContent="Account status is temporarily unavailable. You can still sign in below."}
+logout.addEventListener("click",async function(){
+logout.disabled=true;status.textContent="Signing out…";
+try{
+var response=await fetch(apiBase+"/api/auth/logout",{method:"POST",credentials:"include",headers:{Accept:"application/json"}});
+if(!response.ok)throw new Error("Sign-out could not be confirmed.");
+status.textContent="You have signed out.";logout.hidden=true;actions.hidden=false;
+}catch(error){status.textContent="Could not sign out right now. Please try again.";logout.disabled=false}
+});
+})();
+\nPromise.all(feeds.map(async function(feed){
 var target=document.getElementById(feed.id);
 try{
 var response=await fetch(apiBase+feed.path,{headers:{Accept:"application/json"}});
