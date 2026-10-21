@@ -245,7 +245,53 @@ function communityShortcuts(){
  finally{invite.disabled=false;}});
  links.append(invite);panel.append(links,feedback);return panel;
 }
-async function mountHome(){const {stream,aside}=socialFeedLayout("Home feed","Connecting Believers • Building Faith • Growing in Christ");void CareUI.mountDaily({host:aside,api,el,session});stream.append(communityShortcuts(),composeCard("fellowship"));feedTabs(stream);await mountFeed(stream);const today=(await api("/api/today-with-god")).today;const purpose=el('details',null,'community-purpose'),purposeTitle=el('summary');purposeTitle.append(el('span','✦','purpose-symbol'),el('span','Connected in Christ. Living with purpose.'),el('span','Our mission','purpose-label'));purpose.append(purposeTitle,el('p',"Advancing the gospel of Christ, equipping the saints, upholding the faith of our fathers, fulfilling destiny, and living meaningful, purposeful lives in the will of God."));stream.querySelector('.stream-heading').after(purpose);const t=card("Today With God");t.append(el("strong",today.scripture_reference),el("p",today.reflection),el("p","Prayer focus: "+today.prayer_focus));aside.append(t);const actions=card("Explore"),links=el("div",null,"stack");for(const [label,href] of [["Pray with believers","prayer.html"],["Grow in Christ","grow.html"],["I want to know Jesus","salvation.html"],["Create Global Space","spaces.html"]]){const a=el("a",label,"btn secondary");a.href=href;links.append(a);}actions.append(links);aside.append(actions);const discover=card("Discover believers");discover.id="discover";const sf=el("form",null,"stack"),q=el("input"),sb=el("button","Search","btn secondary");q.placeholder="Search name or calling";q.maxLength=120;q.setAttribute("aria-label","Search believers");sb.type="submit";sf.append(q,sb);discover.append(sf);sf.addEventListener("submit",e=>{e.preventDefault();discoverProfiles(discover,q.value);});aside.children[0].after(discover);const messages=card("Messages",session?"View your conversations and message requests.":"Connect with believers in a private conversation.");messages.classList.add("home-messages");const inbox=el("a",session?"Open messages":"Sign in to chat","btn secondary");inbox.href=session?"messages.html":"account.html?next=messages.html";messages.append(inbox);discover.after(messages);await discoverProfiles(discover);}
+function homeReadingCard(){
+ const panel=card("Today With God"),content=el('div'),feedback=el('p','','status'),retry=el('button','Try again','btn secondary');
+ feedback.setAttribute('role','status');retry.type='button';retry.hidden=true;
+ panel.append(content,feedback,retry);
+ async function load(){
+  retry.disabled=true;retry.hidden=true;feedback.textContent='Loading today’s encouragement…';
+  try{
+   const data=await api('/api/today-with-god'),today=data?.today;
+   if(!panel.isConnected)return;
+   if(!today||!['scripture_reference','reflection','prayer_focus'].every(key=>typeof today[key]==='string'&&today[key].trim()))throw Error('Reading unavailable');
+   content.replaceChildren(el('strong',today.scripture_reference),el('p',today.reflection),el('p','Prayer focus: '+today.prayer_focus));
+   feedback.textContent='';
+  }catch{
+   if(!panel.isConnected)return;
+   feedback.textContent='Today’s encouragement could not be loaded. You can keep browsing and try again.';
+   retry.hidden=false;
+  }finally{retry.disabled=false;}
+ }
+ retry.addEventListener('click',()=>void load());
+ void load();return panel;
+}
+async function mountHome(){
+ const {stream,aside}=socialFeedLayout("Home feed","Connecting Believers • Building Faith • Growing in Christ");
+ void CareUI.mountDaily({host:aside,api,el,session});
+ stream.append(communityShortcuts(),composeCard("fellowship"));feedTabs(stream);
+ const purpose=el('details',null,'community-purpose'),purposeTitle=el('summary');
+ purposeTitle.append(el('span','✦','purpose-symbol'),el('span','Connected in Christ. Living with purpose.'),el('span','Our mission','purpose-label'));
+ purpose.append(purposeTitle,el('p',"Advancing the gospel of Christ, equipping the saints, upholding the faith of our fathers, fulfilling destiny, and living meaningful, purposeful lives in the will of God."));
+ stream.querySelector('.stream-heading').after(purpose);
+ aside.append(homeReadingCard());
+ const actions=card("Explore"),links=el("div",null,"stack");
+ for(const [label,href] of [["Pray with believers","prayer.html"],["Grow in Christ","grow.html"],["I want to know Jesus","salvation.html"],["Create Global Space","spaces.html"]]){
+  const a=el("a",label,"btn secondary");a.href=href;links.append(a);
+ }
+ actions.append(links);aside.append(actions);
+ const discover=card("Discover believers");discover.id="discover";
+ const sf=el("form",null,"stack"),q=el("input"),sb=el("button","Search","btn secondary");
+ q.placeholder="Search name or calling";q.maxLength=120;q.setAttribute("aria-label","Search believers");sb.type="submit";
+ sf.append(q,sb);discover.append(sf);sf.addEventListener("submit",e=>{e.preventDefault();void discoverProfiles(discover,q.value);});
+ aside.children[0].after(discover);
+ const messages=card("Messages",session?"View your conversations and message requests.":"Connect with believers in a private conversation.");
+ messages.classList.add("home-messages");const inbox=el("a",session?"Open messages":"Sign in to chat","btn secondary");
+ inbox.href=session?"messages.html":"account.html?next=messages.html";messages.append(inbox);discover.after(messages);
+ // Finish mounting the shell immediately. Each data component owns its loading
+ // and error UI, so a slow or unavailable service cannot hold up ACTIVE/layout.
+ void Promise.allSettled([mountFeed(stream),discoverProfiles(discover)]);
+}
 async function moderatorReports(container=root){if(!session||session.user.status==='restricted'||!["moderator","administrator","owner"].includes(session.user.role))return;const panel=card("Reported content","Review reported content against the Community rules. Reports do not automatically remove posts.");panel.dataset.moderatorReports="1";const d=await api("/api/moderation/reports");for(const r of d.items||[]){const item=el("section",null,"item");if(r.group_id)item.append(el("p","Group #"+r.group_id+" · group review: "+r.group_review_status+" · "+(r.group_review_note||"Awaiting group managers")));item.append(el("h3",r.target_title||r.target_type+" "+r.target_id),el("p",r.reason.replaceAll("_"," ")),el("p",r.details||""),expandableText(r.target_body||""));if(r.video_url)item.append(videoPost(r.video_url));const note=el("textarea");note.placeholder="Decision reason · required";note.maxLength=500;note.setAttribute("aria-label","Review note");item.append(note);const st=el("p","","status");for(const [action,label] of r.target_type==='profile'?[["dismiss","Dismiss report"],["escalate","Escalate account review"]]:[["dismiss","Dismiss report"],["remove","Restrict content"]]){const b=el("button",label,"btn secondary");b.type="button";b.addEventListener("click",async()=>{b.disabled=true;try{await api("/api/moderation/reports/"+r.report_id+"/review","POST",{action,note:note.value});item.replaceChildren(el("p",action==="remove"?"Content restricted.":action==="escalate"?"Account review sent to administrators.":"Report dismissed."));await mountFeed(root.querySelector(".social-stream")||root);}catch(e){status(st,e.message);b.disabled=false;}});item.append(b);}if(["administrator","owner"].includes(session.user.role)&&r.subject_user_id){const lock=el("button","Lock member account for review","btn wine");lock.type="button";lock.addEventListener("click",async()=>{if(note.value.trim().length<10){status(st,"Explain the account decision in at least 10 characters.");return;}if(!confirm("Lock this member’s posting and messaging pending review?"))return;lock.disabled=true;try{await api("/api/moderation/accounts/"+r.subject_user_id,"POST",{action:"lock",note:note.value});status(st,"Account locked by administrator.");}catch(e){status(st,e.message);lock.disabled=false;}});item.append(lock);}item.append(st);panel.append(item);}if(!panel.querySelector(".item"))panel.append(el("p","No pending reports."));container.append(panel);}
 async function mountFellowship(){const {stream,aside}=socialFeedLayout("Fellowship","Share faith, encouragement and meaningful conversations.");stream.append(composeCard("fellowship"));feedTabs(stream);await mountFeed(stream);await moderatorReports(aside);}
 async function mountPrayer(){await CareUI.mountPreferences({host:root,api,el,session});await CareUI.mountDaily({host:root,api,el,session});root.append(composeCard("prayer"));const dedicated=card("Prayer Requests","Choose community, Global Connections, Prayer Circle or private ministry visibility.");if(session){const f=el("form",null,"stack");field(f,"Prayer title","title","text",{required:true});field(f,"What do you want God to do?","requestText","textarea",{required:true});field(f,"Visibility","visibility","select",{options:[["community","Community"],["connections","Global Connections"],["circle","Prayer Circle"],["private_ministry","Private ministry"]]});const b=el("button","Submit Prayer Request","btn primary"),st=el("p","", "status");b.type="submit";const careForm=await CareUI.preparePrayerForm({form:f,api,el});f.append(b,st);f.addEventListener("submit",async e=>{e.preventDefault();b.disabled=true;try{const input=Object.fromEntries(new FormData(f));if(careForm)input.followup=!!f.elements.followup.checked;await api("/api/prayer-items","POST",input);f.reset();if(careForm){f.elements.visibility.value="private_ministry";f.elements.visibility.dispatchEvent(new Event("change"));}status(st,"Prayer request received.");await prayerItems(dedicated);}catch(err){status(st,err.message);}finally{b.disabled=false;}});dedicated.append(f);}root.append(dedicated);await prayerItems(dedicated);const circles=card("Prayer Circles","Small prayer fellowships for deeper support and accountability.");const create=el("form",null,"stack");field(create,"Circle name","name","text",{required:true});field(create,"Christian prayer purpose","description","textarea",{required:true});field(create,"Maximum members","maxMembers","number").value="20";const cb=el("button","Create Prayer Circle","btn primary");cb.type="submit";const st=el("p","", "status");create.append(cb,st);create.addEventListener("submit",async e=>{e.preventDefault();if(!requireSignIn())return;try{await api("/api/prayer-circles","POST",Object.fromEntries(new FormData(create)));create.reset();status(st,"Prayer Circle created.");await prayerCircleList(circles);}catch(err){status(st,err.message);}});circles.append(create);root.append(circles);await prayerCircleList(circles);const feedCard=card("Prayer Wall");root.append(feedCard);await mountFeed(feedCard,"prayer");}

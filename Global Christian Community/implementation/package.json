@@ -18,7 +18,7 @@
     "test:active": "node --test test/active-content.checks.mjs",
     "test:spaces": "node --test test/spaces.checks.mjs",
     "test:care": "node --test test/community-care.checks.mjs",
-    "test:home": "node --test test/approved-home-layout.checks.mjs test/approved-dashboard.checks.mjs"
+    "test:home": "node --test test/approved-home-layout.checks.mjs test/approved-dashboard.checks.mjs test/home-loading.checks.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20261015.1",
