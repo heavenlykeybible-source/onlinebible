@@ -46,3 +46,18 @@ Passing social-auth contract tests do not verify configured Google/Facebook cred
 5. Configure isolated staging resources and obtain explicit owner deployment approval through the requested review process.
 
 This pass is reviewable source work, not a completed premium UI, finished security audit, or launch-ready release.
+
+
+## Visitor welcome follow-up — 21 October 2026
+
+The owner requested an inviting guest homepage that disappears after authentication.
+
+Implemented in public/app.js: the approved banner remains unchanged, followed by encouraging copy, three original feature cards about fellowship, encouragement and purpose, and real Join the Community / Sign In destinations. Guest content is constructed only when no authenticated userId exists. Other public views retain their compact invitation.
+
+approved-home-layout.js now handles placement and session visibility without duplicating or moving the content owned by app.js. Responsive welcome styles and keyboard focus treatment were added to approved-home-layout.css. index.html cache versions were advanced for the three changed frontend assets.
+
+The homepage suite now has six passing tests, including fresh guest visits, exact CTA destinations, member exclusion, repeated renders, login/logout state, compact invitations on other pages and asset references. The existing feed test now checks the new CTA structure and uses the actual userId session field.
+
+Validation: npm run check and npm run frontend passed. The relevant test run passed 28 tests, followed by one additional passing compact-view regression test (29 passing tests across the selected suites in total). These include feed, registration, ACTIVE and all 12 Design Card tests.
+
+Browser visual QA was unavailable in this managed environment; no browser screenshot, pixel matching, mobile rendering or live login flow is claimed. No Cloudflare deployment occurred. Previously recorded full-build and staging blockers remain unresolved.
