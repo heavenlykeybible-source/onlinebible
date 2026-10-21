@@ -266,6 +266,6 @@ import { uploadMediaFile } from './media-uploader.js';
   });
 
   scheduledRefresh.addEventListener('click',async()=>{scheduledRefresh.disabled=true;scheduledStatus.textContent='Refreshing…';try{await refreshScheduled();}catch(err){scheduledStatus.textContent=err.message;}finally{scheduledRefresh.disabled=false;}});
-  $('#schedule-back').addEventListener('click',()=>{if(history.length>1)history.back();else location.href='admin.html';});
+  $('#schedule-back').addEventListener('click',()=>{if(history.length>1)history.back();else location.href='admin';});
   load().catch(err=>{accessStatus.textContent=err.status===401?'Your administrator session has ended. Return to the main dashboard and sign in again.':err.message;});
 })();
