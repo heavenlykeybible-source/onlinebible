@@ -27,7 +27,34 @@ function field(form,labelText,name,type="text",opts={}){const l=el("label",label
 function requireSignIn(){if(session?.user?.status==='active')return true;let invite=document.querySelector('#gc-signin-invitation');if(!invite){invite=el('dialog',null,'gc-signin-invitation');invite.id='gc-signin-invitation';invite.setAttribute('aria-label','Join Global Christian Community');const close=el('button','×','dialog-close');close.type='button';close.setAttribute('aria-label','Close sign-in invitation');close.onclick=()=>invite.close();const signin=el('a','SIGN IN','btn primary'),create=el('a','CREATE ACCOUNT','btn gold');signin.href='account.html';create.href='account.html#register';invite.append(close,el('h2','Join the conversation'),el('p','Sign in or create an account to post, react, comment and connect with members.'),signin,create);document.body.append(invite);}if(!invite.open)invite.showModal();return false;}
 function reactions(post){const row=el("div",null,"reactions"),more=el("details",null,"reaction-menu"),options=el("div",null,"reaction-options");more.append(el("summary","More reactions"),options);const types=[["amen","Amen"],["hallelujah","Hallelujah"],["glory_to_god","Glory to God"],["praying","I am praying"],["encouraged","Encouraged"],["thank_god","Thank God"],["helpful","Helpful"],["i_will_go","I will go"],["challenge_accepted","Challenge accepted"]];for(const [v,t] of types){const b=el("button",t+(post.reactions?.[v]?" · "+post.reactions[v]:""),"reaction");b.type="button";b.setAttribute("aria-pressed",String((post.my_reactions||[]).includes(v)));b.addEventListener("click",async()=>{if(!requireSignIn())return;b.disabled=true;try{const result=await api("/api/posts/"+post.post_id+"/reactions","POST",{reactionType:v});post.reactions=post.reactions||{};post.reactions[v]=Math.max(0,(post.reactions[v]||0)+(result.active?1:-1));post.my_reactions=(post.my_reactions||[]).filter(x=>x!==v);if(result.active)post.my_reactions.push(v);row.replaceWith(reactions(post));}catch(e){alert(e.message);b.disabled=false;}});if(v==="amen")row.append(b);else options.append(b);}row.append(more);return row;}
 function memberAvatar(name,photoUrl){const label=String(name||"Community member");const avatar=el("span",null,"member-avatar");avatar.setAttribute("role","img");avatar.setAttribute("aria-label",label+" profile picture");const img=el("img");img.alt="";img.loading="lazy";img.decoding="async";img.referrerPolicy="no-referrer";const fallback="/assets/heavenly-key-permanent-default-avatar.png";const emergencyFallback="/assets/default-human-avatar.svg";img.src=fallback;if(typeof photoUrl==="string"&&photoUrl.startsWith("/")&&!photoUrl.startsWith("//")&&!/[\\\\<>]/.test(photoUrl))img.src=photoUrl;img.addEventListener("error",()=>{if(!img.src.endsWith("/assets/default-human-avatar.svg"))img.src=emergencyFallback;});avatar.append(img);return avatar;}
-function communityWelcome(){if(session)return null;const banner=el('section',null,'gc-visitor-banner');banner.setAttribute('aria-label','Welcome to Global Christian Community');const image=el('img');image.src='assets/global-christian-community-approved-banner.jpeg';image.alt='Global Christian Community — Together We Take Christ To The Nations Of The World';image.width=1536;image.height=614;image.fetchPriority='high';const actions=el('div',null,'gc-visitor-actions'),join=el('a','CREATE ACCOUNT','btn gold'),signin=el('a','SIGN IN','btn primary');join.href='account.html#register';signin.href='account.html';actions.append(join,signin);banner.append(image,actions,el('p','Browse public posts. Sign in to join the conversation.'));return banner;}
+function communityWelcome(){
+ if(session?.user?.userId)return null;
+ const banner=el('section',null,'gc-visitor-banner');
+ banner.setAttribute('aria-labelledby','gc-welcome-title');
+ const image=el('img');image.src='assets/global-christian-community-approved-banner.jpeg';
+ image.alt='Global Christian Community — Together We Take Christ To The Nations Of The World';
+ image.width=1536;image.height=614;image.fetchPriority='high';image.decoding='async';
+ // Other public views keep their compact invitation and existing page styling.
+ if(page!=='home'){
+  const actions=el('div',null,'gc-visitor-actions'),join=el('a','Join the Community','btn gold'),signin=el('a','Sign In','btn primary');
+  join.href='account.html#register';signin.href='account.html';actions.append(join,signin);
+  banner.removeAttribute('aria-labelledby');banner.setAttribute('aria-label','Welcome to Global Christian Community');
+  banner.append(image,actions,el('p','Browse public posts. Join the community to share, pray and connect.'));return banner;
+ }
+ const copy=el('div',null,'gc-visitor-copy'),title=el('h2','You belong to a family of faith.','gc-visitor-heading');title.id='gc-welcome-title';
+ copy.append(el('p','ONE FAITH · ONE FAMILY · ALL NATIONS','gc-welcome-eyebrow'),title,el('p','Wherever you are in the world, there is room for you here. Connect with believers, encourage one another, share what God is doing, and grow together in Christ.','gc-welcome-intro'));
+ const features=el('div',null,'gc-welcome-features');
+ for(const [theme,heading,text]of [
+  ['FELLOWSHIP','Find your community','Discover Spaces and Groups where faith, fellowship and meaningful conversations bring people together.'],
+  ['ENCOURAGEMENT','Share hope. Strengthen faith.','Share a testimony, an encouraging Design Card or a prayer request. Your words can lift someone today.'],
+  ['PURPOSE','Grow in Christ. Serve together.','Learn, pray and take part in a community united by the gospel and a heart for the nations.']
+ ]){const feature=el('article',null,'gc-welcome-feature');feature.append(el('span',theme,'gc-welcome-theme'),el('h3',heading),el('p',text));features.append(feature);}
+ const invitation=el('div',null,'gc-welcome-invitation');invitation.append(el('p','Your next connection could be an encouragement to someone. Come and be part of the family.','gc-welcome-call'));
+ const actions=el('div',null,'gc-visitor-actions'),join=el('a','Join the Community','btn gold'),signin=el('a','Sign In','btn primary');
+ join.href='account.html#register';signin.href='account.html';actions.append(join,signin);
+ invitation.append(actions,el('p','You can explore public posts below. Create your account to post, pray, connect and join the conversation.','gc-welcome-note'));
+ copy.append(features,invitation);banner.append(image,copy);return banner;
+}
 function mountReferenceFrame(nav,stream,aside){
  const profile=el("section",null,"reference-member");profile.append(memberAvatar(session?.profile?.displayName||"HK",session?.profile?.profilePhotoKey),el("strong",session?.profile?.displayName||"Welcome, believer"));const account=el("a",session?"View profile":"Sign in / Join");account.href=session?"profile.html":"account.html";profile.append(account);nav.prepend(profile);
  const topnav=document.querySelector(".top .nav");if(topnav&&!topnav.querySelector(".reference-search")){
@@ -513,6 +540,7 @@ root.append(loading);
 viewBusy=true;try{await renderPage();}finally{loading.remove();viewBusy=false;if(queuedNavigation){const queued=queuedNavigation;queuedNavigation=null;navigate(...queued);}}
 
 })().catch(e=>{const host=document.querySelector("#page-root");if(host)host.textContent="Unable to load. Please refresh. "+e.message;});
+
 
 
 
