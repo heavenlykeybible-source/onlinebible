@@ -68,7 +68,9 @@ for (const file of htmlFiles) {
     if (target.file === file && !ref.value.includes("#") && ref.kind === "href") continue;
 
     let candidate = target.file;
-    if (candidate.endsWith(sep)) candidate = join(candidate, "index.html");
+    candidate = candidate.split("?", 1)[0];
+    if (!await exists(candidate) && await exists(candidate + ".html")) candidate += ".html";
+    if (!await exists(candidate) && await exists(join(candidate, "index.html"))) candidate = join(candidate, "index.html");
     if (!await exists(candidate)) {
       failures.push(relative(site,file)+': missing '+ref.kind+' target "'+ref.value+'" -> '+relative(site,candidate));
       continue;
@@ -102,8 +104,8 @@ for (const [label,value] of [
   if (!requiredHome.includes(value)) failures.push("Homepage GRDPC block is missing official "+label+" live link.");
   if (!requiredGrdpc.includes(value)) failures.push("GRDPC page is missing official "+label+" live link.");
 }
-if (!requiredHome.includes('href="pages/grdpc.html#reminders"')) failures.push("Homepage is missing the GRDPC reminder-subscription link.");
-if (!requiredHome.includes('href="pages/grdpc.html"')) failures.push("Homepage is missing the GRDPC know-more link.");
+if (!requiredHome.includes('href="pages/grdpc#reminders"')) failures.push("Homepage is missing the GRDPC reminder-subscription link.");
+if (!requiredHome.includes('href="pages/grdpc"')) failures.push("Homepage is missing the GRDPC know-more link.");
 if (!requiredGrdpc.includes('id="reminders"')) failures.push("GRDPC page is missing the reminders anchor.");
 
 if (failures.length) {
@@ -112,3 +114,4 @@ if (failures.length) {
   process.exit(1);
 }
 console.log("SITE LINK AUDIT PASSED — checked "+htmlFiles.length+" HTML pages, local links/assets/anchors, and official GRDPC social links.");
+

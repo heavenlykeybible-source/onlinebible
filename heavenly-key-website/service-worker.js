@@ -24,14 +24,13 @@
  * is tracked as a known limitation in KNOWN-ISSUES.md.
  */
 const ASSET_VERSION = "1.2.5";
-const CACHE_VERSION = "hk-v18-footer";
+const CACHE_VERSION = "hk-v19-clean-urls";
 const APP_SHELL_CACHE = CACHE_VERSION + "-shell";
 const PAGES_CACHE = CACHE_VERSION + "-pages";
 
 const APP_SHELL = [
   "/",
-  "/index.html",
-  "/offline.html",
+  "/offline",
   `/css/tokens.css?v=${ASSET_VERSION}`,
   `/css/base.css?v=${ASSET_VERSION}`,
   `/css/components.css?v=${ASSET_VERSION}`,
@@ -118,9 +117,10 @@ self.addEventListener("fetch", (event) => {
           caches.open(PAGES_CACHE).then((cache) => cache.put(req, resClone));
           return res;
         })
-        .catch(() => caches.match(req).then((cached) => cached || caches.match("/offline.html")))
+        .catch(() => caches.match(req).then((cached) => cached || caches.match("/offline")))
     );
   }
 });
+
 
 

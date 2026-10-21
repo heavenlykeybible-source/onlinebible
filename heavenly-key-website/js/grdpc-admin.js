@@ -1,7 +1,7 @@
 
 export async function mountGRDPCAdmin(host,{api,el,getLevel}){
  host.replaceChildren(el('h3','GRDPC prayer reminders'),el('p','Sunday 8:00 PM and Monday 12:00 midnight, Nigeria time. Monday midnight is Sunday night entering Monday. The requested Monday noon, 6 PM and 11:30 PM reminders need clarification before activation.'));
- const link=el('a','Open permanent live / subscription page','btn btn-secondary');link.href='grdpc.html';link.target='_blank';link.rel='noopener noreferrer';host.append(link);
+ const link=el('a','Open permanent live / subscription page','btn btn-secondary');link.href='grdpc';link.target='_blank';link.rel='noopener noreferrer';host.append(link);
  const state=el('p','Loading…','form-status');state.setAttribute('role','status');host.append(state);
  try{const data=await api('/api/admin/grdpc'),c=data.config,form=el('form'),fields={};
  function field(key,text,type='text'){const input=el('input');input.type=type;input.value=c[key]??'';const label=el('label',text);label.append(input);form.append(label);fields[key]=input;return input;}

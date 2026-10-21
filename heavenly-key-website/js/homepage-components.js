@@ -56,7 +56,7 @@
         return `
           <p class="verse-text">"${escapeHTML(v.text)}"</p>
           <span class="verse-ref">${escapeHTML(v.reference)}</span>
-          <a class="btn btn-gold" href="pages/resources.html#bible">Read Chapter</a>`;
+          <a class="btn btn-gold" href="pages/resources#bible">Read Chapter</a>`;
       },
     });
 
@@ -72,7 +72,7 @@
           <h3 id="devotional-heading" class="visually-hidden">Bible Verse of the Day</h3>
           <p class="verse-text" style="color:var(--color-charcoal);font-style:italic">"${escapeHTML(v.text)}"</p>
           <p style="font-weight:700;color:var(--color-wine)">${escapeHTML(v.reference)}</p>
-          <a href="pages/resources.html#bible">Read in Context →</a>`;
+          <a href="pages/resources#bible">Read in Context →</a>`;
       },
     });
 
@@ -110,7 +110,7 @@
           <span class="eyebrow">Daily Devotional</span>
           <h3>${escapeHTML(d.title)}</h3>
           <p>${escapeHTML(d.excerpt || d.body)}</p>
-          <a href="pages/resources.html#devotional">Read Today's Devotional →</a>`;
+          <a href="pages/resources#devotional">Read Today's Devotional →</a>`;
       },
     });
 
@@ -144,4 +144,5 @@
 
   document.addEventListener("DOMContentLoaded", initHomepageComponents);
 })();
+
 
