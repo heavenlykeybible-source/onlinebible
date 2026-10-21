@@ -200,7 +200,7 @@ async function route(request:Request,env:Env,ctx?:ExecutionContext):Promise<Resp
 
 export default {
   async scheduled(_event:ScheduledController,env:Env):Promise<void>{
-    const jobs=[['call-cleanup',()=>Calls.cleanup(env)],['social-flow-cleanup',()=>env.DB.prepare("DELETE FROM social_login_flows WHERE expires_at<?").bind(Date.now()).run()],['community-care',()=>Care.deliverDue(env)]] as const;
+    const jobs=[['call-cleanup',()=>Calls.cleanup(env)],['social-flow-cleanup',()=>env.DB.prepare("DELETE FROM social_login_flows WHERE expires_at<?").bind(Date.now()).run()],['session-revocation-cleanup',()=>env.DB.prepare("DELETE FROM revoked_sessions WHERE expires_at<=?").bind(Date.now()).run()],['community-care',()=>Care.deliverDue(env)]] as const;
     const results=await Promise.allSettled(jobs.map(async([,run])=>run()));
     const failed=results.flatMap((r,i)=>r.status==='rejected'?[jobs[i][0]]:[]);
     if(failed.length)throw new Error('Scheduled tasks failed: '+failed.join(', '));
@@ -210,5 +210,6 @@ export default {
     catch(e:any){const internal=e instanceof TypeError||e instanceof ReferenceError||e instanceof SyntaxError||/D1_|SQLITE|constraint failed|no such table|binding|TypeError/i.test(String(e?.message))||!(e instanceof Error);return error(internal?"The request could not be completed. Please try again.":e.message,internal?500:Number((e as any)?.status)||400);}
   }
 };
+
 
 
