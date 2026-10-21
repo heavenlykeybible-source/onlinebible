@@ -3,43 +3,85 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
+const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
+class Element {
+ constructor(tag,text='',className=''){this.tag=tag;this.textContent=text;this.className=className;this.children=[];this.attributes={};this.parentElement=null;this.dataset={};const classes=new Set();this.classList={toggle:(k,on)=>on?classes.add(k):classes.delete(k),remove:(...ks)=>ks.forEach(k=>classes.delete(k)),contains:k=>classes.has(k)};}
+ append(...items){for(const n of items){n.remove();n.parentElement=this;this.children.push(n);}}
+ after(n){n.remove();const p=this.parentElement;n.parentElement=p;p.children.splice(p.children.indexOf(this)+1,0,n);}
+ remove(){if(this.parentElement){const p=this.parentElement;p.children=p.children.filter(n=>n!==this);this.parentElement=null;}}
+ setAttribute(k,v){this.attributes[k]=v;}
+ removeAttribute(k){delete this.attributes[k];}
+ querySelectorAll(selector){return this.children.flatMap(n=>[...((selector.startsWith('.')?n.className.split(' ').includes(selector.slice(1)):n.tag===selector)?[n]:[]),...n.querySelectorAll(selector)]);}
+ querySelector(s){return this.querySelectorAll(s)[0]||null;}
+}
+function welcome(session,page='home'){
+ const start=source.indexOf('function communityWelcome('),end=source.indexOf('function mountReferenceFrame(',start);
+ return vm.runInNewContext(source.slice(start,end)+'\ncommunityWelcome();',{session,page,el:(...args)=>new Element(...args.map(x=>x??''))});
+}
 function fixture(){
-  const listeners={},classes=new Set(),order=[];
-  const body={dataset:{page:'home'},classList:{toggle(k,on){on?classes.add(k):classes.delete(k)},remove(...ks){ks.forEach(k=>classes.delete(k))}}};
-  const intro={textContent:''},join={textContent:'CREATE ACCOUNT'},login={textContent:'SIGN IN'};
-  let welcome=null,removed=false;
-  const actions={before(n){const old=order.indexOf(n);if(old>=0)order.splice(old,1);order.splice(order.indexOf(actions),0,n);},querySelector:s=>s.includes('a:not')?login:join};
-  const image={src:'assets/global-christian-community-approved-banner.jpeg'};
-  order.push(image,actions,intro);
-  const banner={setAttribute(){},remove(){removed=true;},querySelector(s){if(s===':scope > p')return intro;if(s==='.gc-visitor-actions')return actions;if(s==='.gc-visitor-heading')return welcome=order.find(n=>n.className==='gc-visitor-heading')||null;}};
-  const active={},heading={after(n){this.next=n;}};
-  const stream={querySelector:s=>s==='.gc-visitor-banner'?(removed?null:banner):s==='.stream-heading'?heading:s==='.gc-active-section'?active:null};
-  const document={body,createElement:tag=>({tag}),querySelector:s=>s==='.social-stream'?stream:null};
-  vm.runInNewContext(readFileSync(new URL('../public/approved-home-layout.js',import.meta.url),'utf8'),{document,window:{addEventListener:(k,f)=>listeners[k]=f}});
-  return {emit:(name,detail)=>listeners[name]({detail}),classes,order,image,intro,join,login,actions,banner,heading,active,get removed(){return removed;}};
+ const listeners={},body=new Element('body');body.dataset.page='home';
+ const stream=new Element('main'),heading=new Element('header','','stream-heading'),active=new Element('section','','gc-active-section');
+ const banner=welcome(null);stream.append(heading,banner,active);
+ const document={body,querySelector:s=>s==='.social-stream'?stream:null};
+ vm.runInNewContext(readFileSync(new URL('../public/approved-home-layout.js',import.meta.url),'utf8'),{document,window:{addEventListener:(k,f)=>listeners[k]=f}});
+ return {emit:(name,detail)=>listeners[name]({detail}),body,stream,heading,active,banner};
 }
 
-test('guest welcome keeps the approved banner and working account links, in reading order',()=>{
-  const f=fixture();f.emit('hk-community-view-ready',{page:'home',session:null});
-  assert(f.classes.has('gc-approved-guest'));assert.equal(f.heading.next,f.banner);
-  assert.equal(f.order[0],f.image);assert.equal(f.order[1].tag,'h2');assert.equal(f.order[2],f.intro);assert.equal(f.order[3],f.actions);
-  assert.equal(f.join.textContent,'Join the Community');assert.equal(f.login.textContent,'Sign In');
-  f.emit('hk-community-view-ready',{page:'home',session:null});
-  assert.equal(f.order.filter(n=>n.tag==='h2').length,1,'Repeated rendering must not duplicate the heading');
+test('every guest receives the approved banner, encouraging cards and real registration/sign-in destinations',()=>{
+ for(let i=0;i<2;i++){
+  const banner=welcome(null),image=banner.children[0],copy=banner.children[1];
+  assert.equal(image.src,'assets/global-christian-community-approved-banner.jpeg');
+  assert.equal(image.width,1536);assert.equal(image.height,614);assert.equal(image.fetchPriority,'high');
+  assert.equal(banner.attributes['aria-labelledby'],copy.querySelector('h2').id);
+  assert.equal(copy.querySelectorAll('.gc-welcome-feature').length,3);
+  assert.match(copy.querySelector('.gc-welcome-intro').textContent,/grow together in Christ/);
+  const [join,login]=copy.querySelectorAll('a');
+  assert.equal(join.textContent,'Join the Community');assert.equal(join.href,'account.html#register');
+  assert.equal(login.textContent,'Sign In');assert.equal(login.href,'account.html');
+  assert.equal(copy.children.at(-1).className,'gc-welcome-invitation');
+ }
 });
 
-test('session changes immediately switch visibility and member rendering preserves ACTIVE',()=>{
-  const f=fixture(),session={user:{userId:7}};
-  f.emit('hk-community-view-ready',{page:'home',session:null});
-  f.emit('hk-care-session',session);assert(f.classes.has('gc-approved-member'));assert(!f.classes.has('gc-approved-guest'));
-  f.emit('hk-community-view-ready',{page:'home',session});assert(f.removed);assert.equal(f.heading.next,f.active);
-  f.emit('hk-care-session',null);assert(f.classes.has('gc-approved-guest'));assert(!f.classes.has('gc-approved-member'));
-  f.emit('hk-community-view-ready',{page:'groups',session:null});assert.equal(f.classes.size,0);
+test('authenticated members never construct the visitor banner or its image',()=>{
+ assert.equal(welcome({user:{userId:7}}),null);
+ assert.notEqual(welcome({user:{}}),null,'Only an actual authenticated user hides the invitation');
 });
 
-test('homepage loads both layout assets and keeps real guest account destinations',()=>{
-  const html=readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
-  assert.match(html,/href="approved-home-layout\.css\?/);assert.match(html,/src="approved-home-layout\.js\?/);
-  const app=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
-  assert(app.includes("join.href='account.html#register'"));assert(app.includes("signin.href='account.html'"));
+test('other public views preserve their compact invitation and working registration link',()=>{
+ const banner=welcome(null,'groups');
+ assert.equal(banner.children.length,3);assert.equal(banner.attributes['aria-labelledby'],undefined);
+ assert.equal(banner.children[1].children[0].href,'account.html#register');
+ assert.equal(banner.querySelectorAll('.gc-welcome-features').length,0);
+});
+
+test('guest render is repeatable and does not duplicate or rearrange the welcome content',()=>{
+ const f=fixture(),copy=f.banner.children[1],children=[...copy.children];
+ for(let i=0;i<2;i++)f.emit('hk-community-view-ready',{page:'home',session:null});
+ assert(f.body.classList.contains('gc-approved-guest'));assert.equal(f.stream.children[1],f.banner);
+ assert.deepEqual(copy.children,children);assert.equal(copy.querySelectorAll('h2').length,1);
+});
+
+test('sign-in hides welcome immediately, member render retains ACTIVE, and sign-out restores the invitation',()=>{
+ const f=fixture(),session={user:{userId:7}};
+ f.emit('hk-community-view-ready',{page:'home',session:null});
+ f.emit('hk-care-session',session);
+ assert(f.body.classList.contains('gc-approved-member'));assert(!f.body.classList.contains('gc-approved-guest'));
+ f.emit('hk-community-view-ready',{page:'home',session});
+ assert.equal(f.stream.querySelector('.gc-visitor-banner'),null);assert.equal(f.stream.children[1],f.active);
+ f.emit('hk-care-session',null);f.stream.append(welcome(null));
+ f.emit('hk-community-view-ready',{page:'home',session:null});
+ assert(f.body.classList.contains('gc-approved-guest'));assert.equal(f.stream.children[1].className,'gc-visitor-banner');
+ f.emit('hk-community-view-ready',{page:'groups',session:null});
+ assert(!f.body.classList.contains('gc-approved-guest'));assert(!f.body.classList.contains('gc-approved-member'));
+});
+
+test('home loads current welcome assets and CSS makes guest/member sections mutually exclusive',()=>{
+ const html=readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
+ for(const file of ['app.js','approved-home-layout.js','approved-home-layout.css'])assert(html.includes(file+'?v=20261021-welcome3'));
+ const css=readFileSync(new URL('../public/approved-home-layout.css',import.meta.url),'utf8');
+ assert(css.includes('.gc-approved-member .gc-visitor-banner{display:none!important}'));
+ assert(css.includes('.gc-approved-guest .gc-active-section{display:none!important}'));
+ assert(css.includes('@media(max-width:420px)'));
+ assert(source.includes("location.hash==='#register'?'register':'login'"));
+ assert(source.includes("navigate(me.user.status==='restricted'?'safety.html':'index.html')"));
 });
