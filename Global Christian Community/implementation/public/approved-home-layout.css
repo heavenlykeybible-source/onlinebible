@@ -111,3 +111,7 @@ body[data-page="home"].hk-reference-dashboard .gc-active-viewport{scrollbar-colo
 @media(max-width:1399px) and (min-width:901px){body[data-page="home"].hk-reference-dashboard .brand{flex-basis:220px!important}}
 @media(max-width:900px){body[data-page="home"].hk-reference-dashboard .brand{flex:0 1 auto!important}body[data-page="home"].hk-reference-dashboard .social-layout{gap:12px!important}}
 @media(prefers-reduced-motion:reduce){body[data-page="home"].hk-reference-dashboard .gc-active-content{transition:none!important}}
+
+
+/* Guest introduction follows the approved banner and precedes account actions. */
+body[data-page="home"].hk-reference-dashboard .gc-visitor-heading{margin:20px 16px 8px;text-align:center;color:#0a2c64;font-size:clamp(18px,2vw,24px);line-height:1.3}
