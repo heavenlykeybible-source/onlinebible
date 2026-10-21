@@ -79,3 +79,35 @@ body[data-page="home"].hk-reference-dashboard .gc-visitor-actions a:first-child{
 body[data-page="home"].hk-reference-dashboard .gc-visitor-actions a:last-child{border:1px solid #cbdaf0!important;color:#0a3d83!important;background:white!important}
 @media(max-width:900px){body[data-page="home"].hk-reference-dashboard .social-rail{min-height:0!important}body[data-page="home"].hk-reference-dashboard .social-sidebar{display:block!important}body[data-page="home"].hk-reference-dashboard .social-stream{width:100%}}
 @media(max-width:520px){body[data-page="home"].hk-reference-dashboard .social-rail .rail-link{font-size:12px!important}body[data-page="home"].hk-reference-dashboard .social-stream .post .actions :is(button,a){font-size:12px!important}body[data-page="home"].hk-reference-dashboard .gc-active-content{flex-basis:142px;width:142px}}
+
+
+/* Approved 1536px dashboard reference: density, alignment and colour matching. */
+@media(min-width:1400px){
+body[data-page="home"].hk-reference-dashboard .shell{padding:10px 6px 36px!important;max-width:1800px!important}
+body[data-page="home"].hk-reference-dashboard .social-layout{grid-template-columns:clamp(280px,20vw,310px) minmax(0,1fr) clamp(280px,21vw,325px)!important;gap:12px!important}
+body[data-page="home"].hk-reference-dashboard .social-rail{border-radius:0 12px 12px 0!important;top:75px;min-height:calc(100dvh - 85px)}
+body[data-page="home"].hk-reference-dashboard .social-stream{padding-top:0!important}
+}
+body[data-page="home"].hk-reference-dashboard .top .nav{gap:12px!important}
+body[data-page="home"].hk-reference-dashboard .brand{flex-basis:290px!important}
+body[data-page="home"].hk-reference-dashboard .brand img{border:2px solid #edc24f!important;box-shadow:0 0 0 2px #ffffff70}
+body[data-page="home"].hk-reference-dashboard .reference-search{background:#f8faff!important;border-radius:999px!important;box-shadow:inset 0 1px 3px #09275018!important}
+body[data-page="home"].hk-reference-dashboard .social-rail{background:radial-gradient(circle at 50% 110%,#1257ac 0%,transparent 38%),linear-gradient(135deg,#06173b 0%,#083675 58%,#041631 100%)!important}
+body[data-page="home"].hk-reference-dashboard .social-rail .rail-link[aria-current="page"]{background:linear-gradient(90deg,#a9003b,#ed0750)!important}
+body[data-page="home"].hk-reference-dashboard .social-rail .reference-mission{border-radius:12px!important;overflow:hidden}
+body[data-page="home"].hk-reference-dashboard .social-stream .composer-card{border-radius:12px!important}
+body[data-page="home"].hk-reference-dashboard .social-stream .composer-card :is(button,a){min-height:38px}
+body[data-page="home"].hk-reference-dashboard .feed-tabs{border-radius:10px!important}
+body[data-page="home"].hk-reference-dashboard .feed-tabs [aria-selected="true"],body[data-page="home"].hk-reference-dashboard .feed-tabs .active{color:#c60045!important;border-bottom:3px solid #e4004b!important;font-weight:800!important}
+body[data-page="home"].hk-reference-dashboard .social-stream .post{border-radius:12px!important;border-left:1px solid #dde6f2!important}
+body[data-page="home"].hk-reference-dashboard .social-stream .post .post-header{padding:12px 14px 5px!important}
+body[data-page="home"].hk-reference-dashboard .social-stream .post p{line-height:1.5!important}
+body[data-page="home"].hk-reference-dashboard .hk-ref-panel{border-radius:12px!important}
+body[data-page="home"].hk-reference-dashboard .gc-broadcast-feature{background:radial-gradient(circle at 90% 15%,#125baf 0%,transparent 48%),linear-gradient(150deg,#08183f,#0c387d)!important;min-height:215px!important}
+body[data-page="home"].hk-reference-dashboard .gc-broadcast-feature .hk-live-button{background:linear-gradient(90deg,#b00042,#e60850)!important;color:white!important;border-radius:8px!important;padding:10px 14px!important}
+body[data-page="home"].hk-reference-dashboard .gc-visitor-banner{box-shadow:0 5px 22px #102a501a!important}
+body[data-page="home"].hk-reference-dashboard .gc-active-section{overflow:hidden}
+body[data-page="home"].hk-reference-dashboard .gc-active-viewport{scrollbar-color:#b6c9e2 transparent}
+@media(max-width:1399px) and (min-width:901px){body[data-page="home"].hk-reference-dashboard .brand{flex-basis:220px!important}}
+@media(max-width:900px){body[data-page="home"].hk-reference-dashboard .brand{flex:0 1 auto!important}body[data-page="home"].hk-reference-dashboard .social-layout{gap:12px!important}}
+@media(prefers-reduced-motion:reduce){body[data-page="home"].hk-reference-dashboard .gc-active-content{transition:none!important}}
