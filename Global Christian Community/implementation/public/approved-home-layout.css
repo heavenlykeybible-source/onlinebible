@@ -115,3 +115,28 @@ body[data-page="home"].hk-reference-dashboard .gc-active-viewport{scrollbar-colo
 
 /* Guest introduction follows the approved banner and precedes account actions. */
 body[data-page="home"].hk-reference-dashboard .gc-visitor-heading{margin:20px 16px 8px;text-align:center;color:#0a2c64;font-size:clamp(18px,2vw,24px);line-height:1.3}
+
+/* Visitor welcome is part of the real feed. It never supplies synthetic activity. */
+body[data-page="home"] .gc-visitor-banner{margin-bottom:16px;overflow:hidden;border:1px solid #d5dfed;border-radius:16px;background:#fff;box-shadow:0 8px 28px #102a5014}
+body[data-page="home"] .gc-visitor-banner>img{display:block;width:100%;height:auto;object-fit:contain;background:#fff}
+body[data-page="home"] .gc-visitor-copy{padding:clamp(20px,3vw,32px);background:radial-gradient(ellipse at 100% 100%,#e7efff 0,transparent 65%),#fff;text-align:center}
+body[data-page="home"] .gc-visitor-copy .gc-welcome-eyebrow{margin:0 0 12px;color:#8c6217;font-size:11px;font-weight:800;letter-spacing:.13em;line-height:1.6}
+body[data-page="home"] .gc-visitor-copy .gc-visitor-heading{margin:0 0 12px;color:#082e69;font-size:clamp(23px,2.3vw,32px);font-weight:800;line-height:1.18;letter-spacing:-.025em}
+body[data-page="home"] .gc-visitor-copy .gc-welcome-intro{max-width:620px;margin:0 auto;color:#425675;font-size:15px;line-height:1.75}
+body[data-page="home"] .gc-welcome-features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:24px 0;text-align:left}
+body[data-page="home"] .gc-welcome-feature{min-width:0;padding:18px 15px;border:1px solid #dce5f2;border-top:3px solid #1653a2;border-radius:12px;background:#ffffffeb}
+body[data-page="home"] .gc-welcome-feature:nth-child(2){border-top-color:#cc0750}
+body[data-page="home"] .gc-welcome-feature:nth-child(3){border-top-color:#bd902e}
+body[data-page="home"] .gc-welcome-theme{color:#496585;font-size:10px;font-weight:800;letter-spacing:.1em;overflow-wrap:anywhere}
+body[data-page="home"] .gc-welcome-feature h3{margin:10px 0 8px;color:#102f60;font-size:16px;line-height:1.35}
+body[data-page="home"] .gc-welcome-feature p{margin:0;color:#425675;font-size:13px;line-height:1.7}
+body[data-page="home"] .gc-welcome-invitation{padding-top:22px;border-top:1px solid #dce5f2}
+body[data-page="home"] .gc-welcome-call{max-width:530px;margin:0 auto 16px;font-size:15px;font-weight:650;line-height:1.6;color:#173a69}
+body[data-page="home"] .gc-visitor-copy .gc-visitor-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:0;padding:0}
+body[data-page="home"] .gc-visitor-copy .gc-visitor-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:12px 24px;border-radius:9px;text-decoration:none;font-size:15px;font-weight:750;line-height:1.4}
+body[data-page="home"] .gc-visitor-copy .gc-visitor-actions a:first-child{background:linear-gradient(100deg,#ac0643,#d6084c);color:#fff;border:1px solid #b80746;box-shadow:0 4px 12px #ac064326}
+body[data-page="home"] .gc-visitor-copy .gc-visitor-actions a:last-child{background:#fff;color:#103f80;border:1px solid #b6c8e2}
+body[data-page="home"] .gc-visitor-copy .gc-visitor-actions a:focus-visible{outline:3px solid #a46b00;outline-offset:4px}
+body[data-page="home"] .gc-welcome-note{max-width:540px;margin:14px auto 0;color:#52627b;font-size:12px;line-height:1.7}
+@media(max-width:1190px) and (min-width:901px),(max-width:600px){body[data-page="home"] .gc-welcome-features{grid-template-columns:minmax(0,1fr)}body[data-page="home"] .gc-welcome-feature{padding:15px 17px}}
+@media(max-width:420px){body[data-page="home"] .gc-visitor-copy{padding:20px 16px}body[data-page="home"] .gc-visitor-copy .gc-visitor-actions{flex-direction:column}body[data-page="home"] .gc-visitor-copy .gc-visitor-actions a{width:100%;box-sizing:border-box}}
