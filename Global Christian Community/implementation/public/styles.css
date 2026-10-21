@@ -493,20 +493,10 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #a7
   text-decoration:none;
 }
 
-/* Gospel Design Studio: simple starter themes and unobtrusive single shared AI. */
+/* Gospel Design Studio: simple starter themes. */
 .featured-card-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
 .featured-card-preset{border:1px solid #d6e0ef;border-radius:12px;min-height:48px;background:linear-gradient(135deg,#f5f8ff,#fffaf1);color:#213d72;font-weight:750;cursor:pointer;padding:9px;letter-spacing:.01em}
 .featured-card-preset:hover,.featured-card-preset:focus-visible{border-color:#d0a953;background:#fff7dc;outline-offset:2px}
-.hk-ai-composer{align-self:flex-start;font-size:.85rem!important;margin:4px 0 10px;background:#edf1fb!important;color:#294776!important;border:1px solid #c9d6e9}
-.hk-ai-search-suggestion{display:block;width:100%;text-align:left;border:0;border-top:1px solid #e2e8f3;padding:10px 4px;background:transparent;color:#385b8b;font-size:.78rem;font-weight:600;cursor:pointer;white-space:normal}
-.hk-ai-search-suggestion:hover,.hk-ai-search-suggestion:focus-visible{background:#f3f7fe;color:#173b78}
-.hk-ai-dialog{box-sizing:border-box;border:1px solid #cfdbed;border-radius:18px;padding:22px;width:min(96vw,620px);max-height:88dvh;overflow:auto;box-shadow:0 24px 70px #152f5780;background:white;color:#1c2e48}
-.hk-ai-dialog::backdrop{background:#09204599}
-.hk-ai-dialog h2{color:#183e78;font-size:1.2rem;line-height:1.35;margin:0 0 6px}
-.hk-ai-dialog .actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-.hk-ai-dialog label{display:grid;gap:6px;font-size:.85rem;font-weight:700}
-.hk-ai-dialog input,.hk-ai-dialog select,.hk-ai-dialog textarea{box-sizing:border-box;width:100%;min-width:0;border:1px solid #bcc9dc;border-radius:10px;padding:11px;color:#213047;background:#fff;font:inherit;font-weight:400}
-.hk-ai-dialog textarea[readonly]{background:#f5f8fe;white-space:pre-wrap;min-height:100px}
 .video-help{display:block;color:#59718d;font-size:.78rem;margin-top:6px}
 .design-preview .linked-video{margin-bottom:12px}
 .design-card{box-shadow:0 14px 34px #0e294725,0 0 0 1px #ffffff17 inset}
@@ -516,7 +506,7 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #a7
 .design-card.dc-pattern-rays{background:radial-gradient(ellipse at 83% 0%,#ffffff33 0%,transparent 52%),linear-gradient(135deg,var(--dc-a),var(--dc-b))}
 .design-card.dc-layout-ribbon .dc-category{display:inline-block;background:var(--dc-accent);color:var(--dc-b);padding:6px 12px;letter-spacing:.06em;border-radius:6px}
 .design-card.dc-layout-arch .dc-inner{padding:5px 10px}
-@media(max-width:520px){.featured-card-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.hk-ai-dialog{padding:15px}.hk-ai-dialog .actions button{flex:1}}
+@media(max-width:520px){.featured-card-presets{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 
 /* AOE Premium Community Cards (draft) — decorative artwork stays outside message content. */
@@ -702,3 +692,4 @@ a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #a7
  .hk-family-promo{margin:12px auto;padding:14px;}
  .hk-family-promo nav a{max-width:100%;overflow-wrap:anywhere;}
 }
+
