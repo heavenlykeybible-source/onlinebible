@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 // Run shared AI sandbox safety checks with the existing Account 3 feed test suite.
-import '../../scripts/test-account4-ai-preview.mjs';
+import '../../../scripts/test-account4-ai-preview.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
@@ -28,7 +28,7 @@ test('Feed keeps the newest filter response and deduplicates paginated posts',as
 });
 
 test('Public broadcast player survives navigation and minimizes without restarting; Stop releases resources',async()=>{
-const base=new URL('../../',import.meta.url);const readSource=path=>readFileSync(new URL(path,base),'utf8');
+const base=new URL('../',import.meta.url);const readSource=path=>readFileSync(new URL(path,base),'utf8');
 class Node{
  constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.attrs={};this.dataset={};this.listeners={};this.hidden=false;this.classList={add(){},remove(){}};}
  append(...xs){for(const x of xs){x.parentElement=this;this.children.push(x);}}
@@ -36,11 +36,11 @@ class Node{
  focus(){this.focusCount=(this.focusCount||0)+1;}after(n){body.append(n);}setAttribute(k,v){this.attrs[k]=v;}getAttribute(k){return this.attrs[k];}addEventListener(k,f){(this.listeners[k]??=[]).push(f);}async click(){for(const f of this.listeners.click??[])await f({});}
 }
 const body=new Node('body'),authbar=new Node('div'),top=new Node('header'),headerNav=new Node('nav'),root=new Node('main'),document=new Node('document');body.append(top,authbar,root);top.append(headerNav);document.body=body;document.createElement=t=>new Node(t);document.querySelector=s=>s==='#authbar'?authbar:s==='.top'?top:s==='.nav'?headerNav:null;
-let opened=0;const context={document};const mount=vm.runInNewContext(readSource('global-community/public/media-dock.js').replace('export function','function')+'\nmountMediaDock;',context);const controls=mount({onOpen:()=>opened++});const dock=body.children.find(n=>n.className==='faith-media-dock'),launch=headerNav.children.find(n=>n.className==='faith-media-launch');assert.equal(controls.active(),false);assert.equal(dock.hidden,true);assert.equal(dock.children[1].children.length,0,'No stream or frame before click');
+let opened=0;const context={document};const mount=vm.runInNewContext(readSource('public/media-dock.js').replace('export function','function')+'\nmountMediaDock;',context);const controls=mount({onOpen:()=>opened++});const dock=body.children.find(n=>n.className==='faith-media-dock'),launch=headerNav.children.find(n=>n.className==='faith-media-launch');assert.equal(controls.active(),false);assert.equal(dock.hidden,true);assert.equal(dock.children[1].children.length,0,'No stream or frame before click');
 await launch.children[2].click();const frame=dock.children[1].children[0];assert.ok(frame.src.endsWith('?channel=radio'));assert.equal(opened,1);
 const head=dock.children[0];await head.children[1].click();assert.equal(dock.children[1].hidden,true);assert.equal(controls.active(),true);assert.equal(dock.children[1].children[0],frame,'Minimize must retain player');root.replaceChildren(new Node('article'));assert.equal(dock.children[1].children[0],frame,'Page content changes must retain player');await launch.children[2].click();assert.equal(dock.children[1].children[0],frame,'Opening same station must not restart it');await launch.children[3].click();const tv=dock.children[1].children[0];assert.notEqual(tv,frame);assert.ok(tv.src.endsWith('?channel=video'));await head.children[2].click();assert.equal(controls.active(),false);assert.equal(dock.hidden,true);assert.equal(dock.children[1].children.length,0,'Stop releases iframe and polling');
 // Exercise the actual app navigation function with a pending render and private-page redirect.
-const app=readSource('global-community/public/app.js'),start=app.indexOf('const routes='),end=app.indexOf('async function renderPage()',start);let renders=0;const history={pushState(_state,_title,url){location.href=url;location.pathname=new URL(url).pathname;location.search=new URL(url).search;},replaceState(_state,_title,url){this.pushState(_state,_title,url);}};const location={href:'https://community.example/index.html',origin:'https://community.example',pathname:'/index.html',search:'',reload(){throw Error('Unexpected reload');}};
+const app=readSource('public/app.js'),start=app.indexOf('const routes='),end=app.indexOf('async function renderPage()',start);let renders=0;const history={pushState(_state,_title,url){location.href=url;location.pathname=new URL(url).pathname;location.search=new URL(url).search;},replaceState(_state,_title,url){this.pushState(_state,_title,url);}};const location={href:'https://community.example/index.html',origin:'https://community.example',pathname:'/index.html',search:'',reload(){throw Error('Unexpected reload');}};
 controls.open('radio');const retained=dock.children[1].children[0];root.replaceChildren=()=>{renders++;root.children=[];};
 const nav={URL,location,history,document:{body:{dataset:{},classList:{remove(){}}}},root,window:{scrollTo(){}},clearInterval(){},chatVersion:0,chatReadRevision:0,messageTimer:1,activeConversation:2,chatBodies:new Map(),confirm:()=>true,page:'home',mounts:{},renderPage:async()=>{}};vm.createContext(nav);vm.runInContext(app.slice(start,end)+'\nkeepNavigation=true;this.navigate=navigate;',nav);await nav.navigate('groups.html?id=2');assert.equal(location.pathname,'/groups.html');assert.equal(nav.page,'groups');assert.equal(nav.activeConversation,null);assert.equal(nav.messageTimer,null);assert.equal(renders,1);await nav.navigate('prayer.html');assert.equal(nav.page,'prayer');assert.equal(renders,2);assert.equal(root.focusCount,2,'Soft navigation moves keyboard focus into the new page');assert.equal(controls.active(),true);assert.equal(dock.children[1].children[0],retained);await head.children[2].click();
 
@@ -110,4 +110,5 @@ test('Community HTML navigation and referenced scripts/styles/images exist',asyn
   }
  }
 });
+
 
