@@ -18,24 +18,8 @@ function update(e){
   const heading=stream.querySelector('.stream-heading');
   if(!signedIn&&banner){
     if(heading)heading.after(banner);
-    banner.setAttribute('aria-label','Join the Global Christian Community');
-    const intro=banner.querySelector(':scope > p');
-    if(intro)intro.textContent='A global family united in Christ. Connect with believers, discover Spaces and Groups, share Design Cards and prayer requests, and grow together in faith.';
-    const actions=banner.querySelector('.gc-visitor-actions');
-    if(actions){
-      let welcome=banner.querySelector('.gc-visitor-heading');
-      if(!welcome){
-        welcome=document.createElement('h2');
-        welcome.className='gc-visitor-heading';
-        welcome.textContent='A global family united in Christ';
-      }
-      actions.before(welcome);
-      if(intro)actions.before(intro);
-      const join=actions.querySelector('a[href*="register"]');
-      if(join)join.textContent='Join the Community';
-      const login=actions.querySelector('a:not([href*="register"])');
-      if(login)login.textContent='Sign In';
-    }
+    // app.js owns the complete welcome content and account destinations.
+    // This layer only positions it and synchronizes member visibility.
   }
   if(signedIn&&banner)banner.remove();
   // The guest banner and ACTIVE are mutually exclusive; keep both under the stream heading.
