@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "npm run check && npm run frontend && npm run test:home && npm run test:security && npm run test:design && npm run test:feed && npm run test:groups && npm run test:registration && npm run test:stewardship && npm run test:social-adverts && npm run test:active && npm run test:spaces && npm run preflight && node scripts/verify-worker-bundle.mjs",
+    "deploy": "wrangler deploy --config wrangler.toml",
+    "upload:version": "wrangler versions upload --config wrangler.toml",
+    "migrations:production": "wrangler d1 migrations apply heavenly-key-global-community-db --remote --config wrangler.toml",
     "check": "tsc --noEmit --pretty false",
     "preflight": "node scripts/preflight.mjs",
     "frontend": "node --check public/app.js && node --check public/design-cards.js && node --check public/calling.js && node --check public/password-policy.js && node --check public/community-admin.js && node --check public/community-app-promo.js && node --check public/ministry-care.js && node --check public/community-live-chat.js && node --check public/active-strip.js && node --check public/community-dashboard-reference.js && node --check public/community-care-ui.js && node --check public/approved-home-layout.js && node --check public/approved-dashboard.js && node --check public/cms-runtime-20261015.js && node --check public/hk-standard-footer.js && node --check public/hk-footer-app-promo-20261015.js",

@@ -1,4 +1,5 @@
 name = "heavenly-key-global-community"
+account_id = "cd095c096c2d5a42501e7d77cecbb34c"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 workers_dev = true
@@ -14,6 +15,7 @@ run_worker_first = ["/api", "/api/*"]
 binding = "DB"
 database_name = "heavenly-key-global-community-db"
 database_id = "94d70dc2-91fe-4c5d-afc2-ca9ccff04f28"
+migrations_dir = "./migrations"
 
 [[kv_namespaces]]
 binding = "SESSIONS"
@@ -37,3 +39,4 @@ crons = ["0 * * * *"]
 # SESSION_SECRET
 # PASSWORD_PEPPER
 # INTERSERVICE_SECRET
+
