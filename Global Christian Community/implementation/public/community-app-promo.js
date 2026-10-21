@@ -15,15 +15,14 @@ function memberFeedShell(){document.getElementById('community-footer')?.remove()
  document.addEventListener('hk-feed-near-end',async e=>{if(e.detail?.sentinel!==sentinel)return;const more=stream.querySelector('[data-load-more]');if(!more){e.detail.complete(false);return;}if(more.disabled)return;more.click();const started=Date.now();const settle=()=>{const next=stream.querySelector('[data-load-more]');const busy=stream.querySelector('[aria-busy="true"]');if(!busy||Date.now()-started>7500){e.detail.complete(Boolean(next));return;}window.setTimeout(settle,120);};window.setTimeout(settle,120);});
  if('IntersectionObserver'in window){const observer=new IntersectionObserver(entries=>{if(entries.some(x=>x.isIntersecting))requestMore();},{rootMargin:'1200px 0px'});observer.observe(sentinel);}else{const onScroll=()=>{if(innerHeight+scrollY>=document.documentElement.scrollHeight-1400)requestMore();};addEventListener('scroll',onScroll,{passive:true});}
  const retry=node('button','btn secondary feed-continuation-retry','Load more');retry.type='button';retry.addEventListener('click',requestMore);sentinel.append(retry);}
-let enhanceAttempts=0;
-async function enhance(){if(document.body.dataset.page!=='home')return;let member=false;try{const r=await fetch('/api/me',{credentials:'same-origin',headers:{Accept:'application/json'}});member=r.ok;}catch{}
- const stream=document.querySelector('.social-stream'),aside=document.querySelector('.social-sidebar');if(!stream||!aside){if(++enhanceAttempts<25)setTimeout(enhance,120);return;}enhanceAttempts=0;
+function enhance(e){if(e.detail?.page!=='home')return;const member=Boolean(e.detail.session?.user?.userId);
+ const stream=document.querySelector('.social-stream'),aside=document.querySelector('.social-sidebar');if(!stream||!aside)return;
  document.body.classList.toggle('community-visitor',!member);document.body.classList.toggle('community-member',member);
- document.querySelectorAll('.community-welcome,.reference-banner,.reference-family,.reference-mission,.community-purpose,.community-app-card,.community-bible-card,.hk-family-promo').forEach(n=>n.remove());
+ document.querySelectorAll('.community-welcome,.reference-banner,.reference-family,.community-purpose,.community-app-card,.community-bible-card,.hk-family-promo').forEach(n=>n.remove());
  const nav=document.querySelector('.social-rail');if(nav&&!nav.querySelector('.hk-community-ministry-note')){const note=node('div','hk-community-ministry-note');const logo=document.createElement('img');logo.src='/assets/community-mark.svg';logo.alt='Heavenly Key';note.append(logo,node('p','','A community by Heavenly Key Evangelistic Movement.'));nav.append(note);}
  const sentinel=stream.querySelector('[data-load-more]');if(sentinel)sentinel.setAttribute('aria-label','Load more community posts');
-
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(enhance,30));else setTimeout(enhance,30);
+window.addEventListener('hk-community-view-ready',enhance);
 })();
+
 
