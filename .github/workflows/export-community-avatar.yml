@@ -1,0 +1,30 @@
+name: Export original community avatar
+on:
+  push:
+    branches: [transfer-community-source-20261022]
+    paths: [.github/workflows/export-community-avatar.yml]
+permissions:
+  contents: write
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export original bytes as small transport chunks
+        run: |
+          python3 - <<'PY'
+          import base64,pathlib,hashlib
+          p=pathlib.Path('Global Christian Community/implementation/public/assets/heavenly-key-permanent-default-avatar.png')
+          b=p.read_bytes()
+          assert hashlib.sha1(b'blob '+str(len(b)).encode()+b'\0'+b).hexdigest()=='9c4ea41a38eaa512eac6f340377d3fded6ec9411'
+          encoded=base64.b64encode(b).decode()
+          out=pathlib.Path('.transfer/community-avatar')
+          out.mkdir(parents=True,exist_ok=True)
+          for i,start in enumerate(range(0,len(encoded),400000)):
+              (out/f'{i}.b64').write_text(encoded[start:start+400000])
+          PY
+          git config user.name "Community Source Transfer"
+          git config user.email "actions@users.noreply.github.com"
+          git add .transfer/community-avatar
+          git commit -m "Preserve original avatar bytes for complete application transfer"
+          git push
