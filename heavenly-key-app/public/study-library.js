@@ -105,8 +105,52 @@ async function bible(){
  const counter=make('span',null,'mobile-kjv-ref');
  nav.append(prev,counter,next);
  area.append(toolbar,intro,status,verses,extras,nav);
- root.append(area);
+ const layout=make('div',null,'hk-bible-layout');
+ const bookPanel=make('aside',null,'hk-bible-side hk-books-panel');
+ const testamentTabs=make('div',null,'hk-testament-tabs');
+ const oldTab=action('Old Testament',()=>renderBookList('old'));
+ const newTab=action('New Testament',()=>renderBookList('new'));
+ testamentTabs.append(oldTab,newTab);
+ const bookList=make('div',null,'hk-book-list');
+ bookPanel.append(testamentTabs,bookList);
+ const rightPanel=make('aside',null,'hk-bible-side hk-chapters-panel');
+ rightPanel.append(make('h3','Chapter Navigation'));
+ const chapterGrid=make('div',null,'hk-chapter-grid');
+ rightPanel.append(chapterGrid,make('h3','Quick Tools'));
+ const quick=make('div',null,'hk-quick-tools');
+ const tools=[
+ ['⌕ Search Scripture',()=>{extras.open=true;search.focus()}],
+ ['☆ Bookmarks',()=>{extras.open=true;savedChapters.focus()}],
+ ['⧉ Copy Chapter',copyChapter],
+ ['↓ Save Book Offline',()=>setOffline(true)],
+ ['Aa Reader Settings',()=>{extras.open=true;smaller.focus()}],
+ ['↗ Share Chapter',()=>document.getElementById('hk-share-scripture')?.click()]
+ ];
+ for(const [name,fn] of tools)quick.append(action(name,fn,'hk-quick-tool'));
+ rightPanel.append(quick);
+ layout.append(bookPanel,area,rightPanel);root.append(layout);
  document.body.classList.add('mobile-kjv-page');
+ function renderBookList(testament){
+  const old=testament==='old';oldTab.classList.toggle('active',old);newTab.classList.toggle('active',!old);
+  bookList.replaceChildren();
+  const subset=books.slice(old?0:39,old?39:66);
+  for(const item of subset){
+   const b=action('▣  '+item.name,()=>openRef({book:item.id,chapter:1},false),'hk-book-item');
+   b.dataset.book=item.id;bookList.append(b);
+  }
+  updateBookHighlight();
+ }
+ function updateBookHighlight(){
+  bookList.querySelectorAll('[data-book]').forEach(b=>b.classList.toggle('selected',b.dataset.book===currentBook.id));
+ }
+ function updateChapterGrid(){
+  chapterGrid.replaceChildren();
+  for(let n=1;n<=currentBook.chapters;n++){
+   const b=action(String(n),()=>openRef({book:currentBook.id,chapter:n},false),'hk-chapter-item');
+   b.classList.toggle('selected',n===currentChapter);chapterGrid.append(b);
+  }
+ }
+ renderBookList(books.indexOf(currentBook)<39?'old':'new');updateChapterGrid();
  function applyFont(){
   font=bibleFont(font);
   verses.style.setProperty('--kjv-reader-font',font+'px');
@@ -159,6 +203,7 @@ async function bible(){
   if(!valid)return;
   currentBook=byId[valid.book];currentChapter=valid.chapter;
   book.value=currentBook.id;refreshChapters();
+  renderBookList(books.indexOf(currentBook)<39?'old':'new');updateChapterGrid();
   loadChapter();
   if(scroll)intro.scrollIntoView({block:'start',behavior:'auto'});
  }
@@ -191,6 +236,7 @@ async function bible(){
   const id=++loadSerial,selectedBook=currentBook,selectedChapter=currentChapter;
   loaded=null;
   title.textContent=selectedBook.name+' '+selectedChapter;
+  updateChapterGrid();
   counter.textContent=selectedBook.name+' '+selectedChapter;
   status.textContent='Opening chapter…';
   chapter.value=String(selectedChapter);
