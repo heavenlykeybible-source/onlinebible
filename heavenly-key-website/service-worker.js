@@ -24,7 +24,7 @@
  * is tracked as a known limitation in KNOWN-ISSUES.md.
  */
 const ASSET_VERSION = "1.2.5";
-const CACHE_VERSION = "hk-v18-footer";
+const CACHE_VERSION = "hk-v19-safe-offline";
 const APP_SHELL_CACHE = CACHE_VERSION + "-shell";
 const PAGES_CACHE = CACHE_VERSION + "-pages";
 
@@ -81,7 +81,9 @@ self.addEventListener("fetch", (event) => {
   // is live, per API-INTEGRATION.md §5, not blanket-cached here.)
   if (url.pathname.startsWith("/api/")) return;
 
-  if (url.pathname.includes('/pages/admin') || url.pathname.includes('/pages/community')) return;
+  // Only same-origin, public, anonymous pages/assets may be stored offline.
+  if (url.origin !== self.location.origin || req.headers.has('authorization') ||
+      /\\/(?:api|admin|studio|control|login|auth|account|profile|messages?|checkout|pages\\/community|pages\\/admin)(?:\\/|\\b)/i.test(url.pathname)) return;
 
   // Static app-shell assets: cache-first, populating the cache on a
   // miss so anything not in the fixed APP_SHELL list (new stylesheets,
@@ -98,7 +100,7 @@ self.addEventListener("fetch", (event) => {
       caches.match(req).then((cached) => {
         if (cached) return cached;
         return fetch(req).then((res) => {
-          if (res.ok) {
+          if (res.ok && res.type === "basic" && !res.headers.has("set-cookie") && !/private|no-store/i.test(res.headers.get("cache-control") || "")) {
             const resClone = res.clone();
             caches.open(APP_SHELL_CACHE).then((cache) => cache.put(req, resClone));
           }
@@ -114,8 +116,10 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          const resClone = res.clone();
-          caches.open(PAGES_CACHE).then((cache) => cache.put(req, resClone));
+          if (res.ok && res.type === "basic" && !res.headers.has("set-cookie") && !/private|no-store/i.test(res.headers.get("cache-control") || "")) {
+            const resClone = res.clone();
+            event.waitUntil(caches.open(PAGES_CACHE).then((cache) => cache.put(req, resClone)));
+          }
           return res;
         })
         .catch(() => caches.match(req).then((cached) => cached || caches.match("/offline.html")))
