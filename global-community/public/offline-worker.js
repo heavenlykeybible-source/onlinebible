@@ -1,9 +1,9 @@
 /* Public offline reading only. Never store sessions, private feeds or API responses. */
-const VERSION='hk-community-public-v1';
+const VERSION='hk-community-public-v2';
 const PUBLIC=new Set(['/','/index.html','/offline.html']);
 const ASSETS=['/','/index.html','/offline.html','/styles.css','/community-maturity.css','/community-reference.css','/royal-community.css','/community-app-promo.css','/heavenly-key-assistant.css','/official-community-feed.css','/clean-community.css'];
 const eligible=(req,url)=>req.method==='GET'&&url.origin===self.location.origin&&!url.search&&
- !req.headers.has('authorization')&&!req.headers.has('range')&&
+ !req.headers.has('authorization')&&!req.headers.has('range')&&req.credentials!=='include'&&
  !/(?:\/api\/|\/admin|\/account|\/profile|\/messages|\/login|\/auth|\/private)/i.test(url.pathname);
 const safe=res=>res.ok&&res.type==='basic'&&!res.headers.has('set-cookie')&&!/private|no-store/i.test(res.headers.get('cache-control')||'');
 self.addEventListener('install',event=>event.waitUntil((async()=>{
