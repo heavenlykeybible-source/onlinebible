@@ -4,7 +4,7 @@ export const targets = Object.freeze({
   'controlroom.heavenlykey.org': 'https://website-management.emmanuel2026miracle.workers.dev',
   'meeting.heavenlykey.org': 'https://heavenly-key-zoom-studio.omegawealthcreator.workers.dev',
   'radio.heavenlykey.org': 'https://heavenlykeyradio.heavenlykeyradio.workers.dev',
-  'mediaeditor.heavenlykey.org': 'https://heavenlykey-studio.pages.dev',
+  'mediaeditor.heavenlykey.org': 'https://heavenlykey-studio.emmanuelmeta247.workers.dev',
   'control.heavenlykey.org': 'https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev',
   'studio.heavenlykey.org': 'https://heavenlykey.alldaywow247.workers.dev',
   'app.heavenlykey.org': 'https://heavenly-key-app.heavenlykeyapp.workers.dev',

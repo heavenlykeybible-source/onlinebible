@@ -67,7 +67,7 @@ for(const [host,origin] of Object.entries({
  'controlroom.heavenlykey.org':'https://website-management.emmanuel2026miracle.workers.dev',
  'meeting.heavenlykey.org':'https://heavenly-key-zoom-studio.omegawealthcreator.workers.dev',
  'radio.heavenlykey.org':'https://heavenlykeyradio.heavenlykeyradio.workers.dev',
- 'mediaeditor.heavenlykey.org':'https://heavenlykey-studio.pages.dev'
+ 'mediaeditor.heavenlykey.org':'https://heavenlykey-studio.emmanuelmeta247.workers.dev'
 }))test(host+' preserves exact API paths, query, cookies and same-origin writes',async()=>{
  const r=await route(new Request('https://'+host+'/api/check?q=1',{method:'POST',headers:{Origin:'https://'+host,Cookie:'session=existing'},body:'test'}),async req=>{
  assert.equal(req.url,origin+'/api/check?q=1');assert.equal(req.headers.get('Origin'),origin);assert.equal(req.headers.get('Cookie'),'session=existing');assert.equal(await req.text(),'test');return new Response('ok');});assert.equal(r.status,200);

@@ -1,0 +1,29 @@
+name: Repair mediaeditor domain to Account 9
+on:
+  push:
+    branches: [main]
+    paths: ['scripts/repair-mediaeditor-domain.mjs', '.github/workflows/repair-mediaeditor-domain.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: mediaeditor-domain-repair
+  cancel-in-progress: false
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/repair-mediaeditor-domain.mjs
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mediaeditor-domain-before
+          path: mediaeditor-domain-before.json
+          if-no-files-found: ignore
