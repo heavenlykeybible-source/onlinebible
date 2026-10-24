@@ -61,3 +61,15 @@ test('Studio auth APIs retain the exact upstream path',async()=>{await route(new
 test('Control rejects a cross-site login before reaching account 4',async()=>{const r=await route(new Request('https://control.heavenlykey.org/api/owner/login',{method:'POST',headers:{Origin:'https://unrelated.example'}}),()=>{throw Error('Must not forward')});assert.equal(r.status,403)});
 
 test('chat asset route changes only the two static files, never production APIs',async()=>{for(const suffix of ['js','css']){const r=await route(new Request('https://heavenlykey.org/js/cms-runtime-20261015.'+suffix+'?v=current'),async req=>{assert.equal(req.url,'https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev/cms-runtime-20261015.'+suffix+'?v=current');assert.equal(req.headers.get('Cookie'),null);return new Response('asset')});assert.match(r.headers.get('Cache-Control'),/no-cache/)}const r=await route(new Request('https://heavenlykey.org/api/auth/login'),()=>{throw Error('Must stay on production backend')});assert.equal(r.status,404)});
+
+for(const [host,origin] of Object.entries({
+ 'studioroom.heavenlykey.org':'https://heavenlykey-media.faithofourfatherstv.workers.dev',
+ 'controlroom.heavenlykey.org':'https://website-management.emmanuel2026miracle.workers.dev',
+ 'meeting.heavenlykey.org':'https://heavenly-key-zoom-studio.omegawealthcreator.workers.dev',
+ 'radio.heavenlykey.org':'https://heavenlykeyradio.heavenlykeyradio.workers.dev',
+ 'mediaeditor.heavenlykey.org':'https://heavenlykey-studio.pages.dev'
+}))test(host+' preserves exact API paths, query, cookies and same-origin writes',async()=>{
+ const r=await route(new Request('https://'+host+'/api/check?q=1',{method:'POST',headers:{Origin:'https://'+host,Cookie:'session=existing'},body:'test'}),async req=>{
+ assert.equal(req.url,origin+'/api/check?q=1');assert.equal(req.headers.get('Origin'),origin);assert.equal(req.headers.get('Cookie'),'session=existing');assert.equal(await req.text(),'test');return new Response('ok');});assert.equal(r.status,200);
+ const rejected=await route(new Request('https://'+host+'/api/check',{method:'POST',headers:{Origin:'https://unrelated.example'}}),()=>{throw Error('must not forward')});assert.equal(rejected.status,403);
+});
