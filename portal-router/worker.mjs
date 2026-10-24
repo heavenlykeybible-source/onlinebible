@@ -7,6 +7,8 @@ export const targets = Object.freeze({
   'mediaeditor.heavenlykey.org': 'https://heavenlykey-studio.emmanuelmeta247.workers.dev',
   'control.heavenlykey.org': 'https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev',
   'studio.heavenlykey.org': 'https://heavenlykey.alldaywow247.workers.dev',
+  'apps.heavenlykey.org': 'https://heavenly-key-app.heavenlykeyapp.workers.dev',
+  'onlinebible.heavenlykey.org': 'https://onlinebible.heavenlykeybible.workers.dev',
   'app.heavenlykey.org': 'https://heavenly-key-app.heavenlykeyapp.workers.dev',
   'global.heavenlykey.org': 'https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev',
   'bible.heavenlykey.org': 'https://onlinebible.heavenlykeybible.workers.dev'
@@ -55,10 +57,11 @@ export async function route(request, upstreamFetch = fetch) {
   if(wantsPage&&response.status===404)return friendlyPage();
   if(wantsPage&&response.status>=500)return friendlyPage(503);
   const location = response.headers.get('Location');
-  if (!location) return response;
+  const fresh=new Response(response.body,response);fresh.headers.set('X-Heavenly-Key-Upstream',new URL(origin).hostname);if(publicUrl.pathname==='/'||publicUrl.pathname.endsWith('.html')||publicUrl.pathname.endsWith('.js')||publicUrl.pathname.endsWith('.css'))fresh.headers.set('Cache-Control','no-cache, max-age=0, must-revalidate');
+  if (!location) return fresh;
   const redirect = new URL(location, upstreamUrl);
   if (redirect.origin !== origin) return response;
-  const result = new Response(response.body, response);
+  const result = new Response(fresh.body, fresh);
   result.headers.set('Location', publicUrl.origin + redirect.pathname + redirect.search + redirect.hash);
   return result;
 }

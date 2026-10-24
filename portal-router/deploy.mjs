@@ -2,7 +2,7 @@ import {readFileSync,writeFileSync} from 'node:fs';
 import {targets} from './worker.mjs';
 const account=process.env.CLOUDFLARE_ACCOUNT_ID,token=process.env.CLOUDFLARE_API_TOKEN,zone='23f3be9052bf609e8ccd85ac1b375019',script='heavenlykey-portals';
 if(account!=='a160ba9fc74911bd4b3005eac86eefcb'||!token)throw Error('Account 1 configuration missing');
-const hosts=['studioroom','controlroom','app','bible','global','meeting','mediaeditor','radio'].map(x=>x+'.heavenlykey.org');
+const hosts=['studioroom','controlroom','app','bible','apps','onlinebible','global','meeting','mediaeditor','radio'].map(x=>x+'.heavenlykey.org');
 async function api(path,init={}){const r=await fetch('https://api.cloudflare.com/client/v4'+path,{...init,headers:{Authorization:'Bearer '+token,...init.headers}});const j=await r.json();if(!r.ok||!j.success)throw Error('Cloudflare HTTP '+r.status+' '+path+' '+JSON.stringify(j.errors));return j.result;}
 const z=await api('/zones/'+zone);if(z.name!=='heavenlykey.org'||z.account.id!==account)throw Error('Zone/account mismatch');
 const routePath='/zones/'+zone+'/workers/routes',routes=await api(routePath),domains=await api('/accounts/'+account+'/workers/domains');
