@@ -1,0 +1,21 @@
+name: Verify live ministry repairs
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/verify-live-repairs.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check public pages and protected preview
+        run: |
+          node --input-type=module <<'JS'
+          const urls=['https://heavenlykey.org/','https://heavenlykey.org/index1','https://heavenlykey.alldaywow247.workers.dev/','https://heavenlykey.alldaywow247.workers.dev/index1','https://app.heavenlykey.org/','https://bible.heavenlykey.org/','https://global.heavenlykey.org/','https://heavenlykey-cms-public.emmanuel2026miracle.workers.dev/health','https://app.heavenlykey.org/nonexistent-link-check','https://bible.heavenlykey.org/nonexistent-link-check'];
+          await Promise.all(urls.map(async url=>{try{const r=await fetch(url,{headers:{Accept:'text/html'},signal:AbortSignal.timeout(25000)}),body=await r.text();console.log(JSON.stringify({url,status:r.status,construction:/Under Construction/i.test(body),privatePreview:/Private homepage workspace/.test(body),friendly404:/Page not found|find this page|page has moved/i.test(body),noStore:r.headers.get('cache-control'),noIndex:r.headers.get('x-robots-tag'),body:url.endsWith('/health')?body.slice(0,200):undefined}));}catch(e){console.log(JSON.stringify({url,error:e.message}));}}));
+          JS
