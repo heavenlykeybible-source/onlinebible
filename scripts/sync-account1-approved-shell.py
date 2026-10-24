@@ -93,7 +93,7 @@ for page in [*sorted((ROOT/'pages').glob('*.html')), ROOT/'live/index.html']:
     if page.name in ['radio.html','terms.html','privacy.html','i-said-yes.html','grdpc.html'] and 'src="/js/cms-runtime-20261015.js' not in text:
         text = text.replace('</body>','<link rel="stylesheet" href="/js/cms-runtime-20261015.css"><script defer src="/js/cms-runtime-20261015.js?v=20261018f"></script></body>')
     text = re.sub(r'(/js/cms-runtime-20261015\.js)(?:\?[^"<>]*)?',r'\1?v=20261018f',text)
-    text = text.replace('</body>',sharing+'<script defer src="/js/public-site-master.js?v=20261018f"></script></body>')
+    text = text.replace('</body>',sharing+'<script defer src="/js/public-site-master.js?v=20261018f"></script><script defer src="/js/hk-standard-footer.js"></script></body>')
     save(page,text)
 if changed and '--check' in sys.argv: print('Approved shell drift: '+', '.join(changed));sys.exit(1)
 print('Approved homepage menu/footer: '+('consistent' if not changed else str(len(changed))+' files synchronized'))
