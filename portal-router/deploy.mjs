@@ -12,9 +12,12 @@ for(const h of hosts.filter(h=>!h.startsWith('mediaeditor.'))){const r=await fet
 const form=new FormData();form.set('metadata',new Blob([JSON.stringify({main_module:'worker.mjs',compatibility_date:'2026-10-01',compatibility_flags:['global_fetch_strictly_public']})],{type:'application/json'}));form.set('worker.mjs',new Blob([readFileSync('portal-router/worker.mjs')],{type:'application/javascript+module'}),'worker.mjs');
 await api('/accounts/'+account+'/workers/scripts/'+script,{method:'PUT',body:form});
 for(const h of hosts){
- const custom=domains.find(x=>x.hostname===h);
+ let custom=domains.find(x=>x.hostname===h);
+ if(!custom){
+  try{custom=await api('/accounts/'+account+'/workers/domains',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({hostname:h,service:script,environment:'production',zone_id:zone})});console.log('Custom domain attached: '+h)}catch(error){console.warn('Custom domain needs DNS/permission repair: '+h+' '+error.message)}
+ }
  if(custom&&custom.service!==script)await api('/accounts/'+account+'/workers/domains',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({hostname:h,service:script,environment:'production',zone_id:zone})});
  const pattern=h+'/*',old=routes.find(x=>x.pattern===pattern);
- if(!old||old.script!==script)await api(routePath+(old?'/'+old.id:''),{method:old?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pattern,script})});
+ if((!old||old.script!==script)&&!custom){try{await api(routePath+(old?'/'+old.id:''),{method:old?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pattern,script})})}catch(error){console.warn('Exact route needs owner permission: '+h+' '+error.message);continue}}
  console.log('Account 1 portal route confirmed: '+h);
 }
