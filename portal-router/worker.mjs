@@ -6,7 +6,7 @@ export const targets = Object.freeze({
   'mediaeditor.heavenlykey.org': 'https://heavenlykey-studio.pages.dev',
   'control.heavenlykey.org': 'https://heavenlykey-owner-dashboard.emmanuel2026miracle.workers.dev',
   'studio.heavenlykey.org': 'https://heavenlykey.alldaywow247.workers.dev',
-  'app.heavenlykey.org': 'https://heavenly-key-app-recovery.alldaywow247.workers.dev',
+  'app.heavenlykey.org': 'https://heavenly-key-app.heavenlykeyapp.workers.dev',
   'global.heavenlykey.org': 'https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev',
   'bible.heavenlykey.org': 'https://onlinebible.heavenlykeybible.workers.dev'
 });
