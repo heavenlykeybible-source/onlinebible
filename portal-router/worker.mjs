@@ -41,6 +41,8 @@ export async function route(request, upstreamFetch = fetch) {
   if (incomingOrigin === publicUrl.origin) headers.set('Origin', origin);
   headers.delete('Host');
   headers.delete('X-Forwarded-Host');
+  headers.delete('X-HK-Public-Origin');
+  headers.set('X-HK-Public-Origin', publicUrl.origin);
   const upstreamUrl = new URL(publicUrl.pathname + publicUrl.search, origin);
   const forwarded = new Request(upstreamUrl, request);
   const init = new Request(forwarded, {headers, redirect: 'manual'});
