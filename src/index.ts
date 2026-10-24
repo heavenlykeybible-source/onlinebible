@@ -1,3 +1,5 @@
+import {privateHomeHtml} from './private-home';
+import {requireMinimumRole} from './middleware/rbac';
 import {handleGRDPCPublic,handleGRDPCAdmin} from "./routes/grdpc";
 import {handleWebsiteAiInbox,handleWebsiteAiConversation} from "./routes/website-ai-inbox";
 import {runReminders} from "./services/grdpc-service";
@@ -82,6 +84,14 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const method = request.method;
+    if (['/index1','/index1/','/index1.html'].includes(pathname)) {
+      const headers={'Content-Type':'text/html; charset=utf-8','Cache-Control':'private, no-store','X-Robots-Tag':'noindex, nofollow','X-Content-Type-Options':'nosniff'};
+      if(!['GET','HEAD'].includes(request.method))return new Response('Method not allowed',{status:405,headers:{...headers,Allow:'GET, HEAD'}});
+      const administrator=await requireMinimumRole(request,env,'Administrator');
+      if(!administrator)return new Response('<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Private homepage preview · Heavenly Key</title><body style="font:18px/1.6 system-ui;padding:8vw;background:#f6f8fc;color:#17345b"><h1>Private homepage workspace</h1><p>Please sign in as a ministry administrator to view index1.</p><a href="/pages/admin.html">Administrator sign-in</a> · <a href="/">Public homepage</a></body></html>',{status:401,headers});
+      return new Response(request.method==='HEAD'?null:privateHomeHtml,{status:200,headers});
+    }
+
     const idMatch = (pattern: RegExp) => pathname.match(pattern);
 
     if (method === "OPTIONS") {
@@ -358,6 +368,9 @@ export default {
     if (pathname === "/api/bible/reading-plans/progress" && method === "POST") return handleUpdateReadingProgress(request, env);
     { const m = idMatch(/^\/api\/hymns\/(\d+)\/play$/); if (m && method === "POST") return handleRecordHymnPlayed(request, env, Number(m[1])); }
 
+    if (!url.pathname.startsWith('/api/') && (request.headers.get('Accept') || '').includes('text/html')) {
+      return new Response('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Page not found · Heavenly Key</title><body style="font:18px/1.6 system-ui;background:#f6f8fc;color:#17345b;padding:10vh 8vw"><main><p>HEAVENLY KEY</p><h1>Let’s help you find your way.</h1><p>This page may have moved. Please return home and continue exploring.</p><a href="/">Return to the ministry homepage</a></main></body></html>', {status:404,headers:{'Content-Type':'text/html; charset=utf-8','X-Content-Type-Options':'nosniff','Cache-Control':'no-store'}});
+    }
     return new Response(JSON.stringify({ error: { code: "not_found", message: "Unknown endpoint." } }), {
       status: 404,
       headers: {

@@ -1,0 +1,12 @@
+
+# Friendly ministry entry points; keep API routes unchanged.
+/bible/ https://bible.heavenlykey.org/ 302
+/bible https://bible.heavenlykey.org/ 302
+/about-us /pages/about 302
+/about-us/ /pages/about 302
+/what-we-believe/ /pages/what-we-believe 302
+/what-we-believe /pages/what-we-believe 302
+
+/pages/community.html https://global.heavenlykey.org/ 302
+/pages/video.html /live/ 302
+/pages/bible-music-admin.html /pages/admin.html 302

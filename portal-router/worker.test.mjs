@@ -73,3 +73,5 @@ for(const [host,origin] of Object.entries({
  assert.equal(req.url,origin+'/api/check?q=1');assert.equal(req.headers.get('Origin'),origin);assert.equal(req.headers.get('Cookie'),'session=existing');assert.equal(await req.text(),'test');return new Response('ok');});assert.equal(r.status,200);
  const rejected=await route(new Request('https://'+host+'/api/check',{method:'POST',headers:{Origin:'https://unrelated.example'}}),()=>{throw Error('must not forward')});assert.equal(rejected.status,403);
 });
+
+test('missing public pages get a friendly 404 while API errors remain JSON',async()=>{const mock=async()=>Response.json({error:{code:'not_found'}},{status:404});const page=await route(new Request('https://bible.heavenlykey.org/missing',{headers:{Accept:'text/html'}}),mock);assert.equal(page.status,404);assert.match(page.headers.get('Content-Type'),/text\/html/);assert.match(await page.text(),/Return to this app/);const api=await route(new Request('https://bible.heavenlykey.org/api/missing',{headers:{Accept:'text/html'}}),mock);assert.match(api.headers.get('Content-Type'),/application\/json/);});

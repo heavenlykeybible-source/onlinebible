@@ -4,3 +4,6 @@ Disallow: /pages/admin.html
 Disallow: /pages/bible-music-admin.html
 
 Sitemap: https://heavenlykey.org/sitemap.xml
+
+Disallow: /index1
+Disallow: /index1.html

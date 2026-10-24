@@ -1,0 +1,38 @@
+name: Repair existing Account 1 public website
+on:
+  push:
+    branches: [main]
+    paths: ['heavenly-key-website/**', 'src/index.ts', 'src/private-home.ts', 'scripts/sync-primary-footer.mjs', '.github/workflows/repair-public-site.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: heavenlykey-account-1-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: a160ba9fc74911bd4b3005eac86eefcb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: node scripts/sync-primary-footer.mjs
+      - run: npm run check:frontend
+      - name: Compile and verify private homepage access
+        run: |
+          npx --yes wrangler@4.152.0 deploy --config wrangler.toml --dry-run --outdir /tmp/private-home-build
+          node scripts/test-private-home.mjs /tmp/private-home-build/index.js
+      - name: Confirm the existing ministry Worker and resource bindings
+        run: |
+          node --input-type=module <<'JS'
+          const r=await fetch('https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/workers/scripts/heavenlykey/settings',{headers:{Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN}}),d=await r.json();
+          if(!r.ok||!d.success||!d.result.bindings.some(x=>x.name==='DB'&&x.id==='8665ff03-6a2c-4852-90ab-6c74375a8c87'))throw Error('Existing ministry Worker access or database identity mismatch');
+          JS
+      - name: Update only the existing ministry Worker and its public assets
+        run: npx --yes wrangler@4.152.0 deploy --config wrangler.toml --keep-vars

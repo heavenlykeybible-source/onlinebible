@@ -1,3 +1,4 @@
+function friendlyPage(status=404){const missing=status===404;return new Response('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Heavenly Key · '+(missing?'Page not found':'Please try again shortly')+'</title><style>body{margin:0;min-height:100dvh;display:grid;place-items:center;background:#f5f8fc;color:#17345b;font:18px/1.6 system-ui}main{max-width:600px;padding:36px;text-align:center}a{display:inline-block;background:#173e8c;color:white;padding:12px 20px;border-radius:12px;margin:8px;text-decoration:none}</style></head><body><main><p>HEAVENLY KEY</p><h1>'+(missing?'Let’s help you find your way.':'This service is temporarily unavailable.')+'</h1><p>'+(missing?'This page may have moved. Return home and continue exploring.':'Please try again shortly, or return to the ministry homepage.')+'</p><a href="/">Return to this app’s home</a><a href="https://heavenlykey.org/">Ministry homepage</a></main></body></html>',{status,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});}
 export const targets = Object.freeze({
   'studioroom.heavenlykey.org': 'https://heavenlykey-media.faithofourfatherstv.workers.dev',
   'controlroom.heavenlykey.org': 'https://website-management.emmanuel2026miracle.workers.dev',
@@ -24,8 +25,9 @@ export async function route(request, upstreamFetch = fetch) {
     return result;
   }
   if(publicUrl.hostname==='studio.heavenlykey.org'&&publicUrl.pathname==='/')return Response.redirect(publicUrl.origin+'/pages/admin.html#studio',302);
+  const wantsPage=!publicUrl.pathname.startsWith('/api/')&&((request.headers.get('Accept')||'').includes('text/html')||request.headers.get('Sec-Fetch-Dest')==='document');
   const origin = targets[publicUrl.hostname];
-  if (!origin) return new Response('Unknown ministry portal', {status: 404});
+  if (!origin) return wantsPage?friendlyPage():new Response('Unknown ministry portal', {status: 404});
   const headers = new Headers(request.headers);
   const incomingOrigin = headers.get('Origin');
   // Keep the same-origin write rule before forwarding to the fixed upstream.
@@ -44,11 +46,14 @@ export async function route(request, upstreamFetch = fetch) {
   try {
     response = await upstreamFetch(init);
   } catch {
+    if(wantsPage)return friendlyPage(503);
     return new Response('The ministry portal is temporarily unavailable.', {
       status: 503, headers: {'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store'}
     });
   }
   if (response.status === 101) return response;
+  if(wantsPage&&response.status===404)return friendlyPage();
+  if(wantsPage&&response.status>=500)return friendlyPage(503);
   const location = response.headers.get('Location');
   if (!location) return response;
   const redirect = new URL(location, upstreamUrl);

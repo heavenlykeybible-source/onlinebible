@@ -1,9 +1,14 @@
 """Copy the approved homepage shell verbatim; --check rejects future drift."""
 from pathlib import Path
-import re, sys
+import re, sys, json
 
 ROOT = Path(__file__).resolve().parents[1] / 'heavenly-key-website'
 home = (ROOT / 'index.html').read_text()
+private = ROOT.parent / 'src/private-home.ts'
+if 'Under Construction' in home and private.exists():
+    match = re.search(r'export const privateHomeHtml=(.*);\s*$', private.read_text(), re.S)
+    if not match: raise RuntimeError('Private approved homepage source unavailable')
+    home = json.loads(match.group(1))
 def section(pattern, text):
     match = re.search(pattern, text, re.S)
     if not match: raise RuntimeError('Approved component missing: ' + pattern)

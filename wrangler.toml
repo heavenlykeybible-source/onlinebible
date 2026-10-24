@@ -10,7 +10,8 @@ routes = []
 # an asset fall through to the Worker automatically.
 [assets]
 directory = "./heavenly-key-website"
-run_worker_first = false
+run_worker_first = ["/api/*", "/health", "/index1", "/index1/", "/index1.html"]
+not_found_handling = "404-page"
 
 # ---------- Production ----------
 [[d1_databases]]
