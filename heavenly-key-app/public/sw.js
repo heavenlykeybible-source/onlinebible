@@ -1,6 +1,6 @@
 /* Only reviewed public shell assets are cached. Bible books and recordings are
  * saved separately by an explicit download action. No member/API cache. */
-const RELEASE='local'; // stamped from the deployed Git commit during build
+const RELEASE='f7dc9031f1331940'; // stamped from the deployed Git commit during build
 const CACHE='heavenly-key-app-shell-v10-'+RELEASE;
 const SHELL=["/download/android/hk-approved-page-style-android-index.css","/download/hk-approved-page-style-download-index.css","/download/ipad/hk-approved-page-style-ipad-index.css","/download/iphone/hk-approved-page-style-iphone-index.css","/download/mac/hk-approved-page-style-mac-index.css","/download/windows/hk-approved-page-style-windows-index.css","/hk-approved-page-style-public-index.css","/cms-runtime-20261015.js","/cms-runtime-20261015.css",'/','/index.html','/styles.css','/app.js','/hk-standard-footer.js','/hk-standard-footer.css','/site-sync.js','/member.js','/platform.js','/install-app.js','/icon.svg','/manifest.webmanifest',
  '/icons/icon-192.svg','/icons/icon-512.svg','/icons/apple-touch-icon.svg',

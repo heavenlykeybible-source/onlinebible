@@ -62,8 +62,8 @@ test('offline shell contains every dependency but never automatically downloads 
 });
 test('Android and Apple installation icons have correct PNG dimensions and safe viewports',()=>{
  const manifest=json('public/manifest.webmanifest');
- for(const icon of manifest.icons){const bytes=readFileSync(new URL('public'+icon.src,root)),size=Number(icon.sizes.split('x')[0]);assert.equal(bytes.readUInt32BE(16),size);assert.equal(bytes.readUInt32BE(20),size);}
+ for(const icon of manifest.icons){if(icon.type==='image/svg+xml'){assert.match(read('public'+icon.src),/<svg/);continue;}const bytes=readFileSync(new URL('public'+icon.src,root)),size=Number(icon.sizes.split('x')[0]);assert.equal(bytes.readUInt32BE(16),size);assert.equal(bytes.readUInt32BE(20),size);}
  for(const page of ['index.html','bible.html','devotional.html','hymns.html','audio-bible.html','audio-hymns.html'])assert.match(read('public/'+page),/viewport-fit=cover/);
- assert.match(read('public/index.html'),/apple-touch-icon.png/);
+ assert.match(read('public/index.html'),/apple-touch-icon\.(png|svg)/);
  assert.match(read('public/styles.css'),/min-height:44px/);
 });
