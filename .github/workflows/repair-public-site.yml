@@ -35,5 +35,23 @@ jobs:
           const r=await fetch('https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/workers/scripts/heavenlykey/settings',{headers:{Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN}}),d=await r.json();
           if(!r.ok||!d.success||!d.result.bindings.some(x=>x.name==='DB'&&x.id==='8665ff03-6a2c-4852-90ab-6c74375a8c87'))throw Error('Existing ministry Worker access or database identity mismatch');
           JS
+      - name: Preserve existing Account 1 deployment and credential bindings
+        id: release_snapshot
+        run: node scripts/existing-worker-release.mjs snapshot
+        env:
+          RELEASE_WORKER: heavenlykey
+          RELEASE_ORIGIN: https://heavenlykey.org/
       - name: Update only the existing ministry Worker and its public assets
-        run: npx --yes wrangler@4.152.0 deploy --config wrangler.toml --keep-vars
+        run: npx --yes wrangler@4.152.0 deploy --config wrangler.toml --name heavenlykey --keep-vars
+      - name: Verify saved bindings and restore prior version on failure
+        if: always() && !cancelled() && steps.release_snapshot.outcome == 'success'
+        run: node scripts/existing-worker-release.mjs verify
+        env:
+          RELEASE_WORKER: heavenlykey
+          RELEASE_ORIGIN: https://heavenlykey.org/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: account1-previous-deployments
+          path: .release-state/
+          retention-days: 90
