@@ -21,7 +21,7 @@ async function publicCommunity(request, env, upstreamFetch) {
     const upstream=await upstreamFetch("https://heavenly-key-global-community.heavenlykeyglobal-cd095c09.workers.dev"+COMMUNITY_READS[url.pathname],{
       method:"GET",headers:{Accept:"application/json"},redirect:"error",credentials:"omit",cache:"no-store",signal:controller.signal
     });
-    if(!upstream.ok||!(upstream.headers.get("content-type")||"").includes("application/json"))throw new Error("Unavailable");
+    if(!upstream.ok||!(upstream.headers.get("content-type")||"").includes("application/json"))throw new Error("Upstream HTTP "+upstream.status+" type "+upstream.headers.get("content-type"));
     const reader=upstream.body?.getReader();if(!reader)throw new Error("Empty");
     let total=0;const chunks=[];
     try{while(true){const {value,done}=await reader.read();if(done)break;total+=value.length;if(total>262144){await reader.cancel();throw new Error("Too large");}chunks.push(value);}}finally{reader.releaseLock();}
@@ -34,7 +34,7 @@ async function publicCommunity(request, env, upstreamFetch) {
       url.pathname.endsWith("/feed")?{display_name:text(item.profile_name || item.display_name).slice(0,160),body:text(item.body).slice(0,5000)}:
         {title:text(item.title).slice(0,160),description:text(item.description).slice(0,5000)});
     return new Response(JSON.stringify({items}),{status:200,headers:JSON_HEADERS});
-  }catch{return new Response(JSON.stringify({error:"Community content is temporarily unavailable."}),{status:502,headers:JSON_HEADERS});}
+  }catch(error){return new Response(JSON.stringify({error:"Community content is temporarily unavailable."}),{status:502,headers:{...JSON_HEADERS,"X-HK-Public-Fetch-Diagnostic":encodeURIComponent(String(error.message)).slice(0,180)}});}
   finally{clearTimeout(timeout);}
 }
 export function createWorker(upstreamFetch=fetch) {
