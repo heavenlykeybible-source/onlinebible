@@ -1,9 +1,6 @@
 name: Restore approved public app while Account 5 connection is pending
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/restore-public-app.yml', 'heavenly-key-app/**']
 permissions:
   contents: read
 concurrency:
