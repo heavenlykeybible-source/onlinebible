@@ -33,7 +33,7 @@ function localTarget(fromFile, raw) {
   }
   if (value.startsWith("/")) {
     const rootPieces = value.split("#",2);
-    return { file: join(site, rootPieces[0].replace(/^\/+/, "") || "index.html"), fragment: rootPieces[1] || "", raw:value };
+    return { file: join(site, decodeURIComponent(rootPieces[0].split("?",1)[0]).replace(/^\/+/, "") || "index.html"), fragment: rootPieces[1] || "", raw:value };
   }
   const pieces = value.split("#",2);
   const beforeHash = pieces[0];
