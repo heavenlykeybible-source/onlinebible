@@ -71,6 +71,10 @@ css = font_import + '\n/* Generated only from the approved homepage. Do not hand
 css = css.replace("url('../assets/", "url('/assets/")
 
 css += '\nheader.site-header .wrap,footer.site-footer .wrap,.hk-share-bless .wrap{padding:0;max-width:none;background:none}header.site-header.site-header{color:var(--ink,#111)}header.site-header.site-header,footer.site-footer.site-footer{padding:0;margin:0;border:0;text-align:start}header.site-header .brand img{filter:none!important}\n'
+# Inner pages have their own body typography. The shared shell must inherit the
+# approved homepage typography and width instead of those unrelated page defaults.
+body_font = re.search(r'body\s*\{[^}]*font:([^;}]+)', (ROOT/'css/home-renewal.css').read_text()).group(1)
+css += '\n:is(header.site-header,footer.site-footer,.hk-share-bless){--width:1480px;font:'+body_font+'!important}footer.site-footer.site-footer{padding:0!important;margin:0!important}\n'
 changed=[]
 def save(path, text):
     previous = path.read_text() if path.exists() else ''
