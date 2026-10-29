@@ -1,0 +1,84 @@
+name: Repair MediaGuru existing portal mapping
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/repair-mediaguru-routing.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: heavenlykey-portal-routing
+  cancel-in-progress: false
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Preserve existing router and add verified MediaGuru target only
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {writeFileSync} from 'node:fs';
+          const token=process.env.CLOUDFLARE_API_TOKEN;
+          if(!token)throw Error('Saved Account 1 token missing');
+          const account='a160ba9fc74911bd4b3005eac86eefcb',worker='heavenlykey-portals';
+          const base='https://api.cloudflare.com/client/v4/accounts/'+account+'/workers/scripts/'+worker;
+          const upstream='https://heavenlykey-studio.heavenlykey.workers.dev',hostname='mediaguru.heavenlykey.org';
+          async function call(url,init={}){return fetch(url,{...init,headers:{authorization:'Bearer '+token,...init.headers},redirect:'error',signal:AbortSignal.timeout(20000)})}
+          async function json(url){const r=await call(url),d=await r.json();if(!r.ok||!d.success)throw Error('Cloudflare read denied HTTP '+r.status+' codes '+JSON.stringify(d.errors?.map(x=>x.code)));return d.result}
+          for(const [path,status] of [['/',200],['/api/health',200],['/api/me',401]]){
+           const r=await fetch(upstream+path,{redirect:'error',signal:AbortSignal.timeout(15000)});
+           assert.equal(r.status,status,'Account 9 upstream '+path);if(r.body)await r.body.cancel();
+          }
+          const settings=await json(base+'/settings');
+          const sourceResponse=await call(base);
+          if(!sourceResponse.ok)throw Error('Cannot read existing router HTTP '+sourceResponse.status);
+          let name='worker.mjs',source;
+          if((sourceResponse.headers.get('content-type')||'').includes('multipart/form-data')){
+           const form=await sourceResponse.formData(),files=[...form.entries()].filter(([k,v])=>k!=='metadata'&&typeof v!=='string');
+           if(files.length!==1)throw Error('Unexpected multi-module router: refusing replacement');
+           name=files[0][0];source=await files[0][1].text();
+          }else source=await sourceResponse.text();
+          writeFileSync('mediaguru-router-before.mjs',source);
+          const marker='const targets = Object.freeze({';
+          assert.equal(source.split(marker).length,2,'Existing router must have one fixed hostname table');
+          let changed=source;
+          if(!source.includes("'"+hostname+"'")){
+           changed=source.replace(marker,marker+"\n  '"+hostname+"': '"+upstream+"',");
+          }else if(!source.includes("'"+hostname+"': '"+upstream+"'"))throw Error('Existing MediaGuru mapping differs; refusing automatic override');
+          const mod=await import('data:text/javascript;base64,'+Buffer.from(changed).toString('base64'));
+          assert.equal(typeof mod.route,'function','Existing router contract');
+          for(const [path,method] of [['/','GET'],['/api/health','GET'],['/api/projects','POST']]){
+           await mod.route(new Request('https://'+hostname+path,{method,headers:{Origin:'https://'+hostname,Cookie:'session=test'},...(method==='POST'?{body:'{}'}:{})}),async req=>{
+            assert.equal(req.url,upstream+path);assert.equal(req.headers.get('Origin'),upstream);assert.equal(req.headers.get('Cookie'),'session=test');return new Response('ok');
+           });
+          }
+          assert.equal((await mod.route(new Request('https://'+hostname+'/api/projects',{method:'POST',headers:{Origin:'https://unrelated.example'}}),()=>{throw Error('Cross-site must not forward')})).status,403);
+          console.log('PASS hostname, API path, session and cross-site boundary regression checks');
+          if(changed!==source){
+           // Keep every existing binding, secret and asset. No routes, DNS or databases are modified.
+           const metadata={main_module:name,compatibility_date:settings.compatibility_date,compatibility_flags:settings.compatibility_flags||[],keep_bindings:[...new Set((settings.bindings||[]).map(x=>x.type))],keep_assets:true};
+           for(const key of ['logpush','observability','tail_consumers','limits','placement','tags'])if(settings[key]!==undefined)metadata[key]=settings[key];
+           const upload=new FormData();upload.set('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
+           upload.set(name,new Blob([changed],{type:'application/javascript+module'}),name);
+           const r=await call(base,{method:'PUT',body:upload});const d=await r.json();
+           if(!r.ok||!d.success)throw Error('Router update failed HTTP '+r.status+' codes '+JSON.stringify(d.errors?.map(x=>x.code)));
+           console.log('PASS added only MediaGuru mapping to existing router');
+          }else console.log('PASS correct MediaGuru mapping already present');
+          for(const [path,status] of [['/',200],['/api/health',200],['/api/me',401],['/timeline.js',200]]){
+           const r=await fetch('https://'+hostname+path,{redirect:'error',cache:'no-store',signal:AbortSignal.timeout(20000)});
+           assert.equal(r.status,status,'Public MediaGuru '+path);
+           if(path==='/')assert.match(r.headers.get('x-heavenly-key-release')||'',/^account9-/);
+           if(path==='/api/health')assert.equal((await r.json()).status,'ready');else if(r.body)await r.body.cancel();
+           console.log('PASS public MediaGuru '+path+' HTTP '+status);
+          }
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mediaguru-router-before
+          path: mediaguru-router-before.mjs
+          if-no-files-found: ignore
+          retention-days: 30
