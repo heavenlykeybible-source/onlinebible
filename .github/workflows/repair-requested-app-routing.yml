@@ -1,0 +1,93 @@
+name: Repair requested application router mappings
+on:
+  workflow_dispatch:
+    inputs:
+      socialplus_worker_origin:
+        description: Confirmed Account 10 heavenly-key-social-management workers.dev origin (without trailing slash)
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: heavenlykey-portal-routing
+  cancel-in-progress: false
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate and patch only requested app mappings
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          SOCIALPLUS_WORKER_ORIGIN: ${{ inputs.socialplus_worker_origin }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {writeFileSync} from 'node:fs';
+          const token=process.env.CLOUDFLARE_API_TOKEN;
+          const social=process.env.SOCIALPLUS_WORKER_ORIGIN||'';
+          assert.match(social,/^https:\/\/heavenly-key-social-management\.[a-z0-9-]+\.workers\.dev$/,'Supply the confirmed SocialPlus Worker origin');
+          const targets={
+           'mediaguru.heavenlykey.org':'https://heavenlykey-studio.heavenlykey.workers.dev',
+           'meetingspace.heavenlykey.org':'https://heavenly-key-meetingspace.omegawealthcreator.workers.dev',
+           'socialplus.heavenlykey.org':social
+          };
+          const base='https://api.cloudflare.com/client/v4/accounts/a160ba9fc74911bd4b3005eac86eefcb/workers/scripts/heavenlykey-portals';
+          async function call(url,init={}){return fetch(url,{...init,headers:{authorization:'Bearer '+token,...init.headers},redirect:'error',signal:AbortSignal.timeout(20000)})}
+          async function json(url){const r=await call(url),d=await r.json();assert.ok(r.ok&&d.success,'Cloudflare authorization/read failed HTTP '+r.status);return d.result}
+          const settings=await json(base+'/settings');
+          const r=await call(base);assert.ok(r.ok,'Existing router source must be readable');
+          let modules=[];
+          if((r.headers.get('content-type')||'').includes('multipart/form-data')){
+           const f=await r.formData();for(const [name,value] of f)if(name!=='metadata')modules.push({name,text:typeof value==='string'?value:await value.text(),type:value.type||'application/javascript+module'});
+          }else modules=[{name:'worker.mjs',text:await r.text(),type:'application/javascript+module'}];
+          const entries=modules.filter(x=>x.text.includes('const targets = Object.freeze({'));assert.equal(entries.length,1);
+          const entry=entries[0],before=entry.text;writeFileSync('requested-router-before.mjs',before);
+          const marker='const targets = Object.freeze({';
+          let changed=before;
+          for(const [host,origin]of Object.entries(targets)){
+           const escaped=host.replaceAll('.','\\.');
+           const matcher=new RegExp("(['\"])"+escaped+"\\1\\s*:\\s*(['\"])[^'\"]+\\2");
+           if(matcher.test(changed))changed=changed.replace(matcher,"'"+host+"': '"+origin+"'");
+           else changed=changed.replace(marker,marker+"\n  '"+host+"': '"+origin+"',");
+           const root=await fetch(origin+'/',{redirect:'error',signal:AbortSignal.timeout(15000)});assert.equal(root.status,200,'Verified existing app root '+host);if(root.body)await root.body.cancel();
+          }
+          const previous=await import('data:text/javascript;base64,'+Buffer.from(before).toString('base64'));
+          const updated=await import('data:text/javascript;base64,'+Buffer.from(changed).toString('base64'));
+          for(const [host,origin]of Object.entries(previous.targets||{}))if(!targets[host])assert.equal(updated.targets[host],origin,'Unrelated mapping preserved '+host);
+          for(const [host,origin]of Object.entries(targets)){
+           for(const method of ['GET','POST']){
+            let called=false;
+            const response=await updated.route(new Request('https://'+host+'/api/test?x=1',{method,headers:{Origin:'https://'+host,Cookie:'session=test'},...(method==='POST'?{body:'{}'}:{})}),async req=>{
+             called=true;assert.equal(req.url,origin+'/api/test?x=1');assert.equal(req.headers.get('Origin'),origin);assert.equal(req.headers.get('Cookie'),'session=test');
+             return new Response('ok',{headers:{'Set-Cookie':'session=next; Secure; HttpOnly; Path=/'}});
+            });
+            assert.ok(called);assert.match(response.headers.get('set-cookie')||'',/HttpOnly/);
+           }
+           assert.equal((await updated.route(new Request('https://'+host+'/api/test',{method:'POST',headers:{Origin:'https://unrelated.example'}}),()=>{throw Error('Must not forward')})).status,403);
+          }
+          console.log('PASS all requested routing, session, cross-site and unrelated-host regression checks');
+          if(changed!==before){
+           const metadata={main_module:entry.name,compatibility_date:settings.compatibility_date,compatibility_flags:settings.compatibility_flags||[],keep_bindings:[...new Set((settings.bindings||[]).map(x=>x.type))],keep_assets:true};
+           for(const k of ['logpush','observability','tail_consumers','limits','placement','tags'])if(settings[k]!==undefined)metadata[k]=settings[k];
+           const form=new FormData();form.set('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
+           for(const m of modules)form.set(m.name,new Blob([m===entry?changed:m.text],{type:m.type}),m.name);
+           const result=await call(base,{method:'PUT',body:form}),d=await result.json();assert.ok(result.ok&&d.success,'Router update failed HTTP '+result.status);
+           console.log('PASS requested mappings published to existing router');
+          }
+          let unhealthy=false;
+          for(const host of Object.keys(targets)){
+           for(const path of ['/','/api/health']){
+            const result=await fetch('https://'+host+path,{redirect:'error',cache:'no-store',signal:AbortSignal.timeout(20000)});
+            console.log('PUBLIC',host,path,result.status);if(result.status>=400)unhealthy=true;if(result.body)await result.body.cancel();
+           }
+          }
+          if(unhealthy)throw Error('Routing saved; one or more app endpoints still require backend configuration');
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: requested-router-before
+          path: requested-router-before.mjs
+          if-no-files-found: ignore
+          retention-days: 30
