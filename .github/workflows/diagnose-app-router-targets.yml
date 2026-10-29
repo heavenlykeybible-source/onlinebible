@@ -34,4 +34,8 @@ jobs:
            try{const r=await fetch('https://'+host+path,{redirect:'manual',signal:AbortSignal.timeout(15000)}),text=await r.text();console.log('PROBE',JSON.stringify({host,path,status:r.status,release:r.headers.get('x-heavenly-key-release'),upstream:r.headers.get('x-heavenly-key-upstream'),type:r.headers.get('content-type'),preview:text.slice(0,350)}))}catch(e){console.log('PROBE FAILED',host,path,e.cause?.code||e.message)}
            }
           }
+          for(const account of ['c26cc139515e4f56b9fc7010bd98d1b5','6401a8f41a41f5325ba5bd4d006b4ff5']){
+           const r=await fetch('https://api.cloudflare.com/client/v4/accounts/'+account+'/workers/subdomain',{headers:{authorization:'Bearer '+token},signal:AbortSignal.timeout(15000)}),d=await r.json();
+           console.log('EXACT SUBDOMAIN',JSON.stringify({account,status:r.status,subdomain:d.success?d.result?.subdomain:undefined,codes:d.errors?.map(x=>x.code)}));
+          }
           JS
