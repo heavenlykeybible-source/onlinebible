@@ -1,0 +1,37 @@
+name: Diagnose requested app router targets
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/diagnose-app-router-targets.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read router targets and compare application responses
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          node --input-type=module <<'JS'
+          import {resolve4} from 'node:dns/promises';
+          const token=process.env.CLOUDFLARE_API_TOKEN;
+          const base='https://api.cloudflare.com/client/v4/accounts/a160ba9fc74911bd4b3005eac86eefcb/workers/scripts/heavenlykey-portals';
+          const r=await fetch(base,{headers:{authorization:'Bearer '+token},signal:AbortSignal.timeout(20000)});
+          if(!r.ok)throw Error('Router read failed '+r.status);
+          let source;if((r.headers.get('content-type')||'').includes('multipart/form-data')){
+           const f=await r.formData();for(const [key,v]of f)if(key!=='metadata'){const text=typeof v==='string'?v:await v.text();if(text.includes('const targets = Object.freeze({'))source=text;}
+          }else source=await r.text();
+          if(!source)throw Error('Router module not found');
+          const map=source.match(/const targets = Object.freeze\(\{([\s\S]*?)\}\)/)?.[1]||'';
+          for(const line of map.split('\n'))if(/media|social|meeting/.test(line))console.log('CURRENT TARGET',line.trim());
+          const hosts=['mediaguru.heavenlykey.org','socialplus.heavenlykey.org','meeting.heavenlykey.org','meetingspace.heavenlykey.org','heavenly-key-social-management.heavenlykeysocial.workers.dev','heavenly-key-meetingspace.omegawealthcreator.workers.dev'];
+          for(const host of hosts){
+           try{console.log('DNS',host,JSON.stringify(await resolve4(host)))}catch(e){console.log('DNS',host,e.code)}
+           for(const path of ['/','/api/health']){
+           try{const r=await fetch('https://'+host+path,{redirect:'manual',signal:AbortSignal.timeout(15000)}),text=await r.text();console.log('PROBE',JSON.stringify({host,path,status:r.status,release:r.headers.get('x-heavenly-key-release'),upstream:r.headers.get('x-heavenly-key-upstream'),type:r.headers.get('content-type'),preview:text.slice(0,350)}))}catch(e){console.log('PROBE FAILED',host,path,e.cause?.code||e.message)}
+           }
+          }
+          JS
