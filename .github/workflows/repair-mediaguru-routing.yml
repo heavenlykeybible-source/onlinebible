@@ -35,11 +35,13 @@ jobs:
           const settings=await json(base+'/settings');
           const sourceResponse=await call(base);
           if(!sourceResponse.ok)throw Error('Cannot read existing router HTTP '+sourceResponse.status);
-          let name='worker.mjs',source;
+          let name='worker.mjs',source,modules=[];
           if((sourceResponse.headers.get('content-type')||'').includes('multipart/form-data')){
-           const form=await sourceResponse.formData(),files=[...form.entries()].filter(([k,v])=>k!=='metadata'&&typeof v!=='string');
-           if(files.length!==1)throw Error('Unexpected multi-module router: refusing replacement');
-           name=files[0][0];source=await files[0][1].text();
+           const form=await sourceResponse.formData();
+           for(const [key,value] of form.entries())if(key!=='metadata')modules.push({name:key,text:typeof value==='string'?value:await value.text(),type:value.type||'application/javascript+module'});
+           const entry=modules.filter(x=>x.text.includes('const targets = Object.freeze({'));
+           if(entry.length!==1)throw Error('Cannot identify one router entry module; refusing replacement');
+           name=entry[0].name;source=entry[0].text;
           }else source=await sourceResponse.text();
           writeFileSync('mediaguru-router-before.mjs',source);
           const marker='const targets = Object.freeze({';
@@ -62,7 +64,8 @@ jobs:
            const metadata={main_module:name,compatibility_date:settings.compatibility_date,compatibility_flags:settings.compatibility_flags||[],keep_bindings:[...new Set((settings.bindings||[]).map(x=>x.type))],keep_assets:true};
            for(const key of ['logpush','observability','tail_consumers','limits','placement','tags'])if(settings[key]!==undefined)metadata[key]=settings[key];
            const upload=new FormData();upload.set('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
-           upload.set(name,new Blob([changed],{type:'application/javascript+module'}),name);
+           if(!modules.length)modules=[{name,text:source,type:'application/javascript+module'}];
+           for(const module of modules)upload.set(module.name,new Blob([module.name===name?changed:module.text],{type:module.type}),module.name);
            const r=await call(base,{method:'PUT',body:upload});const d=await r.json();
            if(!r.ok||!d.success)throw Error('Router update failed HTTP '+r.status+' codes '+JSON.stringify(d.errors?.map(x=>x.code)));
            console.log('PASS added only MediaGuru mapping to existing router');
